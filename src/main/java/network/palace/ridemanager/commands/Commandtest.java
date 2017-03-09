@@ -37,7 +37,7 @@ public class Commandtest extends CoreCommand {
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), tea::start, 20L);
             } else if (ride instanceof SignRide) {
                 SignRide s = (SignRide) ride;
-                s.joinQueue((Player) sender);
+//                s.joinQueue((Player) sender);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), s::start, 20L);
             }
         }

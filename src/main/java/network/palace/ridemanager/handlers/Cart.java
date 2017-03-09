@@ -4,6 +4,7 @@ import lombok.Getter;
 import net.minecraft.server.v1_11_R1.EntityArmorStand;
 import network.palace.core.player.CPlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -32,7 +33,9 @@ public class Cart {
     private double rotRadius = 0;
     private int rotatingDegree = 0;
     private double targetDegree = 0;
+    private double startingAngle = 0;
     private Vector lastMovement = new Vector(0, 0, 0);
+    private boolean test = false;
 
     public Cart(SignRide ride, Location loc, ItemStack model, BlockFace direction) {
         this(ride, loc, model, direction, 0.1);
@@ -113,15 +116,19 @@ public class Cart {
                     double y = (lastMovement.getY() * power) / lastPower;
                     double z = (lastMovement.getZ() * power) / lastPower;
                     movement = new Vector(x, y, z);
+                    this.lastPower = this.power;
                 }
             } else {
                 movement = new Vector();
             }
         }
+//        Bukkit.broadcastMessage(ChatColor.GREEN + "" + movement.getX() + " | " + movement.getZ());
         next.add(movement);
         Location tloc = next.clone().add(lastMovement.getX(), 0, lastMovement.getZ());
-        boolean allowed = ((tloc.getBlockX() != next.getBlockX() || tloc.getBlockZ() != next.getBlockZ()) || (lastMovement.getX() != 0 && ((lastMovement.getX() >= 0 ? (next.getX() - next.getBlockX()) : (1 - (next.getX() - next.getBlockX()))) >= 0.5)) || (lastMovement.getZ() != 0 && ((lastMovement.getZ() >= 0 ? (next.getZ() - next.getBlockZ()) : (1 - (next.getZ() - next.getBlockZ()))) >= 0.5)));
-        if (lastSignCheck.getBlockX() != next.getBlockX() || lastSignCheck.getBlockZ() != next.getBlockZ() && allowed) {
+        boolean allowed = ((tloc.getBlockX() != next.getBlockX() || tloc.getBlockZ() != next.getBlockZ()) ||
+                (lastMovement.getX() != 0 && ((lastMovement.getX() >= 0 ? (next.getX() - next.getBlockX()) : (1 - (next.getX() - next.getBlockX()))) >= 0.5)) ||
+                (lastMovement.getZ() != 0 && ((lastMovement.getZ() >= 0 ? (next.getZ() - next.getBlockZ()) : (1 - (next.getZ() - next.getBlockZ()))) >= 0.5)));
+        if ((lastSignCheck.getBlockX() != loc.getBlockX() || lastSignCheck.getBlockZ() != loc.getBlockZ()) && allowed) {
             lastSignCheck = loc.clone();
             World w = loc.getWorld();
             Sign s = null;
@@ -146,6 +153,7 @@ public class Cart {
                         double rotDis = Math.abs((2 * Math.PI * rotRadius) / (360 / rotatingDegree));
                         rotYaw = rotatingDegree / (rotDis / power);
                         rotOrigin = getOrigin(rotatingDegree, rotRadius, loc);
+                        startingAngle = Math.toDegrees(stand.getHeadPose().getY());
                         if (rotatingDegree >= 0) {
                             targetDegree = rotatingDegree + Math.toDegrees(stand.getHeadPose().getY()) + 270;
                             targetDegree %= 360;
@@ -168,7 +176,14 @@ public class Cart {
         }
         boolean rotUpdateMove = false;
         if (rotating) {
-            if (withinDistance(next, rotTarget, 0.2)) {
+            double headDegrees = Math.toDegrees(stand.getHeadPose().getY());
+            if (rotatingDegree >= 0) {
+                headDegrees += 270;
+            } else {
+                headDegrees += 450;
+            }
+//            Bukkit.broadcastMessage(headDegrees + " " + targetDegree + " " + rotYaw);
+            if (rotatingDegree >= 0 ? (headDegrees + rotYaw >= targetDegree) : (headDegrees + rotYaw <= targetDegree)) {
                 rotating = false;
             }
             next = loc;
@@ -178,9 +193,11 @@ public class Cart {
              */
             double head = Math.toRadians(rotYaw);
             if (!rotating) {
-                head *= 2;
+                stand.setHeadPose(stand.getHeadPose().setY(Math.toRadians((startingAngle + rotatingDegree) % 360)));
+            } else {
+                stand.setHeadPose(stand.getHeadPose().add(0, head, 0));
             }
-            stand.setHeadPose(stand.getHeadPose().add(0, head, 0));
+            Bukkit.broadcastMessage(String.valueOf(Math.toDegrees(stand.getHeadPose().getY())));
 
             /**
              * Movement Calculations
@@ -189,20 +206,74 @@ public class Cart {
             double rad = Math.toRadians(deg);
             double x = Math.sin(rad) * -rotRadius;
             double z = Math.cos(rad) * rotRadius;
+            Bukkit.broadcastMessage(ChatColor.GREEN + "" + x + " = " + z);
             next = rotOrigin.clone().add(x, 0, z);
             if (!rotating) {
+                Bukkit.broadcastMessage(ChatColor.RED + "TEST");
                 rotUpdateMove = true;
                 double cx = lastMovement.getX();
                 double cy = lastMovement.getY();
                 double cz = lastMovement.getZ();
 //                if (rotatingDegree >= 0) {
                 double dg = Math.toRadians((targetDegree + 90) % 360);
-                double nx = Math.sin(dg) * -cx + Math.cos(dg) * cz;
-                double nz = Math.cos(dg) * cx + Math.sin(dg) * cz;
-                lastMovement.setX(rotatingDegree >= 0 ? nx : -nx);
-                lastMovement.setZ(rotatingDegree >= 0 ? nz : -nz);
+                double nx = Math.cos(dg) * cx - Math.sin(dg) * cz;
+                double nz = Math.sin(dg) * cx + Math.cos(dg) * cz;
+
+                double rads = Math.toRadians(rotatingDegree);
+
+                double currentX = lastMovement.getX();
+                double currentZ = lastMovement.getZ();
+
+                double cosine = Math.cos(rad);
+                double sine = Math.sin(rad);
+
+                double xPrime2 = (cosine * currentX - sine * currentZ);
+                double zPrime2 = (sine * currentX + cosine * currentZ);
+
+                double u = rotOrigin.getX();
+                double v = rotOrigin.getY();
+                double w = rotOrigin.getZ();
+
+                double dr = Math.toRadians(rotatingDegree);
+
+                double xPrime = u * (u * cx + v * cy + w * cz) * (1d - Math.cos(dr)) + cx * Math.cos(dr) + (-w * cy + v * cz) * Math.sin(dr);
+                double yPrime = v * (u * cx + v * cy + w * cz) * (1d - Math.cos(dr)) + cy * Math.cos(dr) + (w * cx - u * cz) * Math.sin(dr);
+                double zPrime = w * (u * cx + v * cy + w * cz) * (1d - Math.cos(dr)) + cz * Math.cos(dr) + (-v * cx + u * cy) * Math.sin(dr);
+
+                /**
+                 90 degrees CW about y-axis: (x, y, z) -> (-z, y, x)
+                 90 degrees CCW about y-axis: (x, y, z) -> (z, y, -x)
+                 **/
+
+                double ratio = Math.abs(rotatingDegree) / 90D;
+
+                double testX;
+                double testZ;
+                if (rotatingDegree >= 0) {
+                    testX = -currentZ * ratio;
+                    testZ = currentX * ratio;
+                } else {
+                    testX = currentZ * ratio;
+                    testZ = -currentX * ratio;
+                }
+
+                double radJ = Math.toRadians(rotatingDegree);
+
+                double currentXJ = lastMovement.getX();
+                double currentZJ = lastMovement.getZ();
+
+                double cosineJ = Math.cos(radJ);
+                double sineJ = Math.sin(radJ);
+
+                testX = (cosineJ * currentXJ - sineJ * currentZJ);
+                testZ = (sineJ * currentXJ + cosineJ * currentZJ);
+
+                lastMovement.setX(testX);
+                lastMovement.setZ(testZ);
+
 //                    lastMovement.setZ(nz);
-                Bukkit.broadcastMessage(cx + " " + nx + " | " + cz + " " + nz + " | " + dg + " " + targetDegree);
+//                Bukkit.broadcastMessage(cx + " " + nx + " | " + cz + " " + nz + " | " + dg + " " + targetDegree);
+                Bukkit.broadcastMessage(cx + " " + testX + " | " + cz + " " + testZ);
                 rotTarget = null;
                 rotOrigin = null;
                 rotYaw = 0;
@@ -285,7 +356,7 @@ public class Cart {
         if (this.power != 0) {
             this.lastPower = this.power;
         }
-        this.power = p > 1 ? 1 : p;
+        this.power = p > 1 ? 1 : (p < -1 ? -1 : p);
     }
 
     private boolean withinDistance(Location loc, Location target, double distance) {
