@@ -25,8 +25,8 @@ public class TeacupsRide extends Ride {
     @Getter @Setter private double speed = 0; //Full speed is 0.3
     @Getter private boolean started = false;
 
-    public TeacupsRide(String name, String displayName, int riders, double delay, Location exit, Location center) {
-        super(name, displayName, riders, delay, exit);
+    public TeacupsRide(String name, String displayName, double delay, Location exit, Location center) {
+        super(name, displayName, 18, delay, exit);
         this.center = center;
         loadSurroundingChunks();
         spawn();
@@ -312,7 +312,6 @@ public class TeacupsRide extends Ride {
             Location next = getRelativeLocation(angle, tableRadius, center);
             teleport(stand, next);
             for (Cup c : cups) {
-                final double test = c.getAngle();
                 double a = ((c.getAngle()) - (tableChange * 3)) % 360;
                 c.setAngle(a);
                 ArmorStand s = c.getStand();

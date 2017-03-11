@@ -6,9 +6,7 @@ import network.palace.core.command.CommandPermission;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.Rank;
 import network.palace.ridemanager.RideManager;
-import network.palace.ridemanager.handlers.Ride;
-import network.palace.ridemanager.handlers.SignRide;
-import network.palace.ridemanager.handlers.TeacupsRide;
+import network.palace.ridemanager.handlers.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -35,6 +33,14 @@ public class Commandtest extends CoreCommand {
                 TeacupsRide tea = (TeacupsRide) ride;
                 tea.joinQueue((Player) sender);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), tea::start, 20L);
+            } else if (ride instanceof CarouselRide) {
+                CarouselRide car = (CarouselRide) ride;
+//                car.joinQueue((Player) sender);
+                Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), car::start, 20L);
+            } else if (ride instanceof AerialCarouselRide) {
+                AerialCarouselRide aer = (AerialCarouselRide) ride;
+//                aer.joinQueue((Player) sender);
+                Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), aer::start, 20L);
             } else if (ride instanceof SignRide) {
                 SignRide s = (SignRide) ride;
 //                s.joinQueue((Player) sender);

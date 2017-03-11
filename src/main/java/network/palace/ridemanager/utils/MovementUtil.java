@@ -2,10 +2,7 @@ package network.palace.ridemanager.utils;
 
 import network.palace.core.Core;
 import network.palace.ridemanager.RideManager;
-import network.palace.ridemanager.handlers.Ride;
-import network.palace.ridemanager.handlers.RideType;
-import network.palace.ridemanager.handlers.SignRide;
-import network.palace.ridemanager.handlers.TeacupsRide;
+import network.palace.ridemanager.handlers.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -79,7 +76,17 @@ public class MovementUtil {
                         break;
                     case TEACUPS: {
                         Location center = RideManager.parseLocation(current.getConfigurationSection("center"));
-                        ride = new TeacupsRide(s, displayName, riders, delay, exit, center);
+                        ride = new TeacupsRide(s, displayName, delay, exit, center);
+                        break;
+                    }
+                    case CAROUSEL: {
+                        Location center = RideManager.parseLocation(current.getConfigurationSection("center"));
+                        ride = new CarouselRide(s, displayName, delay, exit, center);
+                        break;
+                    }
+                    case AERIAL_CAROUSEL: {
+                        Location center = RideManager.parseLocation(current.getConfigurationSection("center"));
+                        ride = new AerialCarouselRide(s, displayName, delay, exit, center, current.getDouble("aerialRadius"), current.getDouble("supportRadius"));
                         break;
                     }
                 }
