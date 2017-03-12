@@ -18,11 +18,14 @@ import java.util.*;
 public class AerialCarouselRide extends Ride {
     private double aerialRadius = 6.5;
     private double supportRadius = 4.5;
+    private final boolean small;
     @Getter private Location center;
     @Getter private boolean spawned = false;
     @Getter private List<Vehicle> vehicles = new ArrayList<>();
     @Getter @Setter private double speed = 0; //Full speed is 0.2
     @Getter @Setter private double heightSpeed = 0;
+    @Getter private double height = 3;
+    @Getter private double supportAngle = 45;
     @Getter private boolean started = false;
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center) {
@@ -30,10 +33,21 @@ public class AerialCarouselRide extends Ride {
     }
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, double aerialRadius, double supportRadius) {
+        this(name, displayName, delay, exit, center, aerialRadius, supportRadius, false);
+    }
+
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, double aerialRadius, double supportRadius, boolean small) {
+        this(name, displayName, delay, exit, center, aerialRadius, supportRadius, 45, 3, small);
+    }
+
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, double aerialRadius, double supportRadius, double angle, double height, boolean small) {
         super(name, displayName, 16, delay, exit);
         this.center = center;
         this.aerialRadius = aerialRadius;
         this.supportRadius = supportRadius;
+        this.supportAngle = angle;
+        this.height = height;
+        this.small = small;
         loadSurroundingChunks();
         spawn();
     }
@@ -43,22 +57,19 @@ public class AerialCarouselRide extends Ride {
             return;
         }
         World w = this.center.getWorld();
+        double an = small ? 30 : 22.5;
         Location loc1 = getRelativeLocation(0, aerialRadius, this.center);
-        Location loc2 = getRelativeLocation(22.5, aerialRadius, this.center);
-        Location loc3 = getRelativeLocation(22.5 * 2, aerialRadius, this.center);
-        Location loc4 = getRelativeLocation(22.5 * 3, aerialRadius, this.center);
-        Location loc5 = getRelativeLocation(22.5 * 4, aerialRadius, this.center);
-        Location loc6 = getRelativeLocation(22.5 * 5, aerialRadius, this.center);
-        Location loc7 = getRelativeLocation(22.5 * 6, aerialRadius, this.center);
-        Location loc8 = getRelativeLocation(22.5 * 7, aerialRadius, this.center);
-        Location loc9 = getRelativeLocation(22.5 * 8, aerialRadius, this.center);
-        Location loc10 = getRelativeLocation(22.5 * 9, aerialRadius, this.center);
-        Location loc11 = getRelativeLocation(22.5 * 10, aerialRadius, this.center);
-        Location loc12 = getRelativeLocation(22.5 * 11, aerialRadius, this.center);
-        Location loc13 = getRelativeLocation(22.5 * 12, aerialRadius, this.center);
-        Location loc14 = getRelativeLocation(22.5 * 13, aerialRadius, this.center);
-        Location loc15 = getRelativeLocation(22.5 * 14, aerialRadius, this.center);
-        Location loc16 = getRelativeLocation(22.5 * 15, aerialRadius, this.center);
+        Location loc2 = getRelativeLocation(an, aerialRadius, this.center);
+        Location loc3 = getRelativeLocation(an * 2, aerialRadius, this.center);
+        Location loc4 = getRelativeLocation(an * 3, aerialRadius, this.center);
+        Location loc5 = getRelativeLocation(an * 4, aerialRadius, this.center);
+        Location loc6 = getRelativeLocation(an * 5, aerialRadius, this.center);
+        Location loc7 = getRelativeLocation(an * 6, aerialRadius, this.center);
+        Location loc8 = getRelativeLocation(an * 7, aerialRadius, this.center);
+        Location loc9 = getRelativeLocation(an * 8, aerialRadius, this.center);
+        Location loc10 = getRelativeLocation(an * 9, aerialRadius, this.center);
+        Location loc11 = getRelativeLocation(an * 10, aerialRadius, this.center);
+        Location loc12 = getRelativeLocation(an * 11, aerialRadius, this.center);
 
         ItemStack i1 = new ItemStack(Material.STONE, 1);
         ItemStack i2 = new ItemStack(Material.DIRT, 1);
@@ -66,6 +77,7 @@ public class AerialCarouselRide extends Ride {
         ItemStack i4 = new ItemStack(Material.BRICK, 1);
         ItemStack i5 = new ItemStack(Material.WOOL, 1);
         ItemStack i6 = new ItemStack(Material.CLAY, 1);
+
 
         ArmorStand a1 = w.spawn(loc1, ArmorStand.class);
         ArmorStand a2 = w.spawn(loc2, ArmorStand.class);
@@ -79,10 +91,6 @@ public class AerialCarouselRide extends Ride {
         ArmorStand a10 = w.spawn(loc10, ArmorStand.class);
         ArmorStand a11 = w.spawn(loc11, ArmorStand.class);
         ArmorStand a12 = w.spawn(loc12, ArmorStand.class);
-        ArmorStand a13 = w.spawn(loc13, ArmorStand.class);
-        ArmorStand a14 = w.spawn(loc14, ArmorStand.class);
-        ArmorStand a15 = w.spawn(loc15, ArmorStand.class);
-        ArmorStand a16 = w.spawn(loc16, ArmorStand.class);
 
         a1.setGravity(false);
         a2.setGravity(false);
@@ -96,10 +104,6 @@ public class AerialCarouselRide extends Ride {
         a10.setGravity(false);
         a11.setGravity(false);
         a12.setGravity(false);
-        a13.setGravity(false);
-        a14.setGravity(false);
-        a15.setGravity(false);
-        a16.setGravity(false);
 
         a1.setHelmet(i1);
         a2.setHelmet(i2);
@@ -113,26 +117,22 @@ public class AerialCarouselRide extends Ride {
         a10.setHelmet(i4);
         a11.setHelmet(i5);
         a12.setHelmet(i6);
-        a13.setHelmet(i3);
-        a14.setHelmet(i4);
-        a15.setHelmet(i5);
-        a16.setHelmet(i6);
 
-        double d2 = -Math.toRadians(22.5);
-        double d3 = -Math.toRadians(22.5 * 2);
-        double d4 = -Math.toRadians(22.5 * 3);
-        double d5 = -Math.toRadians(22.5 * 4);
-        double d6 = -Math.toRadians(22.5 * 5);
-        double d7 = -Math.toRadians(22.5 * 6);
-        double d8 = -Math.toRadians(22.5 * 7);
-        double d9 = -Math.toRadians(22.5 * 8);
-        double d10 = -Math.toRadians(22.5 * 9);
-        double d11 = -Math.toRadians(22.5 * 10);
-        double d12 = -Math.toRadians(22.5 * 11);
-        double d13 = -Math.toRadians(22.5 * 12);
-        double d14 = -Math.toRadians(22.5 * 13);
-        double d15 = -Math.toRadians(22.5 * 14);
-        double d16 = -Math.toRadians(22.5 * 15);
+        double d2 = -Math.toRadians(an);
+        double d3 = -Math.toRadians(an * 2);
+        double d4 = -Math.toRadians(an * 3);
+        double d5 = -Math.toRadians(an * 4);
+        double d6 = -Math.toRadians(an * 5);
+        double d7 = -Math.toRadians(an * 6);
+        double d8 = -Math.toRadians(an * 7);
+        double d9 = -Math.toRadians(an * 8);
+        double d10 = -Math.toRadians(an * 9);
+        double d11 = -Math.toRadians(an * 10);
+        double d12 = -Math.toRadians(an * 11);
+        double d13 = -Math.toRadians(an * 12);
+        double d14 = -Math.toRadians(an * 13);
+        double d15 = -Math.toRadians(an * 14);
+        double d16 = -Math.toRadians(an * 15);
 
         a2.setHeadPose(a2.getHeadPose().add(0, d2, 0));
         a3.setHeadPose(a3.getHeadPose().add(0, d3, 0));
@@ -145,29 +145,51 @@ public class AerialCarouselRide extends Ride {
         a10.setHeadPose(a10.getHeadPose().add(0, d10, 0));
         a11.setHeadPose(a11.getHeadPose().add(0, d11, 0));
         a12.setHeadPose(a12.getHeadPose().add(0, d12, 0));
-        a13.setHeadPose(a13.getHeadPose().add(0, d13, 0));
-        a14.setHeadPose(a14.getHeadPose().add(0, d14, 0));
-        a15.setHeadPose(a15.getHeadPose().add(0, d15, 0));
-        a16.setHeadPose(a16.getHeadPose().add(0, d16, 0));
 
         Vehicle h1 = new Vehicle(a1, 0);
-        Vehicle h2 = new Vehicle(a2, 22.5);
-        Vehicle h3 = new Vehicle(a3, 22.5 * 2);
-        Vehicle h4 = new Vehicle(a4, 22.5 * 3);
-        Vehicle h5 = new Vehicle(a5, 22.5 * 4);
-        Vehicle h6 = new Vehicle(a6, 22.5 * 5);
-        Vehicle h7 = new Vehicle(a7, 22.5 * 6);
-        Vehicle h8 = new Vehicle(a8, 22.5 * 7);
-        Vehicle h9 = new Vehicle(a9, 22.5 * 8);
-        Vehicle h10 = new Vehicle(a10, 22.5 * 9);
-        Vehicle h11 = new Vehicle(a11, 22.5 * 10);
-        Vehicle h12 = new Vehicle(a12, 22.5 * 11);
-        Vehicle h13 = new Vehicle(a13, 22.5 * 12);
-        Vehicle h14 = new Vehicle(a14, 22.5 * 13);
-        Vehicle h15 = new Vehicle(a15, 22.5 * 14);
-        Vehicle h16 = new Vehicle(a16, 22.5 * 15);
+        Vehicle h2 = new Vehicle(a2, an);
+        Vehicle h3 = new Vehicle(a3, an * 2);
+        Vehicle h4 = new Vehicle(a4, an * 3);
+        Vehicle h5 = new Vehicle(a5, an * 4);
+        Vehicle h6 = new Vehicle(a6, an * 5);
+        Vehicle h7 = new Vehicle(a7, an * 6);
+        Vehicle h8 = new Vehicle(a8, an * 7);
+        Vehicle h9 = new Vehicle(a9, an * 8);
+        Vehicle h10 = new Vehicle(a10, an * 9);
+        Vehicle h11 = new Vehicle(a11, an * 10);
+        Vehicle h12 = new Vehicle(a12, an * 11);
 
-        this.vehicles = new LinkedList<>(Arrays.asList(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16));
+        if (!small) {
+            Location loc13 = getRelativeLocation(an * 12, aerialRadius, this.center);
+            Location loc14 = getRelativeLocation(an * 13, aerialRadius, this.center);
+            Location loc15 = getRelativeLocation(an * 14, aerialRadius, this.center);
+            Location loc16 = getRelativeLocation(an * 15, aerialRadius, this.center);
+            ArmorStand a13 = w.spawn(loc13, ArmorStand.class);
+            ArmorStand a14 = w.spawn(loc14, ArmorStand.class);
+            ArmorStand a15 = w.spawn(loc15, ArmorStand.class);
+            ArmorStand a16 = w.spawn(loc16, ArmorStand.class);
+            a13.setGravity(false);
+            a14.setGravity(false);
+            a15.setGravity(false);
+            a16.setGravity(false);
+            a13.setHelmet(i3);
+            a14.setHelmet(i4);
+            a15.setHelmet(i5);
+            a16.setHelmet(i6);
+            a13.setHeadPose(a13.getHeadPose().add(0, d13, 0));
+            a14.setHeadPose(a14.getHeadPose().add(0, d14, 0));
+            a15.setHeadPose(a15.getHeadPose().add(0, d15, 0));
+            a16.setHeadPose(a16.getHeadPose().add(0, d16, 0));
+            Vehicle h13 = new Vehicle(a13, an * 12);
+            Vehicle h14 = new Vehicle(a14, an * 13);
+            Vehicle h15 = new Vehicle(a15, an * 14);
+            Vehicle h16 = new Vehicle(a16, an * 15);
+            this.vehicles = new LinkedList<>(Arrays.asList(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16));
+        } else {
+            this.vehicles = new LinkedList<>(Arrays.asList(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12));
+        }
+
+
         this.spawned = true;
     }
 
@@ -210,7 +232,6 @@ public class AerialCarouselRide extends Ride {
                 switch (time) {
                     case 0:
                         speed = 1.5;
-                        heightSpeed = 0.2;
                         break;
                     case 1:
                         speed = 1;
@@ -271,7 +292,6 @@ public class AerialCarouselRide extends Ride {
                         break;
                     case 63:
                         speed = 0;
-                        heightSpeed = 0;
                         break;
                     case 66:
                         ejectPlayers();
@@ -315,7 +335,7 @@ public class AerialCarouselRide extends Ride {
             ArmorStand v = c.getStand();
             ArmorStand s = c.getSupport();
             Location n = getRelativeLocation(a, aerialRadius, center);
-            Location n2 = getRelativeLocation(a, supportRadius, center);
+            Location n2 = getRelativeLocation(a, supportRadius, center).add(0, height / 4, 0);
             teleport(v, n);
             teleport(s, n2);
             v.setHeadPose(v.getHeadPose().add(0, head, 0));
@@ -332,15 +352,6 @@ public class AerialCarouselRide extends Ride {
         for (Vehicle h : getVehicles()) {
             h.despawn();
         }
-    }
-
-    public double getHeight(double ticks, boolean positive) {
-        double time = ticks / 20;
-        double h = 0.5 * Math.sin(0.5 * Math.PI * time * heightSpeed);
-        if (!positive) {
-            h *= -1;
-        }
-        return h + center.getY();
     }
 
     public void loadSurroundingChunks() {
@@ -375,9 +386,9 @@ public class AerialCarouselRide extends Ride {
         public Vehicle(ArmorStand stand, double angle) {
             this.stand = stand;
             this.angle = angle;
-            this.support = stand.getWorld().spawn(getRelativeLocation(angle, supportRadius, center), ArmorStand.class);
+            this.support = stand.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 4, 0), ArmorStand.class);
             support.setGravity(false);
-            support.setHeadPose(support.getHeadPose().add(0, Math.toRadians(360 - angle), 0));
+            support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
         }
 
         public double getTicks() {

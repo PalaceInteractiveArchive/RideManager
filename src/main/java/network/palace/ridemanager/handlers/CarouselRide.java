@@ -64,7 +64,7 @@ public class CarouselRide extends Ride {
         Location loc23 = getRelativeLocation(315.0, 5.0, this.center);
         Location loc24 = getRelativeLocation(345.0, 5.0, this.center);
 
-        ItemStack i1 = new ItemStack(Material.STONE, 1);
+        ItemStack i1 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
         ItemStack i2 = new ItemStack(Material.DIRT, 1);
         ItemStack i3 = new ItemStack(Material.GRASS, 1);
         ItemStack i4 = new ItemStack(Material.BRICK, 1);

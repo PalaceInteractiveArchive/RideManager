@@ -343,7 +343,7 @@ public class Cart {
         return bd.doubleValue();
     }
 
-    public static Vector rotate(float yaw, float pitch, double x, double y, double z) {
+    public Vector rotate(float yaw, float pitch, double x, double y, double z) {
         // Conversions found by (a lot of) testing
         float angle;
         angle = yaw * 0.017453293F;
@@ -354,10 +354,13 @@ public class Cart {
         double sinpitch = Math.sin(angle);
         double cospitch = Math.cos(angle);
 
+        double xmult = lastMovement.getX() >= 0 ? 1 : -1;
+        double zmult = lastMovement.getZ() >= 0 ? 1 : -1;
+
         Vector vector = new Vector();
-        vector.setZ((x * sinyaw) - (y * cosyaw * sinpitch) - (z * cosyaw * cospitch));
+        vector.setZ(((x * sinyaw) - (y * cosyaw * sinpitch) - (z * cosyaw * cospitch)) * (zmult));
         vector.setY((y * cospitch) - (z * sinpitch));
-        vector.setX(-(x * cosyaw) - (y * sinyaw * sinpitch) - (z * sinyaw * cospitch));
+        vector.setX((-(x * cosyaw) - (y * sinyaw * sinpitch) - (z * sinyaw * cospitch)) * (xmult));
         Bukkit.broadcastMessage(ChatColor.GOLD + new Vector(x, y, z).toString() + "\n" + ChatColor.GREEN + vector.toString() + "\n");
         return vector;
     }

@@ -86,7 +86,9 @@ public class MovementUtil {
                     }
                     case AERIAL_CAROUSEL: {
                         Location center = RideManager.parseLocation(current.getConfigurationSection("center"));
-                        ride = new AerialCarouselRide(s, displayName, delay, exit, center, current.getDouble("aerialRadius"), current.getDouble("supportRadius"));
+                        ConfigurationSection support = current.getConfigurationSection("support");
+                        ride = new AerialCarouselRide(s, displayName, delay, exit, center, current.getDouble("aerialRadius"),
+                                support.getDouble("radius"), support.getDouble("angle"), support.getDouble("height"), current.getBoolean("small"));
                         break;
                     }
                 }
