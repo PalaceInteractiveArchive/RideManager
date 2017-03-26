@@ -35,15 +35,15 @@ public class Commandtest extends CoreCommand {
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), tea::start, 20L);
             } else if (ride instanceof CarouselRide) {
                 CarouselRide car = (CarouselRide) ride;
-//                car.joinQueue((Player) sender);
+                car.joinQueue((Player) sender);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), car::start, 20L);
             } else if (ride instanceof AerialCarouselRide) {
                 AerialCarouselRide aer = (AerialCarouselRide) ride;
-//                aer.joinQueue((Player) sender);
+                aer.joinQueue((Player) sender);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), aer::start, 20L);
             } else if (ride instanceof SignRide) {
                 SignRide s = (SignRide) ride;
-//                s.joinQueue((Player) sender);
+                s.joinQueue((Player) sender);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), s::start, 20L);
             }
         }

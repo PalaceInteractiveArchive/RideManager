@@ -19,12 +19,14 @@ import java.util.UUID;
 public class SignRide extends Ride {
     private final Location spawnSign;
     @Getter private final int yAxis;
+    @Getter private String modelName;
     private List<Cart> carts = new ArrayList<>();
 
-    public SignRide(String name, String displayName, int riders, double delay, Location exit, Location spawnSign) {
+    public SignRide(String name, String displayName, int riders, double delay, Location exit, Location spawnSign, String modelName) {
         super(name, displayName, riders, delay, exit);
         this.spawnSign = spawnSign;
         this.yAxis = spawnSign.getBlockY();
+        this.modelName = modelName;
     }
 
     @Override
@@ -46,9 +48,7 @@ public class SignRide extends Ride {
         List<UUID> queue = getQueue();
         List<UUID> riding = new ArrayList<>();
         if (queue.size() < getRiders()) {
-            for (UUID uuid : queue) {
-                riding.add(uuid);
-            }
+            riding.addAll(queue);
             queue.clear();
         } else {
             for (int i = 0; i < getRiders(); i++) {
@@ -72,7 +72,7 @@ public class SignRide extends Ride {
         Location loc = new Location(w, sloc.getBlockX() + 0.5, Double.parseDouble(s.getLine(2)),
                 sloc.getBlockZ() + 0.5, yaw, 0);
         ItemStack item = new ItemStack(Material.STONE);
-        Cart c = new Cart(this, loc, item, direction);
+        Cart c = new Cart(this, loc, item, direction, modelName);
         for (CPlayer tp : riders) {
 //            c.addPassenger(tp);
             tp.sendMessage(ChatColor.GREEN + "Ride starting in 1 second!");

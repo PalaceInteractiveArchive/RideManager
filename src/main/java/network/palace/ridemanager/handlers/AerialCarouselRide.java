@@ -2,6 +2,7 @@ package network.palace.ridemanager.handlers;
 
 import lombok.Getter;
 import lombok.Setter;
+import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import org.bukkit.*;
@@ -25,8 +26,12 @@ public class AerialCarouselRide extends Ride {
     @Getter @Setter private double speed = 0; //Full speed is 0.2
     @Getter @Setter private double heightSpeed = 0;
     @Getter private double height = 3;
+    @Getter private double maxHeight;
     @Getter private double supportAngle = 45;
     @Getter private boolean started = false;
+    @Getter private boolean canFly = false;
+    private HashMap<UUID, Long> clicking = new HashMap<>();
+    private final int taskID;
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center) {
         this(name, displayName, delay, exit, center, 6.5, 4.5);
@@ -47,9 +52,41 @@ public class AerialCarouselRide extends Ride {
         this.supportRadius = supportRadius;
         this.supportAngle = angle;
         this.height = height;
+        this.maxHeight = center.getY() + (height * 2);
         this.small = small;
         loadSurroundingChunks();
         spawn();
+        taskID = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
+            @Override
+            public void run() {
+                Player p = Bukkit.getPlayer("Legobuilder0813");
+                if (!canFly) {
+                    return;
+                }
+                List<UUID> moved = new ArrayList<>();
+                for (Map.Entry<UUID, Long> entry : clicking.entrySet()) {
+                    if (System.currentTimeMillis() - entry.getValue() > 500) {
+                        clicking.remove(entry.getKey());
+                        continue;
+                    }
+                    for (Vehicle v : getVehicles()) {
+                        if (v.getPassenger() == null) {
+                            continue;
+                        }
+                        if (v.getPassenger().getUniqueId().equals(entry.getKey())) {
+                            CPlayer player = v.getPassenger();
+                            v.setFlying(true);
+                            moved.add(v.getId());
+                        }
+                    }
+                }
+                for (Vehicle v : getVehicles()) {
+                    if (!moved.contains(v.getId())) {
+                        v.setFlying(false);
+                    }
+                }
+            }
+        }, 0L, 5L).getTaskId();
     }
 
     public void spawn() {
@@ -198,9 +235,7 @@ public class AerialCarouselRide extends Ride {
         List<UUID> queue = getQueue();
         List<UUID> riding = new ArrayList<>();
         if (queue.size() < getRiders()) {
-            for (UUID uuid : queue) {
-                riding.add(uuid);
-            }
+            riding.addAll(queue);
             queue.clear();
         } else {
             for (int i = 0; i < getRiders(); i++) {
@@ -224,6 +259,7 @@ public class AerialCarouselRide extends Ride {
             getOnRide().add(tp.getUniqueId());
             h = getHorse(hc++);
         }
+        started = true;
         int taskID = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
             int time = 0;
 
@@ -243,57 +279,60 @@ public class AerialCarouselRide extends Ride {
                         speed = 0.8;
                         break;
                     case 4:
-                        speed = 0.7;
+                        speed = 0.65;
                         break;
                     case 5:
-                        speed = 0.6;
+                        speed = 0.525;
                         break;
                     case 6:
-                        speed = 0.5;
+                        speed = 0.3125;
                         break;
                     case 7:
-                        speed = 0.4;
-                        break;
-                    case 8:
-                        speed = 0.3;
-                        break;
-                    case 9:
                         speed = 0.2;
+                        canFly = true;
+                        for (UUID uuid : getOnRide()) {
+                            CPlayer cp = Core.getPlayerManager().getPlayer(uuid);
+                            cp.sendMessage(ChatColor.GREEN + "You can fly now, click the item in the middle of your hotbar to start flying!");
+                        }
                         break;
-                    case 52:
+                    case 80:
+                        canFly = false;
+                        break;
+                    case 82:
                         speed = 0.3;
                         break;
-                    case 53:
+                    case 83:
                         speed = 0.4;
                         break;
-                    case 54:
+                    case 84:
                         speed = 0.5;
                         break;
-                    case 55:
+                    case 85:
                         speed = 0.6;
                         break;
-                    case 56:
+                    case 86:
                         speed = 0.7;
                         break;
-                    case 57:
+                    case 87:
                         speed = 0.8;
                         break;
-                    case 58:
+                    case 88:
                         speed = 0.9;
                         break;
-                    case 59:
+                    case 89:
                         speed = 1;
                         break;
-                    case 60:
+                    case 90:
                         speed = 1.5;
                         break;
-                    case 62:
+                    case 92:
                         speed = 2;
                         break;
-                    case 63:
+                    case 93:
                         speed = 0;
+                        started = false;
                         break;
-                    case 66:
+                    case 96:
                         ejectPlayers();
                         break;
                 }
@@ -305,13 +344,13 @@ public class AerialCarouselRide extends Ride {
             public void run() {
                 Bukkit.getScheduler().cancelTask(taskID);
             }
-        }, 1400L);
+        }, 2000L);
     }
 
     @Override
     public boolean handleEject(CPlayer player) {
         for (Vehicle c : getVehicles()) {
-            Player p = c.getPassenger();
+            CPlayer p = c.getPassenger();
             if (p != null && p.getUniqueId().equals(player.getUniqueId())) {
                 getOnRide().remove(player.getUniqueId());
                 c.eject();
@@ -334,8 +373,17 @@ public class AerialCarouselRide extends Ride {
             c.setAngle(a);
             ArmorStand v = c.getStand();
             ArmorStand s = c.getSupport();
+            Location l = v.getLocation();
+            Location center = this.center.clone();
+            if (c.isFlying() && l.getY() < maxHeight) {
+                center.setY(l.getY() + 0.05);
+            } else if (c.isFlying() && l.getY() >= maxHeight) {
+                center.setY(l.getY());
+            } else if (!c.isFlying() && l.getY() > center.getY()) {
+                center.setY(l.getY() - 0.05);
+            }
             Location n = getRelativeLocation(a, aerialRadius, center);
-            Location n2 = getRelativeLocation(a, supportRadius, center).add(0, height / 4, 0);
+            Location n2 = getRelativeLocation(a, supportRadius, this.center).add(0, height / 4, 0);
             teleport(v, n);
             teleport(s, n2);
             v.setHeadPose(v.getHeadPose().add(0, head, 0));
@@ -345,6 +393,7 @@ public class AerialCarouselRide extends Ride {
 
     @Override
     public void despawn() {
+        Bukkit.getScheduler().cancelTask(taskID);
         if (!isSpawned()) {
             return;
         }
@@ -377,11 +426,21 @@ public class AerialCarouselRide extends Ride {
         }
     }
 
+    public void click(CPlayer cp) {
+        if (!clicking.containsKey(cp.getUniqueId())) {
+            clicking.put(cp.getUniqueId(), System.currentTimeMillis());
+            return;
+        }
+        clicking.put(cp.getUniqueId(), System.currentTimeMillis());
+    }
+
     private class Vehicle {
         @Getter private ArmorStand stand;
         @Getter @Setter private double angle;
         private double ticks;
         @Getter private ArmorStand support;
+        @Getter private UUID id = UUID.randomUUID();
+        @Getter @Setter private boolean flying;
 
         public Vehicle(ArmorStand stand, double angle) {
             this.stand = stand;
@@ -402,7 +461,7 @@ public class AerialCarouselRide extends Ride {
             stand.addPassenger(player);
         }
 
-        public Player getPassenger() {
+        public CPlayer getPassenger() {
             if (stand == null || stand.getPassengers() == null || stand.getPassengers().isEmpty()) {
                 return null;
             }
@@ -410,13 +469,13 @@ public class AerialCarouselRide extends Ride {
             if (!(pass instanceof Player)) {
                 return null;
             }
-            return (Player) pass;
+            return Core.getPlayerManager().getPlayer(pass.getUniqueId());
         }
 
         public void eject() {
-            Player passenger = getPassenger();
+            CPlayer passenger = getPassenger();
             if (passenger != null) {
-                stand.removePassenger(passenger);
+                stand.removePassenger(passenger.getBukkitPlayer());
                 passenger.teleport(getExit());
             }
         }

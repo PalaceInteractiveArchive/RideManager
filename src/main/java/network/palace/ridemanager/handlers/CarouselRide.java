@@ -65,11 +65,11 @@ public class CarouselRide extends Ride {
         Location loc24 = getRelativeLocation(345.0, 5.0, this.center);
 
         ItemStack i1 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
-        ItemStack i2 = new ItemStack(Material.DIRT, 1);
-        ItemStack i3 = new ItemStack(Material.GRASS, 1);
-        ItemStack i4 = new ItemStack(Material.BRICK, 1);
-        ItemStack i5 = new ItemStack(Material.WOOL, 1);
-        ItemStack i6 = new ItemStack(Material.CLAY, 1);
+        ItemStack i2 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
+        ItemStack i3 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
+        ItemStack i4 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
+        ItemStack i5 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
+        ItemStack i6 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
 
         ArmorStand a1 = w.spawn(loc1, ArmorStand.class);
         ArmorStand a2 = w.spawn(loc2, ArmorStand.class);
@@ -234,9 +234,7 @@ public class CarouselRide extends Ride {
         List<UUID> queue = getQueue();
         List<UUID> riding = new ArrayList<>();
         if (queue.size() < getRiders()) {
-            for (UUID uuid : queue) {
-                riding.add(uuid);
-            }
+            riding.addAll(queue);
             queue.clear();
         } else {
             for (int i = 0; i < getRiders(); i++) {
@@ -378,7 +376,7 @@ public class CarouselRide extends Ride {
         double tableChange = 360 / (speed * 20 * 60);
         double head = Math.toRadians(tableChange);
         for (Horse c : getHorses()) {
-            double a = ((c.getAngle()) - (tableChange)) % 360;
+            double a = (c.getAngle() + tableChange) % 360;
             c.setAngle(a);
             ArmorStand s = c.getStand();
             Location n;
@@ -390,7 +388,7 @@ public class CarouselRide extends Ride {
             double height = getHeight(c.getTicks(), c.isPositive());
             n.setY(height);
             teleport(s, n);
-            s.setHeadPose(s.getHeadPose().add(0, head, 0));
+            s.setHeadPose(s.getHeadPose().add(0, -head, 0));
         }
     }
 

@@ -3,6 +3,7 @@ package network.palace.ridemanager.handlers;
 import lombok.Getter;
 import net.minecraft.server.v1_11_R1.EntityArmorStand;
 import network.palace.core.player.CPlayer;
+import network.palace.ridemanager.RideManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -25,6 +26,7 @@ public class Cart {
     @Getter private final SignRide ride;
     private final ArmorStand stand;
     @Getter private final ItemStack model;
+    @Getter private final ModelMap map;
     @Getter private double power = 0;
     private double lastPower = 0.1;
     private Location lastSignCheck = null;
@@ -39,12 +41,13 @@ public class Cart {
     private Vector lastMovement = new Vector(0, 0, 0);
     private boolean test = false;
 
-    public Cart(SignRide ride, Location loc, ItemStack model, BlockFace direction) {
-        this(ride, loc, model, direction, 0.1);
+    public Cart(SignRide ride, Location loc, ItemStack model, BlockFace direction, String modelName) {
+        this(ride, loc, model, direction, modelName, 0.1);
     }
 
-    public Cart(SignRide ride, Location loc, ItemStack model, BlockFace direction, double power) {
+    public Cart(SignRide ride, Location loc, ItemStack model, BlockFace direction, String modelName, double power) {
         this.ride = ride;
+        this.map = RideManager.getMappingUtil().getMap(modelName);
         this.lastSignCheck = loc.clone();
         this.stand = loc.getWorld().spawn(new Location(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ()), ArmorStand.class);
         setPower(power);
@@ -181,12 +184,19 @@ public class Cart {
                         if (rotatingDegree >= 0) {
                             targetDegree = rotatingDegree + Math.toDegrees(stand.getHeadPose().getY()) + 270;
                             targetDegree %= 360;
+                            if (targetDegree == 0) {
+                                targetDegree = 360;
+                            }
                             double rad = Math.toRadians(targetDegree);
                             double x = Math.sin(rad) * -rotRadius;
                             double z = Math.cos(rad) * rotRadius;
                             rotTarget = rotOrigin.clone().add(x, 0, z);
                         } else {
-                            targetDegree = rotatingDegree + Math.toDegrees(stand.getHeadPose().getY()) + 450;
+                            targetDegree = rotatingDegree + Math.toDegrees(stand.getHeadPose().getY());
+                            if (targetDegree <= 0) {
+                                targetDegree += 360;
+                            }
+//                            Bukkit.broadcastMessage(ChatColor.YELLOW + "" + rotatingDegree + " " + Math.toDegrees(stand.getHeadPose().getY()) + " " + targetDegree);
                             targetDegree %= 360;
                             double rad = Math.toRadians(targetDegree);
                             double x = Math.sin(rad) * -rotRadius;
@@ -204,10 +214,14 @@ public class Cart {
             if (rotatingDegree >= 0) {
                 headDegrees += 270;
             } else {
-                headDegrees += 450;
+                if (headDegrees <= 0) {
+                    headDegrees += 360;
+                }
             }
+            headDegrees %= 360;
 //            Bukkit.broadcastMessage(headDegrees + " " + targetDegree + " " + rotYaw);
-            if (rotatingDegree >= 0 ? (headDegrees + rotYaw >= targetDegree) : (headDegrees + rotYaw <= targetDegree)) {
+            if ((rotatingDegree >= 0 ? (headDegrees + rotYaw >= targetDegree) : (headDegrees + rotYaw <= targetDegree)) && difference(headDegrees, targetDegree) <= 5) {
+                Bukkit.broadcastMessage("A");
                 rotating = false;
             }
             next = loc;
@@ -338,6 +352,10 @@ public class Cart {
         }
     }
 
+    private double difference(double x, double y) {
+        return Math.abs(x - y);
+    }
+
     private double round(double value, int precision) {
         BigDecimal bd = new BigDecimal(value).setScale(precision, BigDecimal.ROUND_HALF_UP);
         return bd.doubleValue();
@@ -345,44 +363,100 @@ public class Cart {
 
     public Vector rotate(float yaw, float pitch, double x, double y, double z) {
         // Conversions found by (a lot of) testing
-        float angle;
-        angle = yaw * 0.017453293F;
+        float angle = (float) Math.toRadians(yaw);
         double sinyaw = Math.sin(angle);
         double cosyaw = Math.cos(angle);
 
-        angle = pitch * 0.017453293F;
+        angle = (float) Math.toRadians(pitch);
         double sinpitch = Math.sin(angle);
         double cospitch = Math.cos(angle);
 
-        double xmult = lastMovement.getX() >= 0 ? 1 : -1;
-        double zmult = lastMovement.getZ() >= 0 ? 1 : -1;
-
         Vector vector = new Vector();
-        vector.setZ(((x * sinyaw) - (y * cosyaw * sinpitch) - (z * cosyaw * cospitch)) * (zmult));
         vector.setY((y * cospitch) - (z * sinpitch));
-        vector.setX((-(x * cosyaw) - (y * sinyaw * sinpitch) - (z * sinyaw * cospitch)) * (xmult));
-        Bukkit.broadcastMessage(ChatColor.GOLD + new Vector(x, y, z).toString() + "\n" + ChatColor.GREEN + vector.toString() + "\n");
+        double nx = ((x * sinyaw) - (y * cosyaw * sinpitch) - (z * cosyaw * cospitch));
+        double nz = (-(x * cosyaw) - (y * sinyaw * sinpitch) - (z * sinyaw * cospitch));
+        boolean xpos = x > 0;
+        boolean zpos = z > 0;
+        boolean nxpos = nx >= 0;
+        boolean nzpos = nz >= 0;
+        if (x == 0) {
+            xpos = !zpos;
+        }
+        if (z == 0) {
+            zpos = xpos;
+        }
+        if (nx == 0) {
+            nxpos = !nzpos;
+        }
+        if (nz == 0) {
+            nzpos = nxpos;
+        }
+        Bukkit.broadcastMessage(xpos + " " + zpos + " " + nxpos + " " + nzpos);
+        if (xpos && zpos) {//
+            if (nxpos && nzpos) {
+                vector.setX(-nz);
+                vector.setZ(nx);
+            } else if (!nxpos && nzpos) {
+                vector.setX(-nz);
+                vector.setZ(nx);
+            } else if (!nxpos && !nzpos) {
+                vector.setX(-nz);
+                vector.setZ(nx);
+            } else if (nxpos && !nzpos) {
+                vector.setX(-nz);
+                vector.setZ(nx);
+            }
+        } else if (xpos && !zpos) {
+            if (nxpos && nzpos) {//
+                vector.setX(nz);
+                vector.setZ(-nx);
+            } else if (!nxpos && nzpos) {
+                vector.setX(nz);
+                vector.setZ(-nx);
+            } else if (!nxpos && !nzpos) {
+                vector.setX(nz);
+                vector.setZ(-nx);
+            } else if (nxpos && !nzpos) {
+                vector.setX(nz);
+                vector.setZ(-nx);
+            }
+        } else if (!xpos && !zpos) {
+            vector.setX(-nz);
+            vector.setZ(nx);
+        } else if (!xpos && zpos) {
+            if (nxpos && nzpos) {
+                vector.setX(nz);
+                vector.setZ(-nx);
+            } else if (!nxpos && nzpos) {
+                vector.setX(nz);
+                vector.setZ(-nx);
+            } else if (!nxpos && !nzpos) {
+                vector.setX(nz);
+                vector.setZ(-nx);
+            } else if (nxpos && !nzpos) {
+                vector.setX(nz);
+                vector.setZ(-nx);
+            }
+        }
+//        Bukkit.broadcastMessage(ChatColor.GOLD + new Vector(x, y, z).toString() + "\n" + ChatColor.GREEN + vector.toString() + "\n");
         return vector;
     }
 
     private Location getOrigin(int angle, double radius, Location loc) {
         double vx = lastMovement.getX();
         double vz = lastMovement.getZ();
-        boolean xPos = vx >= 0;
-        boolean zPos = vz >= 0;
-        int mult = (xPos && !zPos || !xPos && zPos) ? -1 : 1;
         if (angle >= 0) {
             double tempAng = Math.atan(vx / vz);
             double x = Math.cos(tempAng) * radius;
             double z = Math.sin(tempAng) * radius;
-            Bukkit.broadcastMessage(x + " " + z);
-            return new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() + z, loc.getYaw(), loc.getPitch());
+            Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "" + x + " " + z);
+            return new Location(loc.getWorld(), loc.getX() - x, loc.getY(), loc.getZ() + z, loc.getYaw(), loc.getPitch());
         } else {
             double tempAng = Math.atan(vx / vz);
             double x = Math.cos(tempAng) * radius;
             double z = Math.sin(tempAng) * radius;
-            Bukkit.broadcastMessage(x + " " + z);
-            return new Location(loc.getWorld(), loc.getX() - x, loc.getY(), loc.getZ() - z, loc.getYaw(), loc.getPitch());
+            Bukkit.broadcastMessage(ChatColor.BLUE + "" + x + " " + z);
+            return new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() - z, loc.getYaw(), loc.getPitch());
         }
     }
 

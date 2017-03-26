@@ -1,6 +1,7 @@
 package network.palace.ridemanager.utils;
 
 import network.palace.core.Core;
+import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.*;
 import org.bukkit.Bukkit;
@@ -69,7 +70,7 @@ public class MovementUtil {
                 switch (type) {
                     case SIGN: {
                         Location spawnSign = RideManager.parseLocation(current.getConfigurationSection("sign"));
-                        ride = new SignRide(s, displayName, riders, delay, exit, spawnSign);
+                        ride = new SignRide(s, displayName, riders, delay, exit, spawnSign, current.getString("model"));
                         break;
                     }
                     case COASTER:
@@ -122,6 +123,15 @@ public class MovementUtil {
         for (Ride r : getRides()) {
             if (r.getName().equalsIgnoreCase(name)) {
                 return r;
+            }
+        }
+        return null;
+    }
+
+    public Ride getRide(CPlayer cp) {
+        for (Ride ride : getRides()) {
+            if (ride.getOnRide().contains(cp.getUniqueId())) {
+                return ride;
             }
         }
         return null;

@@ -10,7 +10,9 @@ import network.palace.ridemanager.commands.Commandtest;
 import network.palace.ridemanager.handlers.Ride;
 import network.palace.ridemanager.listeners.ChunkListener;
 import network.palace.ridemanager.listeners.PacketListener;
+import network.palace.ridemanager.listeners.PlayerInteract;
 import network.palace.ridemanager.listeners.PlayerLeaveRide;
+import network.palace.ridemanager.utils.MappingUtil;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,6 +28,7 @@ import org.bukkit.configuration.ConfigurationSection;
 public class RideManager extends Plugin {
     @Getter private static RideManager instance;
     @Getter private static MovementUtil movementUtil;
+    @Getter private static MappingUtil mappingUtil;
 
     @Override
     protected void onPluginEnable() throws Exception {
@@ -40,9 +43,11 @@ public class RideManager extends Plugin {
             return;
         }
         movementUtil = new MovementUtil();
+        mappingUtil = new MappingUtil();
         registerCommand(new Commandtest());
         registerListener(new ChunkListener());
         registerListener(new PacketListener());
+        registerListener(new PlayerInteract());
         registerListener(new PlayerLeaveRide());
     }
 
