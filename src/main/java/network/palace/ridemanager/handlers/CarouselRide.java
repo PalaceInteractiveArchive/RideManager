@@ -18,7 +18,9 @@ import java.util.*;
 public class CarouselRide extends Ride {
     private final int horseRadius1 = 7;
     private final int horseRadius2 = 5;
-    private final double riderRadius = 0.5;
+    private final double riderRadius = 0.395;
+    private final double poleAngle = 95;
+    private final double poleY;
     @Getter private Location center;
     @Getter private boolean spawned = false;
     @Getter private List<Horse> horses = new ArrayList<>();
@@ -29,6 +31,7 @@ public class CarouselRide extends Ride {
     public CarouselRide(String name, String displayName, double delay, Location exit, Location center) {
         super(name, displayName, 12, delay, exit);
         this.center = center;
+        this.poleY = center.getY() + 2.3;
         loadSurroundingChunks();
         spawn();
     }
@@ -122,6 +125,32 @@ public class CarouselRide extends Ride {
         a22.setGravity(false);
         a23.setGravity(false);
         a24.setGravity(false);
+
+        a1.setVisible(false);
+        a2.setVisible(false);
+        a3.setVisible(false);
+        a4.setVisible(false);
+        a5.setVisible(false);
+        a6.setVisible(false);
+        a7.setVisible(false);
+        a8.setVisible(false);
+        a9.setVisible(false);
+        a10.setVisible(false);
+        a11.setVisible(false);
+        a12.setVisible(false);
+
+        a13.setVisible(false);
+        a14.setVisible(false);
+        a15.setVisible(false);
+        a16.setVisible(false);
+        a17.setVisible(false);
+        a18.setVisible(false);
+        a19.setVisible(false);
+        a20.setVisible(false);
+        a21.setVisible(false);
+        a22.setVisible(false);
+        a23.setVisible(false);
+        a24.setVisible(false);
 
         a1.setHelmet(i1);
         a2.setHelmet(i2);
@@ -389,6 +418,13 @@ public class CarouselRide extends Ride {
             n.setY(height);
             teleport(s, n);
             s.setHeadPose(s.getHeadPose().add(0, -head, 0));
+            double y = s.getHeadPose().getY();
+            if ((y % 360) != y) {
+                s.setHeadPose(s.getHeadPose().setY(y % 360));
+            }
+            n.setY(poleY);
+            teleport(c.getPole(), getRelativeLocation(a + poleAngle, riderRadius, n));
+            c.getPole().setHeadPose(c.getPole().getHeadPose().add(0, -head, 0));
         }
     }
 
@@ -437,6 +473,7 @@ public class CarouselRide extends Ride {
 
     private class Horse {
         @Getter private ArmorStand stand;
+        @Getter private ArmorStand pole;
         @Getter @Setter private double angle;
         private double ticks;
         @Getter private boolean positive;
@@ -451,6 +488,13 @@ public class CarouselRide extends Ride {
                 this.positive = (angle % 60) == 0;
             }
             this.inside = inside;
+            Location loc = getRelativeLocation(angle + poleAngle, riderRadius, stand.getLocation());
+            loc.setY(poleY);
+            this.pole = stand.getWorld().spawn(loc, ArmorStand.class);
+            pole.setGravity(false);
+            pole.setVisible(false);
+            pole.setHelmet(new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 2));
+            pole.setHeadPose(pole.getHeadPose().setY(stand.getHeadPose().getY()));
         }
 
         public double getTicks() {
@@ -486,6 +530,7 @@ public class CarouselRide extends Ride {
         public void despawn() {
             eject();
             stand.remove();
+            pole.remove();
         }
     }
 }
