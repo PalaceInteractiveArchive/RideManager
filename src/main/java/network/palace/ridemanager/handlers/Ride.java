@@ -55,6 +55,8 @@ public abstract class Ride {
         e.locX = loc.getX();
         e.locY = loc.getY();
         e.locZ = loc.getZ();
+        e.yaw = loc.getYaw();
+        e.pitch = loc.getPitch();
         e.motX = Math.abs(cur.getX() - loc.getX());
         e.motY = Math.abs(cur.getY() - loc.getY());
         e.motZ = Math.abs(cur.getZ() - loc.getZ());

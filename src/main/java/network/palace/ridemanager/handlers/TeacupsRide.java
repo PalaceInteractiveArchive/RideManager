@@ -308,12 +308,14 @@ public class TeacupsRide extends Ride {
                 c.setAngle(a);
                 ArmorStand s = c.getStand();
                 Location n = getRelativeLocation(a, cupRadius, next);
-                teleport(s, n);
                 s.setHeadPose(s.getHeadPose().add(0, head, 0));
                 ArmorStand rider = c.getRider();
                 if (rider != null) {
-                    teleport(rider, getRelativeLocation(a, riderRadius, n));
+                    Location l = getRelativeLocation(a, riderRadius, n);
+                    l.setYaw((float) -a);
+                    teleport(rider, l);
                 }
+                teleport(s, n);
             }
         }
     }
@@ -396,7 +398,9 @@ public class TeacupsRide extends Ride {
                 return;
             }
             Table t = TeacupsRide.this.getTable(table);
-            rider = stand.getWorld().spawn(getRelativeLocation(angle, riderRadius, stand.getLocation()), ArmorStand.class);
+            Location l = getRelativeLocation(angle, riderRadius, stand.getLocation());
+            l.setYaw((float) angle);
+            rider = stand.getWorld().spawn(l, ArmorStand.class);
             rider.setGravity(false);
             rider.addPassenger(player);
         }

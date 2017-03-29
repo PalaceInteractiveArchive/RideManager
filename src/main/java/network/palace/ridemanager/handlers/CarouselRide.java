@@ -9,6 +9,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.EulerAngle;
 
 import java.util.*;
 
@@ -66,6 +67,57 @@ public class CarouselRide extends Ride {
         Location loc22 = getRelativeLocation(285.0, 5.0, this.center);
         Location loc23 = getRelativeLocation(315.0, 5.0, this.center);
         Location loc24 = getRelativeLocation(345.0, 5.0, this.center);
+
+        double d2 = Math.toRadians(30.0);
+        double d3 = Math.toRadians(60.0);
+        double d4 = Math.toRadians(90.0);
+        double d5 = Math.toRadians(120.0);
+        double d6 = Math.toRadians(150.0);
+        double d7 = Math.toRadians(180.0);
+        double d8 = Math.toRadians(210.0);
+        double d9 = Math.toRadians(240.0);
+        double d10 = Math.toRadians(270.0);
+        double d11 = Math.toRadians(300.0);
+        double d12 = Math.toRadians(330.0);
+
+        double d13 = Math.toRadians(15.0);
+        double d14 = Math.toRadians(45.0);
+        double d15 = Math.toRadians(75.0);
+        double d16 = Math.toRadians(105.0);
+        double d17 = Math.toRadians(135.0);
+        double d18 = Math.toRadians(165.0);
+        double d19 = Math.toRadians(195.0);
+        double d20 = Math.toRadians(225.0);
+        double d21 = Math.toRadians(255.0);
+        double d22 = Math.toRadians(285.0);
+        double d23 = Math.toRadians(315.0);
+        double d24 = Math.toRadians(345.0);
+
+        loc1.setYaw(270);
+        loc2.setYaw(240);
+        loc3.setYaw(210);
+        loc4.setYaw(180);
+        loc5.setYaw(150);
+        loc6.setYaw(120);
+        loc7.setYaw(90);
+        loc8.setYaw(60);
+        loc9.setYaw(30);
+        loc10.setYaw(0);
+        loc11.setYaw(-30);
+        loc12.setYaw(-60);
+
+        loc13.setYaw(255);
+        loc14.setYaw(225);
+        loc15.setYaw(195);
+        loc16.setYaw(165);
+        loc17.setYaw(135);
+        loc18.setYaw(105);
+        loc19.setYaw(75);
+        loc20.setYaw(45);
+        loc21.setYaw(15);
+        loc22.setYaw(-15);
+        loc23.setYaw(-45);
+        loc24.setYaw(-75);
 
         ItemStack i1 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
         ItemStack i2 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
@@ -178,55 +230,57 @@ public class CarouselRide extends Ride {
         a23.setHelmet(i5);
         a24.setHelmet(i6);
 
-        double d2 = Math.toRadians(30.0);
-        double d3 = Math.toRadians(60.0);
-        double d4 = Math.toRadians(90.0);
-        double d5 = Math.toRadians(120.0);
-        double d6 = Math.toRadians(150.0);
-        double d7 = Math.toRadians(180.0);
-        double d8 = Math.toRadians(210.0);
-        double d9 = Math.toRadians(240.0);
-        double d10 = Math.toRadians(270.0);
-        double d11 = Math.toRadians(300.0);
-        double d12 = Math.toRadians(330.0);
+        EulerAngle pose = new EulerAngle(0, Math.toRadians(90), 0);
 
-        double d13 = Math.toRadians(15.0);
-        double d14 = Math.toRadians(45.0);
-        double d15 = Math.toRadians(75.0);
-        double d16 = Math.toRadians(105.0);
-        double d17 = Math.toRadians(135.0);
-        double d18 = Math.toRadians(165.0);
-        double d19 = Math.toRadians(195.0);
-        double d20 = Math.toRadians(225.0);
-        double d21 = Math.toRadians(255.0);
-        double d22 = Math.toRadians(285.0);
-        double d23 = Math.toRadians(315.0);
-        double d24 = Math.toRadians(345.0);
+        a1.setHeadPose(pose);
+        a2.setHeadPose(pose);
+        a3.setHeadPose(pose);
+        a4.setHeadPose(pose);
+        a5.setHeadPose(pose);
+        a6.setHeadPose(pose);
+        a7.setHeadPose(pose);
+        a8.setHeadPose(pose);
+        a9.setHeadPose(pose);
+        a10.setHeadPose(pose);
+        a11.setHeadPose(pose);
+        a12.setHeadPose(pose);
 
-        a2.setHeadPose(a2.getHeadPose().add(0.0, d12, 0.0));
-        a3.setHeadPose(a3.getHeadPose().add(0.0, d11, 0.0));
-        a4.setHeadPose(a4.getHeadPose().add(0.0, d10, 0.0));
-        a5.setHeadPose(a5.getHeadPose().add(0.0, d9, 0.0));
-        a6.setHeadPose(a6.getHeadPose().add(0.0, d8, 0.0));
-        a7.setHeadPose(a7.getHeadPose().add(0.0, d7, 0.0));
-        a8.setHeadPose(a8.getHeadPose().add(0.0, d6, 0.0));
-        a9.setHeadPose(a9.getHeadPose().add(0.0, d5, 0.0));
-        a10.setHeadPose(a10.getHeadPose().add(0.0, d4, 0.0));
-        a11.setHeadPose(a11.getHeadPose().add(0.0, d3, 0.0));
-        a12.setHeadPose(a12.getHeadPose().add(0.0, d2, 0.0));
+        a13.setHeadPose(pose);
+        a14.setHeadPose(pose);
+        a15.setHeadPose(pose);
+        a16.setHeadPose(pose);
+        a17.setHeadPose(pose);
+        a18.setHeadPose(pose);
+        a19.setHeadPose(pose);
+        a20.setHeadPose(pose);
+        a21.setHeadPose(pose);
+        a22.setHeadPose(pose);
+        a23.setHeadPose(pose);
+        a24.setHeadPose(pose);
 
-        a13.setHeadPose(a13.getHeadPose().add(0.0, d24, 0.0));
-        a14.setHeadPose(a14.getHeadPose().add(0.0, d23, 0.0));
-        a15.setHeadPose(a15.getHeadPose().add(0.0, d22, 0.0));
-        a16.setHeadPose(a16.getHeadPose().add(0.0, d21, 0.0));
-        a17.setHeadPose(a17.getHeadPose().add(0.0, d20, 0.0));
-        a18.setHeadPose(a18.getHeadPose().add(0.0, d19, 0.0));
-        a19.setHeadPose(a19.getHeadPose().add(0.0, d18, 0.0));
-        a20.setHeadPose(a20.getHeadPose().add(0.0, d17, 0.0));
-        a21.setHeadPose(a21.getHeadPose().add(0.0, d16, 0.0));
-        a22.setHeadPose(a22.getHeadPose().add(0.0, d15, 0.0));
-        a23.setHeadPose(a23.getHeadPose().add(0.0, d14, 0.0));
-        a24.setHeadPose(a24.getHeadPose().add(0.0, d13, 0.0));
+//        a3.setHeadPose(a3.getHeadPose().add(0.0, Math.toRadians(90), 0.0));
+//        a4.setHeadPose(a4.getHeadPose().add(0.0, Math.toRadians(90), 0.0));
+//        a5.setHeadPose(a5.getHeadPose().add(0.0, d9, 0.0));
+//        a6.setHeadPose(a6.getHeadPose().add(0.0, d8, 0.0));
+//        a7.setHeadPose(a7.getHeadPose().add(0.0, d7, 0.0));
+//        a8.setHeadPose(a8.getHeadPose().add(0.0, d6, 0.0));
+//        a9.setHeadPose(a9.getHeadPose().add(0.0, d5, 0.0));
+//        a10.setHeadPose(a10.getHeadPose().add(0.0, d4, 0.0));
+//        a11.setHeadPose(a11.getHeadPose().add(0.0, d3, 0.0));
+//        a12.setHeadPose(a12.getHeadPose().add(0.0, d2, 0.0));
+//
+//        a13.setHeadPose(a13.getHeadPose().add(0.0, d24, 0.0));
+//        a14.setHeadPose(a14.getHeadPose().add(0.0, d23, 0.0));
+//        a15.setHeadPose(a15.getHeadPose().add(0.0, d22, 0.0));
+//        a16.setHeadPose(a16.getHeadPose().add(0.0, d21, 0.0));
+//        a17.setHeadPose(a17.getHeadPose().add(0.0, d20, 0.0));
+//        a18.setHeadPose(a18.getHeadPose().add(0.0, d19, 0.0));
+//        a19.setHeadPose(a19.getHeadPose().add(0.0, d18, 0.0));
+//        a20.setHeadPose(a20.getHeadPose().add(0.0, d17, 0.0));
+//        a21.setHeadPose(a21.getHeadPose().add(0.0, d16, 0.0));
+//        a22.setHeadPose(a22.getHeadPose().add(0.0, d15, 0.0));
+//        a23.setHeadPose(a23.getHeadPose().add(0.0, d14, 0.0));
+//        a24.setHeadPose(a24.getHeadPose().add(0.0, d13, 0.0));
 
         Horse h1 = new Horse(a1, 0.0, false);
         Horse h2 = new Horse(a2, 30.0, false);
@@ -403,11 +457,11 @@ public class CarouselRide extends Ride {
             return;
         }
         double tableChange = 360 / (speed * 20 * 60);
-        double head = Math.toRadians(tableChange);
         for (Horse c : getHorses()) {
             double a = (c.getAngle() + tableChange) % 360;
             c.setAngle(a);
             ArmorStand s = c.getStand();
+            final float old = s.getLocation().getYaw();
             Location n;
             if (c.isInside()) {
                 n = getRelativeLocation(a, horseRadius2, center);
@@ -416,15 +470,13 @@ public class CarouselRide extends Ride {
             }
             double height = getHeight(c.getTicks(), c.isPositive());
             n.setY(height);
+            n.setYaw((float) (old - tableChange));
+//            s.setHeadPose(s.getHeadPose().add(0, -head, 0));
+            Location p = n.clone();
+            p.setY(poleY);
+            teleport(c.getPole(), getRelativeLocation(a + poleAngle, riderRadius, p));
             teleport(s, n);
-            s.setHeadPose(s.getHeadPose().add(0, -head, 0));
-            double y = s.getHeadPose().getY();
-            if ((y % 360) != y) {
-                s.setHeadPose(s.getHeadPose().setY(y % 360));
-            }
-            n.setY(poleY);
-            teleport(c.getPole(), getRelativeLocation(a + poleAngle, riderRadius, n));
-            c.getPole().setHeadPose(c.getPole().getHeadPose().add(0, -head, 0));
+//            c.getPole().setHeadPose(c.getPole().getHeadPose().add(0, Math.toRadians(-tableChange), 0));
         }
     }
 
