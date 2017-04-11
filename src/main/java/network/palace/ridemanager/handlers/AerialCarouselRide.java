@@ -108,12 +108,12 @@ public class AerialCarouselRide extends Ride {
         Location loc11 = getRelativeLocation(an * 10, aerialRadius, this.center);
         Location loc12 = getRelativeLocation(an * 11, aerialRadius, this.center);
 
-        ItemStack i1 = new ItemStack(Material.STONE, 1);
-        ItemStack i2 = new ItemStack(Material.DIRT, 1);
-        ItemStack i3 = new ItemStack(Material.GRASS, 1);
-        ItemStack i4 = new ItemStack(Material.BRICK, 1);
-        ItemStack i5 = new ItemStack(Material.WOOL, 1);
-        ItemStack i6 = new ItemStack(Material.CLAY, 1);
+        ItemStack i1 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
+        ItemStack i2 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
+        ItemStack i3 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
+        ItemStack i4 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
+        ItemStack i5 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
+        ItemStack i6 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
 
 
         ArmorStand a1 = w.spawn(loc1, ArmorStand.class);

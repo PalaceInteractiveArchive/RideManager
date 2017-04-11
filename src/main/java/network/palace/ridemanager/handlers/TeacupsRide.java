@@ -59,11 +59,11 @@ public class TeacupsRide extends Ride {
         Location loc35 = getRelativeLocation(240, cupRadius, loc3);
         Location loc36 = getRelativeLocation(300, cupRadius, loc3);
         ItemStack h1 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 3);
-        ItemStack h2 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 3);
-        ItemStack h3 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 3);
-        ItemStack h4 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 3);
-        ItemStack h5 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 3);
-        ItemStack h6 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 3);
+        ItemStack h2 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 4);
+        ItemStack h3 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 5);
+        ItemStack h4 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 6);
+        ItemStack h5 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 7);
+        ItemStack h6 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 8);
         ArmorStand a11 = w.spawn(loc11, ArmorStand.class);
         ArmorStand a12 = w.spawn(loc12, ArmorStand.class);
         ArmorStand a13 = w.spawn(loc13, ArmorStand.class);

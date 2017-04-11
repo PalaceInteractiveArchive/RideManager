@@ -393,70 +393,81 @@ public class Cart {
         }
         Bukkit.broadcastMessage(xpos + " " + zpos + " " + nxpos + " " + nzpos);
         if (xpos && zpos) {//
-            if (nxpos && nzpos) {
-                vector.setX(-nz);
-                vector.setZ(nx);
-            } else if (!nxpos && nzpos) {
-                vector.setX(-nz);
-                vector.setZ(nx);
-            } else if (!nxpos && !nzpos) {
-                vector.setX(-nz);
-                vector.setZ(nx);
-            } else if (nxpos && !nzpos) {
-                vector.setX(-nz);
-                vector.setZ(nx);
-            }
+//            if (nxpos && nzpos) {
+//                vector.setX(-nz);
+//                vector.setZ(nx);
+//            } else if (!nxpos && nzpos) {
+//                vector.setX(-nz);
+//                vector.setZ(nx);
+//            } else if (!nxpos && !nzpos) {
+//                vector.setX(-nz);
+//                vector.setZ(nx);
+//            } else if (nxpos && !nzpos) {
+//                vector.setX(-nz);
+//                vector.setZ(nx);
+//            }
+            vector.setX(-nz);
+            vector.setZ(nx);
         } else if (xpos && !zpos) {
-            if (nxpos && nzpos) {//
-                vector.setX(nz);
-                vector.setZ(-nx);
-            } else if (!nxpos && nzpos) {
-                vector.setX(nz);
-                vector.setZ(-nx);
-            } else if (!nxpos && !nzpos) {
-                vector.setX(nz);
-                vector.setZ(-nx);
-            } else if (nxpos && !nzpos) {
-                vector.setX(nz);
-                vector.setZ(-nx);
-            }
+//            if (nxpos && nzpos) {//
+//                vector.setX(nz);
+//                vector.setZ(-nx);
+//            } else if (!nxpos && nzpos) {
+//                vector.setX(nz);
+//                vector.setZ(-nx);
+//            } else if (!nxpos && !nzpos) {
+//                vector.setX(nz);
+//                vector.setZ(-nx);
+//            } else if (nxpos && !nzpos) {
+//                vector.setX(nz);
+//                vector.setZ(-nx);
+//            }
+            vector.setX(nz);
+            vector.setZ(-nx);
         } else if (!xpos && !zpos) {
             vector.setX(-nz);
             vector.setZ(nx);
         } else if (!xpos && zpos) {
-            if (nxpos && nzpos) {
-                vector.setX(nz);
-                vector.setZ(-nx);
-            } else if (!nxpos && nzpos) {
-                vector.setX(nz);
-                vector.setZ(-nx);
-            } else if (!nxpos && !nzpos) {
-                vector.setX(nz);
-                vector.setZ(-nx);
-            } else if (nxpos && !nzpos) {
-                vector.setX(nz);
-                vector.setZ(-nx);
-            }
+//            if (nxpos && nzpos) {
+//                vector.setX(nz);
+//                vector.setZ(-nx);
+//            } else if (!nxpos && nzpos) {
+//                vector.setX(nz);
+//                vector.setZ(-nx);
+//            } else if (!nxpos && !nzpos) {
+//                vector.setX(nz);
+//                vector.setZ(-nx);
+//            } else if (nxpos && !nzpos) {
+//                vector.setX(nz);
+//                vector.setZ(-nx);
+//            }
+            vector.setX(nz);
+            vector.setZ(-nx);
         }
 //        Bukkit.broadcastMessage(ChatColor.GOLD + new Vector(x, y, z).toString() + "\n" + ChatColor.GREEN + vector.toString() + "\n");
         return vector;
     }
 
     private Location getOrigin(int angle, double radius, Location loc) {
+        Bukkit.broadcastMessage(ChatColor.YELLOW + "" + loc.getX() + " " + loc.getY() + " " + loc.getZ());
         double vx = lastMovement.getX();
         double vz = lastMovement.getZ();
+        boolean xPos = vx >= 0;
+        boolean zPos = vz >= 0;
+        int mult = (xPos && !zPos || !xPos && zPos) ? -1 : 1;
+        boolean even = (vx != 0 && vz == 0) || (vx == 0 && vz != 0);
         if (angle >= 0) {
             double tempAng = Math.atan(vx / vz);
-            double x = Math.cos(tempAng) * radius;
-            double z = Math.sin(tempAng) * radius;
+            double x = Math.cos(tempAng) * radius * (xPos ? 1 : -1) * (even ? 1 : -1);
+            double z = Math.sin(tempAng) * radius * (zPos ? 1 : -1) * (even ? -1 : 1);
             Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "" + x + " " + z);
-            return new Location(loc.getWorld(), loc.getX() - x, loc.getY(), loc.getZ() + z, loc.getYaw(), loc.getPitch());
+            return new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() + z, loc.getYaw(), loc.getPitch());
         } else {
             double tempAng = Math.atan(vx / vz);
-            double x = Math.cos(tempAng) * radius;
-            double z = Math.sin(tempAng) * radius;
+            double x = Math.cos(tempAng) * radius * (xPos ? -1 : 1) * (even ? 1 : -1);
+            double z = Math.sin(tempAng) * radius * (zPos ? -1 : 1) * (even ? 1 : -1);
             Bukkit.broadcastMessage(ChatColor.BLUE + "" + x + " " + z);
-            return new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() - z, loc.getYaw(), loc.getPitch());
+            return new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() + z, loc.getYaw(), loc.getPitch());
         }
     }
 
