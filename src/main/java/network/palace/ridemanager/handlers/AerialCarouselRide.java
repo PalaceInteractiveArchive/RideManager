@@ -59,7 +59,6 @@ public class AerialCarouselRide extends Ride {
         taskID = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
             @Override
             public void run() {
-                Player p = Bukkit.getPlayer("Legobuilder0813");
                 if (!canFly) {
                     return;
                 }
@@ -114,7 +113,6 @@ public class AerialCarouselRide extends Ride {
         ItemStack i4 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
         ItemStack i5 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
         ItemStack i6 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
-
 
         ArmorStand a1 = w.spawn(loc1, ArmorStand.class);
         ArmorStand a2 = w.spawn(loc2, ArmorStand.class);
@@ -368,26 +366,46 @@ public class AerialCarouselRide extends Ride {
         }
         double tableChange = 360 / (speed * 20 * 60);
         double head = -Math.toRadians(tableChange);
+        double supportChange = -Math.toRadians((supportAngle * 4) / (speed * 20 * 60));
         for (Vehicle c : getVehicles()) {
             double a = (c.getAngle() + tableChange) % 360;
             c.setAngle(a);
             ArmorStand v = c.getStand();
             ArmorStand s = c.getSupport();
             Location l = v.getLocation();
+            Location l2 = s.getLocation();
             Location center = this.center.clone();
+            Location supportCenter = this.center.clone().add(0, height / 2, 0);
+            boolean vertMove = false;
+            boolean up = false;
             if (c.isFlying() && l.getY() < maxHeight) {
                 center.setY(l.getY() + 0.05);
+                supportCenter.setY(l2.getY() + 0.025);
+                up = true;
+                vertMove = true;
             } else if (c.isFlying() && l.getY() >= maxHeight) {
                 center.setY(l.getY());
+                supportCenter.setY(l2.getY());
             } else if (!c.isFlying() && l.getY() > center.getY()) {
                 center.setY(l.getY() - 0.05);
+                supportCenter.setY(l2.getY() - 0.025);
+                up = false;
+                vertMove = true;
             }
             Location n = getRelativeLocation(a, aerialRadius, center);
-            Location n2 = getRelativeLocation(a, supportRadius, this.center).add(0, height / 4, 0);
+            Location n2 = getRelativeLocation(a, supportRadius, supportCenter);
             teleport(v, n);
             teleport(s, n2);
             v.setHeadPose(v.getHeadPose().add(0, head, 0));
-            s.setHeadPose(s.getHeadPose().add(0, head, 0));
+            if (vertMove) {
+                if (up) {
+                    s.setHeadPose(s.getHeadPose().add(supportChange, head, 0));
+                } else {
+                    s.setHeadPose(s.getHeadPose().add(-supportChange, head, 0));
+                }
+            } else {
+                s.setHeadPose(s.getHeadPose().add(0, head, 0));
+            }
         }
     }
 
@@ -445,7 +463,7 @@ public class AerialCarouselRide extends Ride {
         public Vehicle(ArmorStand stand, double angle) {
             this.stand = stand;
             this.angle = angle;
-            this.support = stand.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 4, 0), ArmorStand.class);
+            this.support = stand.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 2, 0), ArmorStand.class);
             support.setGravity(false);
             support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
         }
