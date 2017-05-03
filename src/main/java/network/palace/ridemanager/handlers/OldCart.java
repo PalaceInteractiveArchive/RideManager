@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 /**
  * Created by Marc on 1/15/17.
  */
-public class Cart {
+public class OldCart {
     @Getter private final SignRide ride;
     private final ArmorStand stand;
     @Getter private final ItemStack model;
@@ -41,11 +41,11 @@ public class Cart {
     private Vector lastMovement = new Vector(0, 0, 0);
     private boolean test = false;
 
-    public Cart(SignRide ride, Location loc, ItemStack model, BlockFace direction, String modelName) {
+    public OldCart(SignRide ride, Location loc, ItemStack model, BlockFace direction, String modelName) {
         this(ride, loc, model, direction, modelName, 0.1);
     }
 
-    public Cart(SignRide ride, Location loc, ItemStack model, BlockFace direction, String modelName, double power) {
+    public OldCart(SignRide ride, Location loc, ItemStack model, BlockFace direction, String modelName, double power) {
         this.ride = ride;
         this.map = RideManager.getMappingUtil().getMap(modelName);
         this.lastSignCheck = loc.clone();

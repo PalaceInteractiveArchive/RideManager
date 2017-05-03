@@ -4,10 +4,12 @@ package network.palace.ridemanager.handlers;
  * Created by Marc on 1/22/17.
  */
 public enum RideType {
-    SIGN, COASTER, TEACUPS, CAROUSEL, AERIAL_CAROUSEL;
+    FILE, SIGN, COASTER, TEACUPS, CAROUSEL, AERIAL_CAROUSEL;
 
     public static RideType fromString(String s) {
         switch (s.toLowerCase()) {
+            case "file":
+                return FILE;
             case "sign":
                 return SIGN;
             case "coaster":

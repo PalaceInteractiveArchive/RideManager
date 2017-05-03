@@ -64,13 +64,13 @@ public abstract class Ride {
         e.velocityChanged = true;
     }
 
-    public Location getRelativeLocation(double angle, double distance, Location center) {
+    public Location getRelativeLocation(double angle, double radius, Location center) {
         if (angle < 0) {
             angle = 360 + angle;
         }
         double rad = Math.toRadians(angle);
-        double x = Math.sin(rad) * distance;
-        double z = Math.cos(rad) * distance;
+        double x = Math.sin(rad) * radius;
+        double z = Math.cos(rad) * radius;
         return center.clone().add(x, 0, z);
     }
 

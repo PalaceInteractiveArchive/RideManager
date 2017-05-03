@@ -1,5 +1,6 @@
 package network.palace.ridemanager.utils;
 
+import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
@@ -22,6 +23,7 @@ import java.util.Set;
 public class MovementUtil {
     private List<Ride> rides = new ArrayList<>();
     private int taskid;
+    @Getter private static long tick = 0;
 
     public MovementUtil() {
         loadRides();
@@ -31,6 +33,7 @@ public class MovementUtil {
                 for (Ride ride : new ArrayList<>(rides)) {
                     ride.move();
                 }
+                tick++;
             }
         }, 0L, 1L).getTaskId();
     }
@@ -68,6 +71,9 @@ public class MovementUtil {
                 Location exit = RideManager.parseLocation(current.getConfigurationSection("exit"));
                 Ride ride = null;
                 switch (type) {
+                    case FILE:
+                        ride = new FileRide(s, displayName, riders, delay, exit, current.getString("file"));
+                        break;
                     case SIGN: {
                         Location spawnSign = RideManager.parseLocation(current.getConfigurationSection("sign"));
                         ride = new SignRide(s, displayName, riders, delay, exit, spawnSign, current.getString("model"));

@@ -20,7 +20,7 @@ public class SignRide extends Ride {
     private final Location spawnSign;
     @Getter private final int yAxis;
     @Getter private String modelName;
-    private List<Cart> carts = new ArrayList<>();
+    private List<OldCart> carts = new ArrayList<>();
 
     public SignRide(String name, String displayName, int riders, double delay, Location exit, Location spawnSign, String modelName) {
         super(name, displayName, riders, delay, exit);
@@ -31,14 +31,14 @@ public class SignRide extends Ride {
 
     @Override
     public void move() {
-        for (Cart c : getCarts()) {
+        for (OldCart c : getCarts()) {
             c.move();
         }
     }
 
     @Override
     public void despawn() {
-        for (Cart c : getCarts()) {
+        for (OldCart c : getCarts()) {
             c.despawn();
         }
     }
@@ -72,7 +72,7 @@ public class SignRide extends Ride {
         Location loc = new Location(w, sloc.getBlockX() + 0.5, Double.parseDouble(s.getLine(2)),
                 sloc.getBlockZ() + 0.5, yaw, 0);
         ItemStack item = new ItemStack(Material.STONE);
-        Cart c = new Cart(this, loc, item, direction, modelName);
+        OldCart c = new OldCart(this, loc, item, direction, modelName);
         for (CPlayer tp : riders) {
 //            c.addPassenger(tp);
             tp.sendMessage(ChatColor.GREEN + "Ride starting in 1 second!");
@@ -87,7 +87,7 @@ public class SignRide extends Ride {
         carts.add(c);
     }
 
-    private List<Cart> getCarts() {
+    private List<OldCart> getCarts() {
         return new ArrayList<>(carts);
     }
 }

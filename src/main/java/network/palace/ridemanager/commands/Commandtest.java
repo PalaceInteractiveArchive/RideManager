@@ -45,6 +45,10 @@ public class Commandtest extends CoreCommand {
                 SignRide s = (SignRide) ride;
                 s.joinQueue((Player) sender);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), s::start, 20L);
+            } else if (ride instanceof FileRide) {
+                FileRide r = (FileRide) ride;
+                r.joinQueue((Player) sender);
+                Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), r::start, 20L);
             }
         }
         if (args.length == 2) {

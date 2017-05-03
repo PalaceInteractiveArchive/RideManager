@@ -10,6 +10,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.EulerAngle;
 
 import java.util.*;
 
@@ -107,12 +108,18 @@ public class AerialCarouselRide extends Ride {
         Location loc11 = getRelativeLocation(an * 10, aerialRadius, this.center);
         Location loc12 = getRelativeLocation(an * 11, aerialRadius, this.center);
 
-        ItemStack i1 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
-        ItemStack i2 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
-        ItemStack i3 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
-        ItemStack i4 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
-        ItemStack i5 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
-        ItemStack i6 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
+        loc1.setYaw(-90);
+        loc2.setYaw(-(float) an - 90);
+        loc3.setYaw(-(float) an * 2 - 90);
+        loc4.setYaw(-(float) an * 3 - 90);
+        loc5.setYaw(-(float) an * 4 - 90);
+        loc6.setYaw(-(float) an * 5 - 90);
+        loc7.setYaw(-(float) an * 6 - 90);
+        loc8.setYaw(-(float) an * 7 - 90);
+        loc9.setYaw(-(float) an * 8 - 90);
+        loc10.setYaw(-(float) an * 9 - 90);
+        loc11.setYaw(-(float) an * 10 - 90);
+        loc12.setYaw(-(float) an * 11 - 90);
 
         ArmorStand a1 = w.spawn(loc1, ArmorStand.class);
         ArmorStand a2 = w.spawn(loc2, ArmorStand.class);
@@ -127,6 +134,19 @@ public class AerialCarouselRide extends Ride {
         ArmorStand a11 = w.spawn(loc11, ArmorStand.class);
         ArmorStand a12 = w.spawn(loc12, ArmorStand.class);
 
+        a1.setVisible(false);
+        a2.setVisible(false);
+        a3.setVisible(false);
+        a4.setVisible(false);
+        a5.setVisible(false);
+        a6.setVisible(false);
+        a7.setVisible(false);
+        a8.setVisible(false);
+        a9.setVisible(false);
+        a10.setVisible(false);
+        a11.setVisible(false);
+        a12.setVisible(false);
+
         a1.setGravity(false);
         a2.setGravity(false);
         a3.setGravity(false);
@@ -140,46 +160,35 @@ public class AerialCarouselRide extends Ride {
         a11.setGravity(false);
         a12.setGravity(false);
 
-        a1.setHelmet(i1);
-        a2.setHelmet(i2);
-        a3.setHelmet(i3);
-        a4.setHelmet(i4);
-        a5.setHelmet(i5);
-        a6.setHelmet(i6);
-        a7.setHelmet(i2);
-        a8.setHelmet(i2);
-        a9.setHelmet(i3);
-        a10.setHelmet(i4);
-        a11.setHelmet(i5);
-        a12.setHelmet(i6);
+        EulerAngle pose = new EulerAngle(0, Math.toRadians(90), 0);
 
-        double d2 = -Math.toRadians(an);
-        double d3 = -Math.toRadians(an * 2);
-        double d4 = -Math.toRadians(an * 3);
-        double d5 = -Math.toRadians(an * 4);
-        double d6 = -Math.toRadians(an * 5);
-        double d7 = -Math.toRadians(an * 6);
-        double d8 = -Math.toRadians(an * 7);
-        double d9 = -Math.toRadians(an * 8);
-        double d10 = -Math.toRadians(an * 9);
-        double d11 = -Math.toRadians(an * 10);
-        double d12 = -Math.toRadians(an * 11);
-        double d13 = -Math.toRadians(an * 12);
-        double d14 = -Math.toRadians(an * 13);
-        double d15 = -Math.toRadians(an * 14);
-        double d16 = -Math.toRadians(an * 15);
+        a1.setHeadPose(pose);
+        a2.setHeadPose(pose);
+        a3.setHeadPose(pose);
+        a4.setHeadPose(pose);
+        a5.setHeadPose(pose);
+        a6.setHeadPose(pose);
+        a7.setHeadPose(pose);
+        a8.setHeadPose(pose);
+        a9.setHeadPose(pose);
+        a10.setHeadPose(pose);
+        a11.setHeadPose(pose);
+        a12.setHeadPose(pose);
 
-        a2.setHeadPose(a2.getHeadPose().add(0, d2, 0));
-        a3.setHeadPose(a3.getHeadPose().add(0, d3, 0));
-        a4.setHeadPose(a4.getHeadPose().add(0, d4, 0));
-        a5.setHeadPose(a5.getHeadPose().add(0, d5, 0));
-        a6.setHeadPose(a6.getHeadPose().add(0, d6, 0));
-        a7.setHeadPose(a7.getHeadPose().add(0, d7, 0));
-        a8.setHeadPose(a8.getHeadPose().add(0, d8, 0));
-        a9.setHeadPose(a9.getHeadPose().add(0, d9, 0));
-        a10.setHeadPose(a10.getHeadPose().add(0, d10, 0));
-        a11.setHeadPose(a11.getHeadPose().add(0, d11, 0));
-        a12.setHeadPose(a12.getHeadPose().add(0, d12, 0));
+        ItemStack item = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
+
+        a1.setHelmet(item);
+        a2.setHelmet(item);
+        a3.setHelmet(item);
+        a4.setHelmet(item);
+        a5.setHelmet(item);
+        a6.setHelmet(item);
+        a7.setHelmet(item);
+        a8.setHelmet(item);
+        a9.setHelmet(item);
+        a10.setHelmet(item);
+        a11.setHelmet(item);
+        a12.setHelmet(item);
 
         Vehicle h1 = new Vehicle(a1, 0);
         Vehicle h2 = new Vehicle(a2, an);
@@ -199,22 +208,30 @@ public class AerialCarouselRide extends Ride {
             Location loc14 = getRelativeLocation(an * 13, aerialRadius, this.center);
             Location loc15 = getRelativeLocation(an * 14, aerialRadius, this.center);
             Location loc16 = getRelativeLocation(an * 15, aerialRadius, this.center);
+            loc13.setYaw(-(float) an * 12 - 90);
+            loc14.setYaw(-(float) an * 13 - 90);
+            loc15.setYaw(-(float) an * 14 - 90);
+            loc16.setYaw(-(float) an * 15 - 90);
             ArmorStand a13 = w.spawn(loc13, ArmorStand.class);
             ArmorStand a14 = w.spawn(loc14, ArmorStand.class);
             ArmorStand a15 = w.spawn(loc15, ArmorStand.class);
             ArmorStand a16 = w.spawn(loc16, ArmorStand.class);
+            a13.setVisible(false);
+            a14.setVisible(false);
+            a15.setVisible(false);
+            a16.setVisible(false);
             a13.setGravity(false);
             a14.setGravity(false);
             a15.setGravity(false);
             a16.setGravity(false);
-            a13.setHelmet(i3);
-            a14.setHelmet(i4);
-            a15.setHelmet(i5);
-            a16.setHelmet(i6);
-            a13.setHeadPose(a13.getHeadPose().add(0, d13, 0));
-            a14.setHeadPose(a14.getHeadPose().add(0, d14, 0));
-            a15.setHeadPose(a15.getHeadPose().add(0, d15, 0));
-            a16.setHeadPose(a16.getHeadPose().add(0, d16, 0));
+            a13.setHeadPose(pose);
+            a14.setHeadPose(pose);
+            a15.setHeadPose(pose);
+            a16.setHeadPose(pose);
+            a13.setHelmet(item);
+            a14.setHelmet(item);
+            a15.setHelmet(item);
+            a16.setHelmet(item);
             Vehicle h13 = new Vehicle(a13, an * 12);
             Vehicle h14 = new Vehicle(a14, an * 13);
             Vehicle h15 = new Vehicle(a15, an * 14);
@@ -366,9 +383,9 @@ public class AerialCarouselRide extends Ride {
         }
         double tableChange = 360 / (speed * 20 * 60);
         double head = -Math.toRadians(tableChange);
-        double supportChange = -Math.toRadians((supportAngle * 4) / (speed * 20 * 60));
+        double supportChange = -Math.toRadians((supportAngle * 6) / (speed * 20 * 60));
         for (Vehicle c : getVehicles()) {
-            double a = (c.getAngle() + tableChange) % 360;
+            double a = (c.getAngle() - tableChange) % 360;
             c.setAngle(a);
             ArmorStand v = c.getStand();
             ArmorStand s = c.getSupport();
@@ -392,20 +409,24 @@ public class AerialCarouselRide extends Ride {
                 up = false;
                 vertMove = true;
             }
-            Location n = getRelativeLocation(a, aerialRadius, center);
+            double r = aerialRadius;
+            if (s.getHeadPose().getX() < 0) {
+                r -= Math.abs(Math.toDegrees(s.getHeadPose().getX())) * 0.025;
+            }
+            Location n = getRelativeLocation(a, r, center);
             Location n2 = getRelativeLocation(a, supportRadius, supportCenter);
+            n.setYaw((float) (l.getYaw() + tableChange) % 360);
+            n2.setYaw((float) (l2.getYaw() + tableChange) % 360);
             teleport(v, n);
             teleport(s, n2);
-            v.setHeadPose(v.getHeadPose().add(0, head, 0));
             if (vertMove) {
                 if (up) {
-                    s.setHeadPose(s.getHeadPose().add(supportChange, head, 0));
+                    s.setHeadPose(s.getHeadPose().add(supportChange, 0, 0));
                 } else {
-                    s.setHeadPose(s.getHeadPose().add(-supportChange, head, 0));
+                    s.setHeadPose(s.getHeadPose().add(-supportChange, 0, 0));
                 }
-            } else {
-                s.setHeadPose(s.getHeadPose().add(0, head, 0));
             }
+//            v.setHeadPose(v.getHeadPose().add(0, head, 0));
         }
     }
 
@@ -464,8 +485,10 @@ public class AerialCarouselRide extends Ride {
             this.stand = stand;
             this.angle = angle;
             this.support = stand.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 2, 0), ArmorStand.class);
+            ItemStack pole = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 10);
             support.setGravity(false);
             support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
+            support.setHelmet(pole);
         }
 
         public double getTicks() {
