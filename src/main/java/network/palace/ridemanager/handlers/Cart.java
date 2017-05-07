@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.handlers.actions.RideAction;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.ItemStack;
@@ -59,10 +58,9 @@ public class Cart {
             recursiveNum = 0;
         }
         RideAction a = actions.get(recursiveNum);
+        a.execute();
         if (a.isFinished()) {
             actions.remove(recursiveNum);
-        } else {
-            a.execute();
         }
         if (!a.isMovementAction()) {
             recursiveProtect += 1;

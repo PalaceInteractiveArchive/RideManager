@@ -27,6 +27,9 @@ public class Commandtest extends CoreCommand {
         if (args.length == 0) {
             RideManager.getMovementUtil().loadRides();
         }
+//        Player player = (Player) sender;
+//        player.sendMessage(RideManager.getMovementUtil().getRides().get(0).getRelativeLocation(Double.parseDouble(args[0]), 4, player.getLocation()) + "");
+
         if (args.length == 1) {
             Ride ride = RideManager.getMovementUtil().getRide(args[0]);
             if (ride instanceof TeacupsRide) {

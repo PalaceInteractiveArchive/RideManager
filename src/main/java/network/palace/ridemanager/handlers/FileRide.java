@@ -43,9 +43,11 @@ public class FileRide extends Ride {
         loading = true;
         Bukkit.getScheduler().runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(this, rideFile, new RideCallback() {
             @Override
-            public void done(LinkedList<RideAction> list, Location spawn) {
+            public void done(LinkedList<RideAction> list, Location spawn, int spawnAngle, double speed) {
                 actions = list;
                 setSpawn(spawn);
+                setSpawnAngle(spawnAngle);
+                setSpeed(speed);
                 loading = false;
             }
         }));
@@ -77,11 +79,12 @@ public class FileRide extends Ride {
 
     @Override
     public void start() {
-        if (spawn == null || actions.isEmpty()) {
-            loadFile();
-        } else {
-            spawn();
-        }
+        loadFile();
+//        if (spawn == null || actions.isEmpty()) {
+//            loadFile();
+//        } else {
+//            spawn();
+//        }
     }
 
     private void spawn() {
@@ -89,6 +92,7 @@ public class FileRide extends Ride {
         LinkedList<RideAction> cartActions = new LinkedList<>();
         cartActions.addAll(actions);
         Cart c = new Cart(this, cartActions, spawn, new ItemStack(Material.STONE), spawnAngle, "");
+        c.setPower(speed);
         carts.add(c);
     }
 }

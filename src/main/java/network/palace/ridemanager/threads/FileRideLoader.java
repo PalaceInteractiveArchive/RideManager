@@ -23,7 +23,8 @@ public class FileRideLoader implements Runnable {
     public void run() {
         LinkedList<RideAction> list = new LinkedList<>();
         Location spawn = null;
-        double spawnAngle = 0;
+        int spawnAngle = 0;
+        double speed = 0.1;
         try {
             String strLine = "";
             FileInputStream fstream = new FileInputStream(file);
@@ -47,17 +48,20 @@ public class FileRideLoader implements Runnable {
                             continue;
                         }
                         if (length > 2) {
-                            spawnAngle = getDouble(tokens[2]);
+                            speed = getDouble(tokens[2]);
+                        }
+                        if (length > 3) {
+                            spawnAngle = getInt(tokens[3]);
                         }
                         break;
                     }
                     case "Speed": {
-                        double speed = getDouble(tokens[1]);
+                        double newSpeed = getDouble(tokens[1]);
                         double ticks = 0;
                         if (length > 2) {
                             ticks = getDouble(tokens[2]);
                         }
-                        list.add(new SpeedAction(speed, ticks));
+                        list.add(new SpeedAction(newSpeed, ticks));
                         break;
                     }
                     case "Teleport": {
@@ -81,12 +85,41 @@ public class FileRideLoader implements Runnable {
                         list.add(new TurnAction(to, origin, positive));
                         break;
                     }
+                    case "Wait": {
+                        long delay = Long.valueOf(tokens[1]);
+                        list.add(new WaitAction(delay));
+                        break;
+                    }
+                    case "Block": {
+                        Location loc = strToLoc(tokens[1]);
+                        String[] l;
+                        if (tokens[2].contains(":")) {
+                            l = tokens[2].split(":");
+                        } else {
+                            l = null;
+                        }
+                        try {
+                            int id;
+                            byte data;
+                            if (l != null) {
+                                id = Integer.parseInt(l[0]);
+                                data = Byte.parseByte(l[1]);
+                            } else {
+                                id = Integer.parseInt(tokens[2]);
+                                data = (byte) 0;
+                            }
+                            list.add(new BlockAction(loc, id, data));
+                        } catch (Exception e) {
+                            System.out.println("Invalid Block ID or Block data [" + strLine + "]");
+                        }
+
+                    }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        callback.done(list, spawn);
+        callback.done(list, spawn, spawnAngle, speed);
     }
 
     private int getInt(String s) {

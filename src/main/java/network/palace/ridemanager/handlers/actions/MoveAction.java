@@ -22,10 +22,13 @@ public class MoveAction extends RideAction {
         Vector resultant = to.clone().subtract(original).toVector().normalize();
         double power = cart.getPower();
         Vector change = resultant.multiply(new Vector(power, power, power));
-        Location cur = cart.getLocation();
-        cart.teleport(cur.add(change));
-        if (cur.distance(original) >= distance) {
+        Location next = cart.getLocation().add(change);
+        if (next.distance(original) >= distance) {
+            to.setYaw(next.getYaw());
+            cart.teleport(to);
             finished = true;
+        } else {
+            cart.teleport(next);
         }
     }
 

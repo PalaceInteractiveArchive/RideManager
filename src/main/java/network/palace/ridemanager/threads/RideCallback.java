@@ -12,9 +12,10 @@ public interface RideCallback {
 
     /**
      * Called when the result is done.
-     *
      * @param actions the list of ride actions
      * @param spawn   the spawn location
+     * @param spawnAngle angle of stand to spawn at
+     * @param speed
      */
-    void done(LinkedList<RideAction> actions, Location spawn);
+    void done(LinkedList<RideAction> actions, Location spawn, int spawnAngle, double speed);
 }
