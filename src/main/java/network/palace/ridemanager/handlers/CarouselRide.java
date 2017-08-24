@@ -2,6 +2,7 @@ package network.palace.ridemanager.handlers;
 
 import lombok.Getter;
 import lombok.Setter;
+import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import org.bukkit.*;
@@ -22,6 +23,7 @@ public class CarouselRide extends Ride {
     private final double riderRadius = 0.395;
     private final double poleAngle = 95;
     private final double poleY;
+    private FlatState state = FlatState.LOADING;
     @Getter private Location center;
     @Getter private boolean spawned = false;
     @Getter private List<Horse> horses = new ArrayList<>();
@@ -33,7 +35,7 @@ public class CarouselRide extends Ride {
         super(name, displayName, 12, delay, exit);
         this.center = center;
         this.poleY = center.getY() + 2.3;
-        loadSurroundingChunks();
+        loadSurroundingChunks(this.center);
         spawn();
     }
 
@@ -126,31 +128,31 @@ public class CarouselRide extends Ride {
         ItemStack i5 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
         ItemStack i6 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
 
-        ArmorStand a1 = w.spawn(loc1, ArmorStand.class);
-        ArmorStand a2 = w.spawn(loc2, ArmorStand.class);
-        ArmorStand a3 = w.spawn(loc3, ArmorStand.class);
-        ArmorStand a4 = w.spawn(loc4, ArmorStand.class);
-        ArmorStand a5 = w.spawn(loc5, ArmorStand.class);
-        ArmorStand a6 = w.spawn(loc6, ArmorStand.class);
-        ArmorStand a7 = w.spawn(loc7, ArmorStand.class);
-        ArmorStand a8 = w.spawn(loc8, ArmorStand.class);
-        ArmorStand a9 = w.spawn(loc9, ArmorStand.class);
-        ArmorStand a10 = w.spawn(loc10, ArmorStand.class);
-        ArmorStand a11 = w.spawn(loc11, ArmorStand.class);
-        ArmorStand a12 = w.spawn(loc12, ArmorStand.class);
+        ArmorStand a1 = lock(w.spawn(loc1, ArmorStand.class));
+        ArmorStand a2 = lock(w.spawn(loc2, ArmorStand.class));
+        ArmorStand a3 = lock(w.spawn(loc3, ArmorStand.class));
+        ArmorStand a4 = lock(w.spawn(loc4, ArmorStand.class));
+        ArmorStand a5 = lock(w.spawn(loc5, ArmorStand.class));
+        ArmorStand a6 = lock(w.spawn(loc6, ArmorStand.class));
+        ArmorStand a7 = lock(w.spawn(loc7, ArmorStand.class));
+        ArmorStand a8 = lock(w.spawn(loc8, ArmorStand.class));
+        ArmorStand a9 = lock(w.spawn(loc9, ArmorStand.class));
+        ArmorStand a10 = lock(w.spawn(loc10, ArmorStand.class));
+        ArmorStand a11 = lock(w.spawn(loc11, ArmorStand.class));
+        ArmorStand a12 = lock(w.spawn(loc12, ArmorStand.class));
 
-        ArmorStand a13 = w.spawn(loc13, ArmorStand.class);
-        ArmorStand a14 = w.spawn(loc14, ArmorStand.class);
-        ArmorStand a15 = w.spawn(loc15, ArmorStand.class);
-        ArmorStand a16 = w.spawn(loc16, ArmorStand.class);
-        ArmorStand a17 = w.spawn(loc17, ArmorStand.class);
-        ArmorStand a18 = w.spawn(loc18, ArmorStand.class);
-        ArmorStand a19 = w.spawn(loc19, ArmorStand.class);
-        ArmorStand a20 = w.spawn(loc20, ArmorStand.class);
-        ArmorStand a21 = w.spawn(loc21, ArmorStand.class);
-        ArmorStand a22 = w.spawn(loc22, ArmorStand.class);
-        ArmorStand a23 = w.spawn(loc23, ArmorStand.class);
-        ArmorStand a24 = w.spawn(loc24, ArmorStand.class);
+        ArmorStand a13 = lock(w.spawn(loc13, ArmorStand.class));
+        ArmorStand a14 = lock(w.spawn(loc14, ArmorStand.class));
+        ArmorStand a15 = lock(w.spawn(loc15, ArmorStand.class));
+        ArmorStand a16 = lock(w.spawn(loc16, ArmorStand.class));
+        ArmorStand a17 = lock(w.spawn(loc17, ArmorStand.class));
+        ArmorStand a18 = lock(w.spawn(loc18, ArmorStand.class));
+        ArmorStand a19 = lock(w.spawn(loc19, ArmorStand.class));
+        ArmorStand a20 = lock(w.spawn(loc20, ArmorStand.class));
+        ArmorStand a21 = lock(w.spawn(loc21, ArmorStand.class));
+        ArmorStand a22 = lock(w.spawn(loc22, ArmorStand.class));
+        ArmorStand a23 = lock(w.spawn(loc23, ArmorStand.class));
+        ArmorStand a24 = lock(w.spawn(loc24, ArmorStand.class));
 
         a1.setGravity(false);
         a2.setGravity(false);
@@ -331,7 +333,7 @@ public class CarouselRide extends Ride {
             if (tp == null) {
                 continue;
             }
-            riders.add(tp);
+            if (!getOnRide().contains(tp.getUniqueId())) riders.add(tp);
         }
         int hc = 1;
         Horse h = getHorse(hc);
@@ -341,6 +343,7 @@ public class CarouselRide extends Ride {
             getOnRide().add(tp.getUniqueId());
             h = getHorse(hc++);
         }
+        state = FlatState.RUNNING;
         int taskID = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
             int time = 0;
 
@@ -388,42 +391,43 @@ public class CarouselRide extends Ride {
                         speed = 0.2;
 //                        heightSpeed = 0.2;
                         break;
-                    case 52:
+                    case 53:
                         speed = 0.3;
                         break;
-                    case 53:
+                    case 54:
                         speed = 0.4;
                         break;
-                    case 54:
+                    case 55:
                         speed = 0.5;
                         break;
-                    case 55:
+                    case 56:
                         speed = 0.6;
                         break;
-                    case 56:
+                    case 57:
                         speed = 0.7;
                         break;
-                    case 57:
+                    case 58:
                         speed = 0.8;
                         break;
-                    case 58:
+                    case 59:
                         speed = 0.9;
                         break;
-                    case 59:
+                    case 60:
                         speed = 1;
                         break;
-                    case 60:
+                    case 61:
                         speed = 1.5;
                         break;
-                    case 62:
+                    case 63:
                         speed = 2;
                         break;
-                    case 63:
+                    case 64:
                         speed = 0;
                         heightSpeed = 0;
                         break;
-                    case 66:
+                    case 67:
                         ejectPlayers();
+                        state = FlatState.LOADING;
                         break;
                 }
                 time++;
@@ -440,12 +444,29 @@ public class CarouselRide extends Ride {
     @Override
     public boolean handleEject(CPlayer player) {
         for (Horse c : getHorses()) {
-            Player p = c.getPassenger();
+            CPlayer p = c.getPassenger();
             if (p != null && p.getUniqueId().equals(player.getUniqueId())) {
                 getOnRide().remove(player.getUniqueId());
                 c.eject();
                 p.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
                 return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean sitDown(CPlayer player, ArmorStand stand) {
+        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= 18 || getOnRide().contains(player.getUniqueId())) {
+            return false;
+        }
+        UUID uuid = stand.getUniqueId();
+        for (Horse c : getHorses()) {
+            Optional<ArmorStand> s = c.getStand();
+            if (!s.isPresent()) continue;
+            if (s.get().getUniqueId().equals(uuid)) {
+                c.addPassenger(player.getBukkitPlayer());
+                getOnRide().add(player.getUniqueId());
             }
         }
         return false;
@@ -460,7 +481,11 @@ public class CarouselRide extends Ride {
         for (Horse c : getHorses()) {
             double a = (c.getAngle() + tableChange) % 360;
             c.setAngle(a);
-            ArmorStand s = c.getStand();
+            Optional<ArmorStand> stand = c.getStand();
+            if (!stand.isPresent()) {
+                continue;
+            }
+            ArmorStand s = stand.get();
             final float old = s.getLocation().getYaw();
             Location n;
             if (c.isInside()) {
@@ -500,19 +525,6 @@ public class CarouselRide extends Ride {
         return h + center.getY();
     }
 
-    public void loadSurroundingChunks() {
-        Chunk c = center.getChunk();
-        World w = c.getWorld();
-        for (int x = c.getX() - 2; x < c.getX() + 4; x++) {
-            for (int z = c.getZ() - 2; z < c.getZ() + 4; z++) {
-                Chunk at = w.getChunkAt(x, z);
-                if (!at.isLoaded()) {
-                    at.load();
-                }
-            }
-        }
-    }
-
     private Horse getHorse(int i) {
         return horses.get(i - 1);
     }
@@ -521,10 +533,11 @@ public class CarouselRide extends Ride {
         for (Horse c : getHorses()) {
             c.eject();
         }
+        getOnRide().clear();
     }
 
     private class Horse {
-        @Getter private ArmorStand stand;
+        private UUID stand;
         @Getter private ArmorStand pole;
         @Getter @Setter private double angle;
         private double ticks;
@@ -532,7 +545,7 @@ public class CarouselRide extends Ride {
         @Getter private boolean inside;
 
         public Horse(ArmorStand stand, double angle, boolean inside) {
-            this.stand = stand;
+            this.stand = stand.getUniqueId();
             this.angle = angle;
             if (inside) {
                 this.positive = (angle % 60) == 15;
@@ -542,11 +555,15 @@ public class CarouselRide extends Ride {
             this.inside = inside;
             Location loc = getRelativeLocation(angle + poleAngle, riderRadius, stand.getLocation());
             loc.setY(poleY);
-            this.pole = stand.getWorld().spawn(loc, ArmorStand.class);
+            this.pole = lock(stand.getWorld().spawn(loc, ArmorStand.class));
             pole.setGravity(false);
             pole.setVisible(false);
             pole.setHelmet(new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 2));
             pole.setHeadPose(pole.getHeadPose().setY(stand.getHeadPose().getY()));
+        }
+
+        public Optional<ArmorStand> getStand() {
+            return center.getWorld().getEntitiesByClass(ArmorStand.class).stream().filter(a -> a.getUniqueId().equals(stand)).findFirst();
         }
 
         public double getTicks() {
@@ -554,13 +571,23 @@ public class CarouselRide extends Ride {
         }
 
         public void addPassenger(Player player) {
+            Optional<ArmorStand> s = getStand();
+            if (!s.isPresent()) {
+                return;
+            }
+            ArmorStand stand = s.get();
             if (!stand.getPassengers().isEmpty()) {
                 return;
             }
             stand.addPassenger(player);
         }
 
-        public Player getPassenger() {
+        public CPlayer getPassenger() {
+            Optional<ArmorStand> s = getStand();
+            if (!s.isPresent()) {
+                return null;
+            }
+            ArmorStand stand = s.get();
             if (stand == null || stand.getPassengers() == null || stand.getPassengers().isEmpty()) {
                 return null;
             }
@@ -568,20 +595,34 @@ public class CarouselRide extends Ride {
             if (!(pass instanceof Player)) {
                 return null;
             }
-            return (Player) pass;
+            return Core.getPlayerManager().getPlayer((Player) pass);
         }
 
         public void eject() {
-            Player passenger = getPassenger();
+            Optional<ArmorStand> s = getStand();
+            if (!s.isPresent()) {
+                return;
+            }
+            ArmorStand stand = s.get();
+            CPlayer passenger = getPassenger();
             if (passenger != null) {
-                stand.removePassenger(passenger);
-                passenger.teleport(getExit());
+                final Location playerLoc = passenger.getLocation();
+                stand.removePassenger(passenger.getBukkitPlayer());
+                Location loc = getExit();
+                if (state.equals(FlatState.LOADING)) {
+                    loc = stand.getLocation().add(0, 1, 0);
+                    loc.setYaw(playerLoc.getYaw());
+                    loc.setPitch(playerLoc.getPitch());
+                }
+                passenger.teleport(loc);
+                getOnRide().remove(passenger.getUniqueId());
             }
         }
 
         public void despawn() {
             eject();
-            stand.remove();
+            Optional<ArmorStand> s = getStand();
+            s.ifPresent(Entity::remove);
             pole.remove();
         }
     }

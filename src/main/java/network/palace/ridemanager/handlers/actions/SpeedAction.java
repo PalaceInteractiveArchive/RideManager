@@ -1,6 +1,6 @@
 package network.palace.ridemanager.handlers.actions;
 
-import org.bukkit.Bukkit;
+import network.palace.ridemanager.handlers.Cart;
 
 /**
  * Created by Marc on 5/2/17.
@@ -29,11 +29,26 @@ public class SpeedAction extends RideAction {
             cart.setPower(speed);
             finished = true;
         }
-        Bukkit.broadcastMessage(cart.getPower() + "");
     }
 
     @Override
     public boolean isFinished() {
         return finished;
+    }
+
+    @Override
+    public RideAction duplicate() {
+        return new SpeedAction(speed, ticks);
+    }
+
+    @Override
+    public String toString() {
+        return "";
+    }
+
+    @Override
+    public RideAction load(Cart cart) {
+        setCart(cart);
+        return this;
     }
 }

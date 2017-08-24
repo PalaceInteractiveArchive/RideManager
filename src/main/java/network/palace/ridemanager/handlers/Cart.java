@@ -2,107 +2,151 @@ package network.palace.ridemanager.handlers;
 
 import lombok.Getter;
 import lombok.Setter;
+import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.handlers.actions.RideAction;
+import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
-import java.math.BigDecimal;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Created by Marc on 5/2/17.
  */
 public class Cart {
     @Getter private final FileRide ride;
-    private final LinkedList<RideAction> actions;
-    private final ArmorStand stand;
+    private final LinkedHashMap<Integer, RideAction> actions;
+    @Getter @Setter private ArmorStand stand;
     @Getter private final ItemStack model;
     @Getter private double power = 0;
-    private int recursiveProtect = 0;
-    private int recursiveNum = 0;
-    private long currentTick = 0;
     @Getter @Setter private float yaw = 0;
+    private int currentActionIndex = 0;
 
-    public Cart(FileRide ride, LinkedList<RideAction> actions, Location loc, ItemStack model, int spawnAngle, String modelName) {
-        this(ride, actions, loc, model, spawnAngle, modelName, 0.1);
+    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, ItemStack model, String modelName) {
+        this(ride, actions, model, modelName, 0.1);
     }
 
-    public Cart(FileRide ride, LinkedList<RideAction> actions, Location loc, ItemStack model, int spawnAngle, String modelName, double power) {
+    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, ItemStack model, String modelName, double power) {
         this.ride = ride;
         this.actions = actions;
-        for (RideAction a : actions) {
+        for (RideAction a : this.actions.values()) {
             a.setCart(this);
         }
         setPower(power);
         this.model = model;
-        this.yaw = spawnAngle;
-        this.stand = loc.getWorld().spawn(new Location(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), yaw, 0), ArmorStand.class);
-        stand.setVisible(false);
-        stand.setGravity(false);
-        stand.setHelmet(model);
+//        this.yaw = spawnAngle;
+//        this.stand = loc.getWorld().spawn(new Location(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), yaw, 0), ArmorStand.class);
+//        stand.setVisible(false);
+//        stand.setGravity(false);
+//        stand.setHelmet(model);
 //        stand.setHeadPose(new EulerAngle(0, Math.toRadians(spawnAngle), 0));
     }
 
-    public void move(long tick) {
+    public void move() {
         if (actions.isEmpty()) {
+            despawn();
             return;
         }
-        if (actions.get(0).getCart() == null) {
+        RideAction a = actions.get(currentActionIndex);
+        if (a == null || a.getCart() == null || !a.getCart().equals(this)) {
+            despawn();
             return;
         }
-        if (tick != currentTick) {
-            currentTick = tick;
-            recursiveProtect = 0;
-            recursiveNum = 0;
-        }
-        RideAction a = actions.get(recursiveNum);
         a.execute();
         if (a.isFinished()) {
-            actions.remove(recursiveNum);
-        }
-        if (!a.isMovementAction()) {
-            recursiveProtect += 1;
-            recursiveNum += 1;
-            if (recursiveProtect < 5 && (actions.size() - 1) >= recursiveNum) {
-                move(tick);
-            }
+            currentActionIndex++;
         }
     }
 
     public void teleport(Location loc) {
+        loc.setY(loc.getY() - MovementUtil.armorStandHeight);
         ride.teleport(stand, loc);
-    }
-
-    private double difference(double x, double y) {
-        return Math.abs(x - y);
-    }
-
-    private double round(double value, int precision) {
-        BigDecimal bd = new BigDecimal(value).setScale(precision, BigDecimal.ROUND_HALF_UP);
-        return bd.doubleValue();
     }
 
     public void setPower(double p) {
         this.power = p > 1 ? 1 : (p < -1 ? -1 : p);
     }
 
-    private boolean withinDistance(Location loc, Location target, double distance) {
-        return loc.getX() >= target.getX() - distance && loc.getX() <= target.getX() + distance &&
-                loc.getY() >= target.getY() - distance && loc.getY() <= target.getY() + distance &&
-                loc.getZ() >= target.getZ() - distance && loc.getZ() <= target.getZ() + distance;
-    }
-
     public Location getLocation() {
-        return stand.getLocation();
+        Location loc = stand.getLocation();
+        loc.setY(loc.getY() + MovementUtil.armorStandHeight);
+        return loc;
     }
 
     public void despawn() {
+        if (stand == null) return;
+        if (!stand.getPassengers().isEmpty()) {
+            for (Entity e : stand.getPassengers()) {
+                stand.removePassenger(e);
+                e.teleport(getRide().getExit());
+            }
+        }
         stand.remove();
+        stand = null;
     }
 
     public void addPassenger(CPlayer tp) {
         stand.addPassenger(tp.getBukkitPlayer());
+    }
+
+    public void removePassenger(CPlayer tp) {
+        stand.removePassenger(tp.getBukkitPlayer());
+        tp.teleport(getRide().getExit());
+    }
+
+    public List<CPlayer> getPassengers() {
+        List<CPlayer> list = new ArrayList<>();
+        for (Entity e : stand.getPassengers()) {
+            CPlayer p = Core.getPlayerManager().getPlayer(e.getUniqueId());
+            if (p != null) {
+                list.add(p);
+            } else {
+                stand.removePassenger(e);
+            }
+        }
+        return list;
+    }
+
+    public void empty() {
+        for (CPlayer p : getPassengers()) {
+            removePassenger(p);
+        }
+    }
+
+    public RideAction getPreviousAction() {
+        if (currentActionIndex == 0) return null;
+        return getPreviousAction(actions.get(currentActionIndex).getId());
+    }
+
+    public RideAction getPreviousAction(UUID id) {
+        int i = -1;
+        for (RideAction a : new ArrayList<>(actions.values())) {
+            if (a.getId().equals(id)) {
+                return actions.get(i);
+            }
+            i++;
+        }
+        return null;
+    }
+
+    public RideAction getNextAction(UUID id) {
+        int i = 0;
+        for (Map.Entry<Integer, RideAction> a : new HashMap<>(actions).entrySet()) {
+            if (a.getValue().getId().equals(id)) {
+                i = a.getKey();
+                break;
+            }
+        }
+        if (i < 0) {
+            return null;
+        }
+        return actions.get(i + 1);
+    }
+
+    public boolean isFinished() {
+        return stand == null && currentActionIndex >= actions.size();
     }
 }

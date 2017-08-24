@@ -1,39 +1,32 @@
 package network.palace.ridemanager.handlers.actions;
 
+import network.palace.ridemanager.handlers.Cart;
 import org.bukkit.Location;
-import org.bukkit.util.Vector;
 
 /**
- * Created by Marc on 5/2/17.
+ * @author Marc
+ * @since 8/10/17
  */
-public class MoveAction extends RideAction {
-    private Location to;
-    private boolean finished = false;
+public abstract class MoveAction extends RideAction {
+    protected Location finalLocation = null;
 
-    public MoveAction(Location to) {
+    public MoveAction() {
         super(true);
-        this.to = to;
     }
 
     @Override
-    public void execute() {
-        Location original = cart.getLocation();
-        double distance = original.distance(to);
-        Vector resultant = to.clone().subtract(original).toVector().normalize();
-        double power = cart.getPower();
-        Vector change = resultant.multiply(new Vector(power, power, power));
-        Location next = cart.getLocation().add(change);
-        if (next.distance(original) >= distance) {
-            to.setYaw(next.getYaw());
-            cart.teleport(to);
-            finished = true;
-        } else {
-            cart.teleport(next);
+    public RideAction load(Cart cart) {
+        setCart(cart);
+        RideAction a = cart.getPreviousAction(id);
+        while (!(a instanceof MoveAction)) {
+            a = cart.getPreviousAction(a.getId());
+            if (a == null) break;
         }
-    }
-
-    @Override
-    public boolean isFinished() {
-        return finished;
+        if (a != null) {
+            finalLocation = ((MoveAction) a).finalLocation;
+        } else {
+            finalLocation = cart.getRide().getSpawn();
+        }
+        return this;
     }
 }

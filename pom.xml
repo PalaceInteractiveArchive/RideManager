@@ -33,6 +33,12 @@
             <type>jar</type>
         </dependency>
         <dependency>
+            <groupId>network.palace</groupId>
+            <artifactId>vanish</artifactId>
+            <version>1.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.16.10</version>

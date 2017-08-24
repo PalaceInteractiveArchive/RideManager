@@ -10,6 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.ArmorStand;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.util.Set;
 public class MovementUtil {
     private List<Ride> rides = new ArrayList<>();
     private int taskid;
+    public static final double armorStandHeight = 1.68888; //Meters
     @Getter private static long tick = 0;
 
     public MovementUtil() {
@@ -33,6 +35,12 @@ public class MovementUtil {
                 for (Ride ride : new ArrayList<>(rides)) {
                     ride.move();
                 }
+                /*
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    Vector v = p.getVelocity();
+//                    p.sendMessage(v.toString());
+                    p.setVelocity(new Vector(0.1, v.getY(), 0));
+                }*/
                 tick++;
             }
         }, 0L, 1L).getTaskId();
@@ -95,9 +103,14 @@ public class MovementUtil {
                         Location center = RideManager.parseLocation(current.getConfigurationSection("center"));
                         ConfigurationSection support = current.getConfigurationSection("support");
                         ride = new AerialCarouselRide(s, displayName, delay, exit, center, current.getDouble("aerialRadius"),
-                                support.getDouble("radius"), support.getDouble("angle"), support.getDouble("height"), current.getBoolean("small"));
+                                support.getDouble("radius"), current.getBoolean("small"), support.getDouble("angle"),
+                                support.getDouble("height"), support.getDouble("movein"));
                         break;
                     }
+                    case ARMORSTAND:
+                        String fileName = current.getString("file");
+                        ride = new ArmorStandRide(s, displayName, riders, delay, exit, fileName);
+                        break;
                 }
                 if (ride != null) {
                     rides.add(ride);
@@ -141,5 +154,29 @@ public class MovementUtil {
             }
         }
         return null;
+    }
+
+    public boolean sitDown(CPlayer player, ArmorStand stand) {
+        for (Ride ride : getRides()) {
+            if (ride.sitDown(player, stand)) {
+            }
+        }
+        return false;
+    }
+
+    public static double getYMin() {
+        return Double.MIN_VALUE;
+    }
+
+    public static double pythag(double a, double b) {
+        return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+    }
+
+    public static double pythag2(double a, double c) {
+        return Math.sqrt(Math.pow(c, 2) - Math.pow(a, 2));
+    }
+
+    public static double sin(double amplitude, double period, double x) {
+        return amplitude * Math.sin(period * x);
     }
 }

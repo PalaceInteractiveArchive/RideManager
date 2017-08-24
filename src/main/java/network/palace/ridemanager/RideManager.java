@@ -6,14 +6,13 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.core.plugin.Plugin;
 import network.palace.core.plugin.PluginInfo;
+import network.palace.ridemanager.commands.CommandRideBuilder;
 import network.palace.ridemanager.commands.Commandtest;
 import network.palace.ridemanager.handlers.Ride;
-import network.palace.ridemanager.listeners.ChunkListener;
-import network.palace.ridemanager.listeners.PacketListener;
-import network.palace.ridemanager.listeners.PlayerInteract;
-import network.palace.ridemanager.listeners.PlayerLeaveRide;
+import network.palace.ridemanager.listeners.*;
 import network.palace.ridemanager.utils.MappingUtil;
 import network.palace.ridemanager.utils.MovementUtil;
+import network.palace.ridemanager.utils.RideBuilderUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -29,6 +28,7 @@ public class RideManager extends Plugin {
     @Getter private static RideManager instance;
     @Getter private static MovementUtil movementUtil;
     @Getter private static MappingUtil mappingUtil;
+    @Getter private static RideBuilderUtil rideBuilderUtil;
 
     @Override
     protected void onPluginEnable() throws Exception {
@@ -42,9 +42,12 @@ public class RideManager extends Plugin {
             onDisable();
             return;
         }
-        movementUtil = new MovementUtil();
         mappingUtil = new MappingUtil();
+        movementUtil = new MovementUtil();
+        rideBuilderUtil = new RideBuilderUtil();
         registerCommand(new Commandtest());
+        registerCommand(new CommandRideBuilder());
+        registerListener(new BlockListener());
         registerListener(new ChunkListener());
         registerListener(new PacketListener());
         registerListener(new PlayerInteract());

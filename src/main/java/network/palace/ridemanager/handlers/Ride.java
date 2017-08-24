@@ -3,13 +3,15 @@ package network.palace.ridemanager.handlers;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_11_R1.Entity;
+import net.minecraft.server.v1_11_R1.EntityArmorStand;
 import network.palace.core.player.CPlayer;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.v1_11_R1.entity.CraftArmorStand;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.ArmorStand;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -18,6 +20,7 @@ import java.util.UUID;
  * Created by Marc on 1/22/17.
  */
 public abstract class Ride {
+    @Getter private World world;
     @Getter private String name;
     @Getter private String displayName;
     @Getter private int riders;
@@ -27,6 +30,7 @@ public abstract class Ride {
     @Getter private List<UUID> onRide = new ArrayList<>();
 
     public Ride(String name, String displayName, int riders, double delay, Location exit) {
+        this.world = Bukkit.getWorlds().get(0);
         this.name = name;
         this.displayName = displayName;
         this.riders = riders;
@@ -44,24 +48,39 @@ public abstract class Ride {
         return false;
     }
 
-    public void joinQueue(Player tp) {
+    public void joinQueue(CPlayer tp) {
         queue.add(tp.getUniqueId());
         tp.sendMessage(ChatColor.GREEN + "You joined the queue for " + displayName + "!");
     }
 
+    public void leaveQueue(CPlayer tp) {
+        queue.remove(tp.getUniqueId());
+        tp.sendMessage(ChatColor.RED + "You left the queue for " + displayName + "!");
+    }
+
     public void teleport(org.bukkit.entity.Entity entity, Location loc) {
         Entity e = ((CraftEntity) entity).getHandle();
+        e.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+        e.h(loc.getYaw());
+        e.world.entityJoinedWorld(e, false);
+        /*
         Location cur = entity.getLocation();
-        e.locX = loc.getX();
-        e.locY = loc.getY();
-        e.locZ = loc.getZ();
+        double y = loc.getY() - cur.getY();
+//        entity.teleport(loc);
+//        entity.setVelocity(new Vector(loc.getX() - cur.getX(), y != 0 ? y : Double.MIN_VALUE, loc.getZ() - cur.getZ()));
+        Entity e = ((CraftEntity) entity).getHandle();
+        if (position) {
+            e.locX = loc.getX();
+            e.locY = loc.getY();
+            e.locZ = loc.getZ();
+            e.positionChanged = true;
+        }
         e.yaw = loc.getYaw();
         e.pitch = loc.getPitch();
-        e.motX = Math.abs(cur.getX() - loc.getX());
-        e.motY = Math.abs(cur.getY() - loc.getY());
-        e.motZ = Math.abs(cur.getZ() - loc.getZ());
-        e.positionChanged = true;
-        e.velocityChanged = true;
+        e.motX = loc.getX() - cur.getX();
+        e.motY = y != 0 ? y : Double.MIN_VALUE;
+        e.motZ = loc.getZ() - cur.getZ();
+        e.velocityChanged = true;*/
     }
 
     public Location getRelativeLocation(double angle, double radius, Location center) {
@@ -72,6 +91,19 @@ public abstract class Ride {
         double x = Math.sin(rad) * radius;
         double z = Math.cos(rad) * radius;
         return center.clone().add(x, 0, z);
+    }
+
+    public void loadSurroundingChunks(Location loc) {
+        Chunk c = loc.getChunk();
+        World w = c.getWorld();
+        for (int x = c.getX() - 2; x < c.getX() + 4; x++) {
+            for (int z = c.getZ() - 2; z < c.getZ() + 4; z++) {
+                Chunk at = w.getChunkAt(x, z);
+                if (!at.isLoaded()) {
+                    at.load();
+                }
+            }
+        }
     }
 
     public double getAngleFromDirection(BlockFace direction) {
@@ -111,4 +143,19 @@ public abstract class Ride {
         }
         return 0;
     }
+
+    public ArmorStand lock(ArmorStand stand) {
+        try {
+            Field f = EntityArmorStand.class.getDeclaredField("bA");
+            if (f != null) {
+                f.setAccessible(true);
+                f.set(((CraftArmorStand) stand).getHandle(), 2096896);
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return stand;
+    }
+
+    public abstract boolean sitDown(CPlayer player, ArmorStand stand);
 }

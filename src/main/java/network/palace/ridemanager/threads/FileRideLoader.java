@@ -23,7 +23,6 @@ public class FileRideLoader implements Runnable {
     public void run() {
         LinkedList<RideAction> list = new LinkedList<>();
         Location spawn = null;
-        int spawnAngle = 0;
         double speed = 0.1;
         try {
             String strLine = "";
@@ -34,7 +33,7 @@ public class FileRideLoader implements Runnable {
             while ((strLine = br.readLine()) != null) {
                 if (strLine.length() == 0 || strLine.startsWith("#"))
                     continue;
-                String[] tokens = strLine.split("\\s+");
+                String[] tokens = strLine.split(" ");
                 double length = tokens.length;
                 if (length < 2) {
                     System.out.println("Invalid Ride Line [" + strLine + "]");
@@ -44,85 +43,72 @@ public class FileRideLoader implements Runnable {
                     case "Spawn": {
                         spawn = strToLoc(tokens[1]);
                         if (spawn == null) {
-                            System.out.println("Invalid Spawn Location");
-                            continue;
+                            throw new Exception("Invalid Spawn Location");
                         }
-                        if (length > 2) {
-                            speed = getDouble(tokens[2]);
-                        }
-                        if (length > 3) {
-                            spawnAngle = getInt(tokens[3]);
-                        }
+                        speed = getDouble(tokens[2]);
+                        float yaw = getFloat(tokens[3]);
+                        SpawnAction a = new SpawnAction(spawn, speed, yaw);
+                        list.add(a);
                         break;
                     }
-                    case "Speed": {
-                        double newSpeed = getDouble(tokens[1]);
-                        double ticks = 0;
-                        if (length > 2) {
-                            ticks = getDouble(tokens[2]);
-                        }
-                        list.add(new SpeedAction(newSpeed, ticks));
+                    case "Straight": {
+                        Location to = strToLoc(tokens[1]);
+                        StraightAction a = new StraightAction(to);
+                        list.add(a);
+                        break;
+                    }
+                    case "Turn": {
+                        Location origin = strToLoc(tokens[1]);
+                        int angle = getInt(tokens[2]);
+                        TurnAction a = new TurnAction(origin, angle);
+                        list.add(a);
+                        break;
+                    }
+                    case "Rotate": {
+                        long angle = getLong(tokens[1]);
+                        boolean right = Boolean.parseBoolean(tokens[2]);
+                        long ticks = getLong(tokens[3]);
+                        RotateAction a = new RotateAction(angle, right, ticks);
+                        list.add(a);
+                        break;
+                    }
+                    case "Wait": {
+                        long delay = getLong(tokens[1]);
+                        WaitAction a = new WaitAction(delay);
+                        list.add(a);
+                        break;
+                    }
+                    case "Incline": {
+                        Location to = strToLoc(tokens[1]);
+                        int angle = getInt(tokens[2]);
+                        InclineAction a = new InclineAction(to, angle);
+                        list.add(a);
+                        break;
+                    }
+                    case "Decline": {
                         break;
                     }
                     case "Teleport": {
                         Location to = strToLoc(tokens[1]);
-                        list.add(new TeleportAction(to));
+                        TeleportAction a = new TeleportAction(to);
+                        list.add(a);
                         break;
                     }
-                    case "Move": {
+                    case "Exit": {
                         Location to = strToLoc(tokens[1]);
-                        list.add(new MoveAction(to));
+                        ExitAction a = new ExitAction(to);
+                        list.add(a);
                         break;
-                    }
-                    case "Turn": {
-                        if (length < 4) {
-                            System.out.println("Invalid parameters for Turn [" + strLine + "]");
-                            continue;
-                        }
-                        Location to = strToLoc(tokens[1]);
-                        Location origin = strToLoc(tokens[2]);
-                        boolean positive = Boolean.valueOf(tokens[3]);
-                        list.add(new TurnAction(to, origin, positive));
-                        break;
-                    }
-                    case "Wait": {
-                        long delay = Long.valueOf(tokens[1]);
-                        list.add(new WaitAction(delay));
-                        break;
-                    }
-                    case "Block": {
-                        Location loc = strToLoc(tokens[1]);
-                        String[] l;
-                        if (tokens[2].contains(":")) {
-                            l = tokens[2].split(":");
-                        } else {
-                            l = null;
-                        }
-                        try {
-                            int id;
-                            byte data;
-                            if (l != null) {
-                                id = Integer.parseInt(l[0]);
-                                data = Byte.parseByte(l[1]);
-                            } else {
-                                id = Integer.parseInt(tokens[2]);
-                                data = (byte) 0;
-                            }
-                            list.add(new BlockAction(loc, id, data));
-                        } catch (Exception e) {
-                            System.out.println("Invalid Block ID or Block data [" + strLine + "]");
-                        }
-
                     }
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        callback.done(list, spawn, spawnAngle, speed);
+        callback.done(list, spawn, speed);
     }
 
-    private int getInt(String s) {
+    public static int getInt(String s) {
         try {
             return Integer.parseInt(s);
         } catch (NumberFormatException e) {
@@ -131,7 +117,7 @@ public class FileRideLoader implements Runnable {
         }
     }
 
-    private double getDouble(String s) {
+    public static double getDouble(String s) {
         try {
             return Double.parseDouble(s);
         } catch (NumberFormatException e) {
@@ -140,7 +126,25 @@ public class FileRideLoader implements Runnable {
         }
     }
 
-    private Location strToLoc(String string) {
+    public static float getFloat(String s) {
+        try {
+            return Float.parseFloat(s);
+        } catch (NumberFormatException e) {
+            System.out.println("Not a number [" + s + "]");
+            return 0;
+        }
+    }
+
+    public static long getLong(String s) {
+        try {
+            return Long.parseLong(s);
+        } catch (NumberFormatException e) {
+            System.out.println("Not a number [" + s + "]");
+            return 0;
+        }
+    }
+
+    public static Location strToLoc(String string) {
         Location l = null;
         if (string.length() == 0) {
             return null;

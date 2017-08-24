@@ -28,10 +28,11 @@ public class ModelMap {
         seats.put(pos, seat);
     }
 
+    @Getter
     public static class Seat {
-        @Getter private final double x;
-        @Getter private final double y;
-        @Getter private final double z;
+        private final double x;
+        private final double y;
+        private final double z;
 
         public Seat(double x, double y, double z) {
             this.x = x;

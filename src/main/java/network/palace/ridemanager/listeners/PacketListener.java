@@ -26,6 +26,7 @@ public class PacketListener implements Listener {
             @Override
             public void onPacketReceiving(PacketEvent event) {
                 CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
+                if (player == null) return;
                 PacketContainer packet = event.getPacket();
                 try {
                     Field f = packet.getBooleans().getFields().get(1);
@@ -38,13 +39,26 @@ public class PacketListener implements Listener {
                     return;
                 }
                 Ride ride = RideManager.getInstance().getCurrentRide(player);
-                if (ride == null) {
-                    return;
-                }
+                if (ride == null) return;
                 PlayerLeaveRideEvent leaveRide = new PlayerLeaveRideEvent(player, ride);
                 leaveRide.call();
                 event.setCancelled(leaveRide.isCancelled());
             }
         });
+        /*
+        manager.addPacketListener(new PacketAdapter(RideManager.getInstance(), PacketType.Play.Client.POSITION, PacketType.Play.Client.POSITION_LOOK) {
+            @Override
+            public void onPacketReceiving(PacketEvent event) {
+                CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
+                if (player == null) return;
+                Ride ride = RideManager.getInstance().getCurrentRide(player);
+                Bukkit.broadcastMessage(ride == null ? "yay" : "nay");
+                if (ride == null) return;
+                if (ride instanceof ArmorStandRide) {
+                    event.setCancelled(true);
+                    player.teleport(player.getLocation());
+                }
+            }
+        });*/
     }
 }

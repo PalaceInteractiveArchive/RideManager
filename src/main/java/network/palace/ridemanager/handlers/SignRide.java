@@ -7,6 +7,7 @@ import network.palace.ridemanager.RideManager;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -85,6 +86,11 @@ public class SignRide extends Ride {
             }
         }, 20L);
         carts.add(c);
+    }
+
+    @Override
+    public boolean sitDown(CPlayer player, ArmorStand stand) {
+        return true;
     }
 
     private List<OldCart> getCarts() {

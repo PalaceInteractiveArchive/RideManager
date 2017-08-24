@@ -1,9 +1,11 @@
 package network.palace.ridemanager.commands;
 
+import network.palace.core.Core;
 import network.palace.core.command.CommandException;
 import network.palace.core.command.CommandMeta;
 import network.palace.core.command.CommandPermission;
 import network.palace.core.command.CoreCommand;
+import network.palace.core.player.CPlayer;
 import network.palace.core.player.Rank;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.*;
@@ -30,27 +32,32 @@ public class Commandtest extends CoreCommand {
 //        Player player = (Player) sender;
 //        player.sendMessage(RideManager.getMovementUtil().getRides().get(0).getRelativeLocation(Double.parseDouble(args[0]), 4, player.getLocation()) + "");
 
+        CPlayer player = Core.getPlayerManager().getPlayer((Player) sender);
         if (args.length == 1) {
             Ride ride = RideManager.getMovementUtil().getRide(args[0]);
             if (ride instanceof TeacupsRide) {
                 TeacupsRide tea = (TeacupsRide) ride;
-                tea.joinQueue((Player) sender);
+                tea.joinQueue(player);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), tea::start, 20L);
             } else if (ride instanceof CarouselRide) {
                 CarouselRide car = (CarouselRide) ride;
-                car.joinQueue((Player) sender);
+                car.joinQueue(player);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), car::start, 20L);
             } else if (ride instanceof AerialCarouselRide) {
                 AerialCarouselRide aer = (AerialCarouselRide) ride;
-                aer.joinQueue((Player) sender);
+                aer.joinQueue(player);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), aer::start, 20L);
             } else if (ride instanceof SignRide) {
                 SignRide s = (SignRide) ride;
-                s.joinQueue((Player) sender);
+                s.joinQueue(player);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), s::start, 20L);
             } else if (ride instanceof FileRide) {
                 FileRide r = (FileRide) ride;
-                r.joinQueue((Player) sender);
+                r.joinQueue(player);
+                Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), r::start, 20L);
+            } else if (ride instanceof ArmorStandRide) {
+                ArmorStandRide r = (ArmorStandRide) ride;
+                r.joinQueue(player);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), r::start, 20L);
             }
         }

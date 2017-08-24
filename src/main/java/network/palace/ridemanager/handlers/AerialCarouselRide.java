@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
+import network.palace.core.player.CPlayerActionBarManager;
 import network.palace.ridemanager.RideManager;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
@@ -21,17 +22,18 @@ public class AerialCarouselRide extends Ride {
     private double aerialRadius = 6.5;
     private double supportRadius = 4.5;
     private final boolean small;
+    private FlatState state = FlatState.LOADING;
     @Getter private Location center;
     @Getter private boolean spawned = false;
     @Getter private List<Vehicle> vehicles = new ArrayList<>();
     @Getter @Setter private double speed = 0; //Full speed is 0.2
     @Getter @Setter private double heightSpeed = 0;
     @Getter private double height = 3;
+    @Getter private double movein = 0.9;
     @Getter private double maxHeight;
     @Getter private double supportAngle = 45;
     @Getter private boolean started = false;
     @Getter private boolean canFly = false;
-    private HashMap<UUID, Long> clicking = new HashMap<>();
     private final int taskID;
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center) {
@@ -39,50 +41,46 @@ public class AerialCarouselRide extends Ride {
     }
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, double aerialRadius, double supportRadius) {
-        this(name, displayName, delay, exit, center, aerialRadius, supportRadius, false);
+        this(name, displayName, delay, exit, center, aerialRadius, supportRadius, true);
     }
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, double aerialRadius, double supportRadius, boolean small) {
-        this(name, displayName, delay, exit, center, aerialRadius, supportRadius, 45, 3, small);
+        this(name, displayName, delay, exit, center, aerialRadius, supportRadius, small, 45, 3, 0.9);
     }
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, double aerialRadius, double supportRadius, double angle, double height, boolean small) {
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, double aerialRadius, double supportRadius, boolean small, double angle, double height, double movein) {
         super(name, displayName, 16, delay, exit);
         this.center = center;
         this.aerialRadius = aerialRadius;
         this.supportRadius = supportRadius;
         this.supportAngle = angle;
         this.height = height;
-        this.maxHeight = center.getY() + (height * 2);
+        this.movein = movein;
+        this.maxHeight = center.getY() + height;
         this.small = small;
-        loadSurroundingChunks();
+        loadSurroundingChunks(center);
         spawn();
         taskID = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
             @Override
             public void run() {
-                if (!canFly) {
-                    return;
-                }
-                List<UUID> moved = new ArrayList<>();
-                for (Map.Entry<UUID, Long> entry : clicking.entrySet()) {
-                    if (System.currentTimeMillis() - entry.getValue() > 500) {
-                        clicking.remove(entry.getKey());
+                for (Vehicle v : getVehicles()) {
+                    CPlayer p = v.getPassenger();
+                    if (p == null) continue;
+                    CPlayerActionBarManager ab = p.getActionBar();
+                    if (!canFly) {
+                        ab.show(ChatColor.RED + "Flying Disabled");
                         continue;
                     }
-                    for (Vehicle v : getVehicles()) {
-                        if (v.getPassenger() == null) {
-                            continue;
-                        }
-                        if (v.getPassenger().getUniqueId().equals(entry.getKey())) {
-                            CPlayer player = v.getPassenger();
-                            v.setFlying(true);
-                            moved.add(v.getId());
-                        }
-                    }
-                }
-                for (Vehicle v : getVehicles()) {
-                    if (!moved.contains(v.getId())) {
-                        v.setFlying(false);
+                    switch (v.getFlyingState()) {
+                        case HOVERING:
+                            ab.show(ChatColor.YELLOW + "Hovering");
+                            break;
+                        case ASCENDING:
+                            ab.show(ChatColor.GREEN + "▲ Ascending ▲");
+                            break;
+                        case DESCENDING:
+                            ab.show(ChatColor.RED + "▼ Descending ▼");
+                            break;
                     }
                 }
             }
@@ -93,7 +91,7 @@ public class AerialCarouselRide extends Ride {
         if (isSpawned()) {
             return;
         }
-        World w = this.center.getWorld();
+        World w = getWorld();
         double an = small ? 30 : 22.5;
         Location loc1 = getRelativeLocation(0, aerialRadius, this.center);
         Location loc2 = getRelativeLocation(an, aerialRadius, this.center);
@@ -108,31 +106,31 @@ public class AerialCarouselRide extends Ride {
         Location loc11 = getRelativeLocation(an * 10, aerialRadius, this.center);
         Location loc12 = getRelativeLocation(an * 11, aerialRadius, this.center);
 
-        loc1.setYaw(-90);
-        loc2.setYaw(-(float) an - 90);
-        loc3.setYaw(-(float) an * 2 - 90);
-        loc4.setYaw(-(float) an * 3 - 90);
-        loc5.setYaw(-(float) an * 4 - 90);
-        loc6.setYaw(-(float) an * 5 - 90);
-        loc7.setYaw(-(float) an * 6 - 90);
-        loc8.setYaw(-(float) an * 7 - 90);
-        loc9.setYaw(-(float) an * 8 - 90);
-        loc10.setYaw(-(float) an * 9 - 90);
-        loc11.setYaw(-(float) an * 10 - 90);
-        loc12.setYaw(-(float) an * 11 - 90);
+        loc1.setYaw(90);
+        loc2.setYaw(90 - (float) an);
+        loc3.setYaw(90 - (float) an * 2);
+        loc4.setYaw(90 - (float) an * 3);
+        loc5.setYaw(90 - (float) an * 4);
+        loc6.setYaw(90 - (float) an * 5);
+        loc7.setYaw(90 - (float) an * 6);
+        loc8.setYaw(90 - (float) an * 7);
+        loc9.setYaw(90 - (float) an * 8);
+        loc10.setYaw(90 - (float) an * 9);
+        loc11.setYaw(90 - (float) an * 10);
+        loc12.setYaw(90 - (float) an * 11);
 
-        ArmorStand a1 = w.spawn(loc1, ArmorStand.class);
-        ArmorStand a2 = w.spawn(loc2, ArmorStand.class);
-        ArmorStand a3 = w.spawn(loc3, ArmorStand.class);
-        ArmorStand a4 = w.spawn(loc4, ArmorStand.class);
-        ArmorStand a5 = w.spawn(loc5, ArmorStand.class);
-        ArmorStand a6 = w.spawn(loc6, ArmorStand.class);
-        ArmorStand a7 = w.spawn(loc7, ArmorStand.class);
-        ArmorStand a8 = w.spawn(loc8, ArmorStand.class);
-        ArmorStand a9 = w.spawn(loc9, ArmorStand.class);
-        ArmorStand a10 = w.spawn(loc10, ArmorStand.class);
-        ArmorStand a11 = w.spawn(loc11, ArmorStand.class);
-        ArmorStand a12 = w.spawn(loc12, ArmorStand.class);
+        ArmorStand a1 = lock(w.spawn(loc1, ArmorStand.class));
+        ArmorStand a2 = lock(w.spawn(loc2, ArmorStand.class));
+        ArmorStand a3 = lock(w.spawn(loc3, ArmorStand.class));
+        ArmorStand a4 = lock(w.spawn(loc4, ArmorStand.class));
+        ArmorStand a5 = lock(w.spawn(loc5, ArmorStand.class));
+        ArmorStand a6 = lock(w.spawn(loc6, ArmorStand.class));
+        ArmorStand a7 = lock(w.spawn(loc7, ArmorStand.class));
+        ArmorStand a8 = lock(w.spawn(loc8, ArmorStand.class));
+        ArmorStand a9 = lock(w.spawn(loc9, ArmorStand.class));
+        ArmorStand a10 = lock(w.spawn(loc10, ArmorStand.class));
+        ArmorStand a11 = lock(w.spawn(loc11, ArmorStand.class));
+        ArmorStand a12 = lock(w.spawn(loc12, ArmorStand.class));
 
         a1.setVisible(false);
         a2.setVisible(false);
@@ -160,7 +158,7 @@ public class AerialCarouselRide extends Ride {
         a11.setGravity(false);
         a12.setGravity(false);
 
-        EulerAngle pose = new EulerAngle(0, Math.toRadians(90), 0);
+        EulerAngle pose = new EulerAngle(0, Math.toRadians(-90), 0);
 
         a1.setHeadPose(pose);
         a2.setHeadPose(pose);
@@ -208,14 +206,14 @@ public class AerialCarouselRide extends Ride {
             Location loc14 = getRelativeLocation(an * 13, aerialRadius, this.center);
             Location loc15 = getRelativeLocation(an * 14, aerialRadius, this.center);
             Location loc16 = getRelativeLocation(an * 15, aerialRadius, this.center);
-            loc13.setYaw(-(float) an * 12 - 90);
-            loc14.setYaw(-(float) an * 13 - 90);
-            loc15.setYaw(-(float) an * 14 - 90);
-            loc16.setYaw(-(float) an * 15 - 90);
-            ArmorStand a13 = w.spawn(loc13, ArmorStand.class);
-            ArmorStand a14 = w.spawn(loc14, ArmorStand.class);
-            ArmorStand a15 = w.spawn(loc15, ArmorStand.class);
-            ArmorStand a16 = w.spawn(loc16, ArmorStand.class);
+            loc13.setYaw(90 - (float) an * 12);
+            loc14.setYaw(90 - (float) an * 13);
+            loc15.setYaw(90 - (float) an * 14);
+            loc16.setYaw(90 - (float) an * 15);
+            ArmorStand a13 = lock(w.spawn(loc13, ArmorStand.class));
+            ArmorStand a14 = lock(w.spawn(loc14, ArmorStand.class));
+            ArmorStand a15 = lock(w.spawn(loc15, ArmorStand.class));
+            ArmorStand a16 = lock(w.spawn(loc16, ArmorStand.class));
             a13.setVisible(false);
             a14.setVisible(false);
             a15.setVisible(false);
@@ -264,16 +262,17 @@ public class AerialCarouselRide extends Ride {
             if (tp == null) {
                 continue;
             }
-            riders.add(tp);
+            if (!getOnRide().contains(tp.getUniqueId())) riders.add(tp);
         }
         int hc = 1;
-        Vehicle h = getHorse(hc);
+        Vehicle h = getVehicle(hc);
         for (Player tp : riders) {
             h.addPassenger(tp);
             tp.sendMessage(ChatColor.GREEN + "Ride starting in 3 seconds!");
             getOnRide().add(tp.getUniqueId());
-            h = getHorse(hc++);
+            h = getVehicle(hc++);
         }
+        state = FlatState.RUNNING;
         started = true;
         int taskID = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
             int time = 0;
@@ -310,8 +309,9 @@ public class AerialCarouselRide extends Ride {
                             cp.sendMessage(ChatColor.GREEN + "You can fly now, click the item in the middle of your hotbar to start flying!");
                         }
                         break;
-                    case 80:
+                    case 75:
                         canFly = false;
+                        getVehicles().stream().forEach(v -> v.setFlyingState(FlyingState.DESCENDING));
                         break;
                     case 82:
                         speed = 0.3;
@@ -349,6 +349,7 @@ public class AerialCarouselRide extends Ride {
                         break;
                     case 96:
                         ejectPlayers();
+                        state = FlatState.LOADING;
                         break;
                 }
                 time++;
@@ -377,56 +378,85 @@ public class AerialCarouselRide extends Ride {
     }
 
     @Override
+    public boolean sitDown(CPlayer player, ArmorStand stand) {
+        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= 18 || getOnRide().contains(player.getUniqueId())) {
+            return false;
+        }
+        UUID uuid = stand.getUniqueId();
+        for (Vehicle v : getVehicles()) {
+            Optional<ArmorStand> s = v.getStand();
+            if (!s.isPresent()) continue;
+            if (s.get().getUniqueId().equals(uuid)) {
+                v.addPassenger(player.getBukkitPlayer());
+                getOnRide().add(player.getUniqueId());
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void move() {
         if (!isSpawned() || speed == 0) {
             return;
         }
         double tableChange = 360 / (speed * 20 * 60);
-        double head = -Math.toRadians(tableChange);
         double supportChange = -Math.toRadians((supportAngle * 6) / (speed * 20 * 60));
         for (Vehicle c : getVehicles()) {
             double a = (c.getAngle() - tableChange) % 360;
             c.setAngle(a);
-            ArmorStand v = c.getStand();
-            ArmorStand s = c.getSupport();
-            Location l = v.getLocation();
-            Location l2 = s.getLocation();
+            Optional<ArmorStand> st = c.getStand();
+            Optional<ArmorStand> su = c.getSupport();
+            if (!st.isPresent() || !su.isPresent()) {
+                return;
+            }
+            ArmorStand vehicle = st.get();
+            ArmorStand support = su.get();
+            Location l = vehicle.getLocation();
+            Location l2 = support.getLocation();
             Location center = this.center.clone();
             Location supportCenter = this.center.clone().add(0, height / 2, 0);
             boolean vertMove = false;
             boolean up = false;
-            if (c.isFlying() && l.getY() < maxHeight) {
+            FlyingState state = c.getFlyingState();
+            if ((l.getY() > maxHeight && state.equals(FlyingState.ASCENDING)) || (l.getY() - 0.05 < center.getY() && state.equals(FlyingState.DESCENDING))) {
+                c.setLastFlyingState(c.getFlyingState());
+                c.setFlyingState(FlyingState.HOVERING);
+                CPlayer p = c.getPassenger();
+                if (p != null)
+                    p.playSound(p.getLocation(), Sound.BLOCK_LEVER_CLICK, 1, 0.5f);
+            }
+            if (state.equals(FlyingState.ASCENDING) && l.getY() < maxHeight) {
                 center.setY(l.getY() + 0.05);
                 supportCenter.setY(l2.getY() + 0.025);
                 up = true;
                 vertMove = true;
-            } else if (c.isFlying() && l.getY() >= maxHeight) {
+            } else if ((state.equals(FlyingState.ASCENDING) && l.getY() >= maxHeight) || state.equals(FlyingState.HOVERING)) {
                 center.setY(l.getY());
                 supportCenter.setY(l2.getY());
-            } else if (!c.isFlying() && l.getY() > center.getY()) {
+            } else if (state.equals(FlyingState.DESCENDING) && l.getY() >= center.getY()) {
                 center.setY(l.getY() - 0.05);
                 supportCenter.setY(l2.getY() - 0.025);
                 up = false;
                 vertMove = true;
             }
             double r = aerialRadius;
-            if (s.getHeadPose().getX() < 0) {
-                r -= Math.abs(Math.toDegrees(s.getHeadPose().getX())) * 0.025;
+            if (support.getHeadPose().getX() < 0) {
+                r -= Math.abs(Math.toDegrees(support.getHeadPose().getX())) * 0.025;
             }
             Location n = getRelativeLocation(a, r, center);
-            Location n2 = getRelativeLocation(a, supportRadius, supportCenter);
+            double radius = supportRadius - (((movein * (supportCenter.getY() / this.center.clone().add(0, height / 2, 0).getY())) - movein) * 38);
+            Location n2 = getRelativeLocation(a, radius, supportCenter);
             n.setYaw((float) (l.getYaw() + tableChange) % 360);
             n2.setYaw((float) (l2.getYaw() + tableChange) % 360);
-            teleport(v, n);
-            teleport(s, n2);
+            teleport(vehicle, n);
+            teleport(support, n2);
             if (vertMove) {
                 if (up) {
-                    s.setHeadPose(s.getHeadPose().add(supportChange, 0, 0));
+                    support.setHeadPose(support.getHeadPose().add(supportChange, 0, 0));
                 } else {
-                    s.setHeadPose(s.getHeadPose().add(-supportChange, 0, 0));
+                    support.setHeadPose(support.getHeadPose().add(-supportChange, 0, 0));
                 }
             }
-//            v.setHeadPose(v.getHeadPose().add(0, head, 0));
         }
     }
 
@@ -437,25 +467,12 @@ public class AerialCarouselRide extends Ride {
             return;
         }
         spawned = false;
-        for (Vehicle h : getVehicles()) {
-            h.despawn();
+        for (Vehicle v : getVehicles()) {
+            v.despawn();
         }
     }
 
-    public void loadSurroundingChunks() {
-        Chunk c = center.getChunk();
-        World w = c.getWorld();
-        for (int x = c.getX() - 2; x < c.getX() + 4; x++) {
-            for (int z = c.getZ() - 2; z < c.getZ() + 4; z++) {
-                Chunk at = w.getChunkAt(x, z);
-                if (!at.isLoaded()) {
-                    at.load();
-                }
-            }
-        }
-    }
-
-    private Vehicle getHorse(int i) {
+    private Vehicle getVehicle(int i) {
         return vehicles.get(i - 1);
     }
 
@@ -463,46 +480,61 @@ public class AerialCarouselRide extends Ride {
         for (Vehicle c : getVehicles()) {
             c.eject();
         }
+        getOnRide().clear();
     }
 
-    public void click(CPlayer cp) {
-        if (!clicking.containsKey(cp.getUniqueId())) {
-            clicking.put(cp.getUniqueId(), System.currentTimeMillis());
-            return;
+    public Vehicle getVehicle(UUID uuid) {
+        for (Vehicle v : getVehicles()) {
+            if (v.getPassenger() == null) continue;
+            if (v.getPassenger().getUniqueId().equals(uuid)) {
+                return v;
+            }
         }
-        clicking.put(cp.getUniqueId(), System.currentTimeMillis());
+        return null;
     }
 
-    private class Vehicle {
-        @Getter private ArmorStand stand;
+    public class Vehicle {
+        private UUID standID;
         @Getter @Setter private double angle;
-        private double ticks;
-        @Getter private ArmorStand support;
+        private UUID supportID;
         @Getter private UUID id = UUID.randomUUID();
-        @Getter @Setter private boolean flying;
+        @Getter @Setter private FlyingState flyingState = FlyingState.HOVERING;
+        @Getter @Setter private FlyingState lastFlyingState = FlyingState.HOVERING;
 
         public Vehicle(ArmorStand stand, double angle) {
-            this.stand = stand;
+            this.standID = stand.getUniqueId();
             this.angle = angle;
-            this.support = stand.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 2, 0), ArmorStand.class);
+            ArmorStand support = stand.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 2, 0), ArmorStand.class);
+            this.supportID = support.getUniqueId();
             ItemStack pole = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 10);
             support.setGravity(false);
+            support.setVisible(false);
             support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
             support.setHelmet(pole);
         }
 
-        public double getTicks() {
-            return ticks++;
+        public Optional<ArmorStand> getStand() {
+            return getWorld().getEntitiesByClass(ArmorStand.class).stream().filter(s -> s.getUniqueId().equals(standID)).findFirst();
+        }
+
+        public Optional<ArmorStand> getSupport() {
+            return getWorld().getEntitiesByClass(ArmorStand.class).stream().filter(s -> s.getUniqueId().equals(supportID)).findFirst();
         }
 
         public void addPassenger(Player player) {
-            if (!stand.getPassengers().isEmpty()) {
+            Optional<ArmorStand> s = getStand();
+            if (!s.isPresent() || !s.get().getPassengers().isEmpty()) {
                 return;
             }
-            stand.addPassenger(player);
+            s.get().addPassenger(player);
         }
 
         public CPlayer getPassenger() {
+            Optional<ArmorStand> s = getStand();
+            if (!s.isPresent()) {
+                return null;
+            }
+            ArmorStand stand = s.get();
             if (stand == null || stand.getPassengers() == null || stand.getPassengers().isEmpty()) {
                 return null;
             }
@@ -514,17 +546,27 @@ public class AerialCarouselRide extends Ride {
         }
 
         public void eject() {
+            Optional<ArmorStand> stand = getStand();
+            if (!stand.isPresent())
+                return;
             CPlayer passenger = getPassenger();
             if (passenger != null) {
-                stand.removePassenger(passenger.getBukkitPlayer());
+                stand.ifPresent(s -> s.removePassenger(passenger.getBukkitPlayer()));
                 passenger.teleport(getExit());
+                getOnRide().remove(passenger.getUniqueId());
             }
         }
 
         public void despawn() {
             eject();
-            stand.remove();
-            support.remove();
+            Optional<ArmorStand> s = getStand();
+            Optional<ArmorStand> su = getSupport();
+            s.ifPresent(Entity::remove);
+            su.ifPresent(Entity::remove);
         }
+    }
+
+    public enum FlyingState {
+        HOVERING, ASCENDING, DESCENDING
     }
 }

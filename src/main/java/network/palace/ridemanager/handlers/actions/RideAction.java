@@ -12,12 +12,20 @@ import java.util.UUID;
  */
 @RequiredArgsConstructor
 public abstract class RideAction {
-    @Getter UUID id = UUID.randomUUID();
-    @Getter @Setter public Cart cart = null;
-    @Getter public final boolean movementAction;
+    @Getter protected UUID id = UUID.randomUUID();
+    @Getter @Setter protected Cart cart = null;
+    @Getter protected final boolean movementAction;
     @Getter protected boolean executed = false;
 
     public abstract void execute();
 
     public abstract boolean isFinished();
+
+    public abstract RideAction duplicate();
+
+    @Override
+    public abstract String toString();
+
+    public abstract RideAction load(Cart cart);
+
 }
