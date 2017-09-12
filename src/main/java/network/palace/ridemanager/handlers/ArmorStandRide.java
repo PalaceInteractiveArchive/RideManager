@@ -3,6 +3,7 @@ package network.palace.ridemanager.handlers;
 import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
+import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.threads.FileRideLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -106,26 +107,14 @@ public class ArmorStandRide extends Ride {
     }
 
     @Override
-    public void start() {
+    public void start(List<CPlayer> riders) {
         Vehicle v = new Vehicle(spawn);
         v.spawn();
-        List<UUID> queue = getQueue();
-        List<UUID> riding = new ArrayList<>();
-        if (queue.size() < getRiders()) {
-            riding.addAll(queue);
-            queue.clear();
-        } else {
-            for (int i = 0; i < getRiders(); i++) {
-                riding.add(queue.remove(0));
+        new RideStartEvent(this).call();
+        for (CPlayer player : riders) {
+            if (getOnRide().contains(player.getUniqueId())) {
+                riders.remove(player);
             }
-        }
-        List<CPlayer> riders = new ArrayList<>();
-        for (UUID uuid : riding) {
-            CPlayer tp = Core.getPlayerManager().getPlayer(uuid);
-            if (tp == null) {
-                continue;
-            }
-            riders.add(tp);
         }
         riders.stream().forEach(p -> {
             v.addPassenger(p);

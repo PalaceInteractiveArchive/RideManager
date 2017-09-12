@@ -6,6 +6,7 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.core.player.CPlayerActionBarManager;
 import network.palace.ridemanager.RideManager;
+import network.palace.ridemanager.events.RideStartEvent;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -244,35 +245,23 @@ public class AerialCarouselRide extends Ride {
     }
 
     @Override
-    public void start() {
-        List<UUID> queue = getQueue();
-        List<UUID> riding = new ArrayList<>();
-        if (queue.size() < getRiders()) {
-            riding.addAll(queue);
-            queue.clear();
-        } else {
-            for (int i = 0; i < getRiders(); i++) {
-                riding.add(queue.get(0));
-                queue.remove(0);
+    public void start(List<CPlayer> riders) {
+        if (started) return;
+        new RideStartEvent(this).call();
+        state = FlatState.RUNNING;
+        for (CPlayer player : riders) {
+            if (getOnRide().contains(player.getUniqueId())) {
+                riders.remove(player);
             }
-        }
-        List<Player> riders = new ArrayList<>();
-        for (UUID uuid : riding) {
-            Player tp = Bukkit.getPlayer(uuid);
-            if (tp == null) {
-                continue;
-            }
-            if (!getOnRide().contains(tp.getUniqueId())) riders.add(tp);
         }
         int hc = 1;
         Vehicle h = getVehicle(hc);
-        for (Player tp : riders) {
-            h.addPassenger(tp);
+        for (CPlayer tp : riders) {
+            h.addPassenger(tp.getBukkitPlayer());
             tp.sendMessage(ChatColor.GREEN + "Ride starting in 3 seconds!");
             getOnRide().add(tp.getUniqueId());
             h = getVehicle(hc++);
         }
-        state = FlatState.RUNNING;
         started = true;
         int taskID = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
             int time = 0;

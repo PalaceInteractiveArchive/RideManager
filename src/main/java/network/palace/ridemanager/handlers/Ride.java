@@ -5,7 +5,10 @@ import lombok.Setter;
 import net.minecraft.server.v1_11_R1.Entity;
 import net.minecraft.server.v1_11_R1.EntityArmorStand;
 import network.palace.core.player.CPlayer;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftArmorStand;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftEntity;
@@ -26,7 +29,6 @@ public abstract class Ride {
     @Getter private int riders;
     @Getter private double delay;
     @Getter @Setter private Location exit;
-    @Getter private List<UUID> queue = new ArrayList<>();
     @Getter private List<UUID> onRide = new ArrayList<>();
 
     public Ride(String name, String displayName, int riders, double delay, Location exit) {
@@ -42,20 +44,10 @@ public abstract class Ride {
 
     public abstract void despawn();
 
-    public abstract void start();
+    public abstract void start(List<CPlayer> riders);
 
     public boolean handleEject(CPlayer player) {
         return false;
-    }
-
-    public void joinQueue(CPlayer tp) {
-        queue.add(tp.getUniqueId());
-        tp.sendMessage(ChatColor.GREEN + "You joined the queue for " + displayName + "!");
-    }
-
-    public void leaveQueue(CPlayer tp) {
-        queue.remove(tp.getUniqueId());
-        tp.sendMessage(ChatColor.RED + "You left the queue for " + displayName + "!");
     }
 
     public void teleport(org.bukkit.entity.Entity entity, Location loc) {

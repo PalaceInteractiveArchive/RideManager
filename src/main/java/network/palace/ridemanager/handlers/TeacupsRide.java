@@ -4,14 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
+import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
@@ -24,7 +22,7 @@ public class TeacupsRide extends Ride {
     private final int tableRadius = 7;
     private final int cupRadius = 3;
     private final double riderRadius = 0.5;
-    private FlatState state = FlatState.LOADING;
+    @Getter private FlatState state = FlatState.LOADING;
     @Getter private Location center;
     @Getter private boolean spawned = false;
     private List<Table> tables = new ArrayList<>();
@@ -44,7 +42,7 @@ public class TeacupsRide extends Ride {
         if (isSpawned()) {
             return;
         }
-        World w = center.getWorld();
+//        World w = center.getWorld();
         Location loc1 = getRelativeLocation(0, tableRadius, center);
         Location loc2 = getRelativeLocation(120, tableRadius, center);
         Location loc3 = getRelativeLocation(240, tableRadius, center);
@@ -166,27 +164,15 @@ public class TeacupsRide extends Ride {
     }
 
     @Override
-    public void start() {
+    public void start(List<CPlayer> riders) {
         if (started) return;
+        new RideStartEvent(this).call();
         state = FlatState.RUNNING;
-        List<UUID> queue = getQueue();
-        List<UUID> riding = new ArrayList<>();
-        if (queue.size() < getRiders()) {
-            riding.addAll(queue);
-            queue.clear();
-        } else {
-            for (int i = 0; i < getRiders(); i++) {
-                riding.add(queue.get(0));
-                queue.remove(0);
+        for (CPlayer player : new ArrayList<>(riders)) {
+            if (player == null) continue;
+            if (getOnRide().contains(player.getUniqueId())) {
+                riders.remove(player);
             }
-        }
-        List<CPlayer> riders = new ArrayList<>();
-        for (UUID uuid : riding) {
-            CPlayer tp = Core.getPlayerManager().getPlayer(uuid);
-            if (tp == null) {
-                continue;
-            }
-            if (!getOnRide().contains(tp.getUniqueId())) riders.add(tp);
         }
         int table = 1;
         int cup = 1;
@@ -204,9 +190,10 @@ public class TeacupsRide extends Ride {
         }
         started = true;
         startTime = System.currentTimeMillis();
-        for (UUID uuid : getOnRide()) {
-            CPlayer player = Core.getPlayerManager().getPlayer(uuid);
-            if (player != null) player.sendMessage(ChatColor.GREEN + "Ride starting in 3 seconds!");
+        for (Table tab : tables) {
+            for (Cup c : tab.getCups()) {
+                c.removeExtraSeats();
+            }
         }
     }
 
@@ -240,8 +227,9 @@ public class TeacupsRide extends Ride {
                 }
                 getOnRide().remove(player.getUniqueId());
                 c.eject(player);
-                if (!state.equals(FlatState.LOADING))
+                if (!state.equals(FlatState.LOADING)) {
                     player.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
+                }
                 return true;
             }
         }
@@ -321,6 +309,11 @@ public class TeacupsRide extends Ride {
                         ticks = -1;
                         started = false;
                         state = FlatState.LOADING;
+                        for (Table t : tables) {
+                            for (Cup c : t.getCups()) {
+                                c.spawnSeats();
+                            }
+                        }
                         break;
                 }
             }
@@ -333,8 +326,8 @@ public class TeacupsRide extends Ride {
             for (Table t : tables) {
                 for (Cup c : t.getCups()) {
                     c.getStand().setVelocity(v);
-                    c.getSeat2().setVelocity(v);
-                    c.getSeat3().setVelocity(v);
+                    if (c.getSeat2() != null) c.getSeat2().setVelocity(v);
+                    if (c.getSeat3() != null) c.getSeat3().setVelocity(v);
                 }
             }
         }
@@ -342,7 +335,7 @@ public class TeacupsRide extends Ride {
             return;
         }
         double tableChange = 360 / (speed * 20 * 60);
-        double head = Math.toRadians(tableChange * 2);
+//        double head = Math.toRadians(tableChange * 2);
         for (Table t : tables) {
             List<Cup> cups = t.getCups();
             double angle = (t.getAngle() + tableChange) % 360;
@@ -352,7 +345,7 @@ public class TeacupsRide extends Ride {
             for (Cup c : cups) {
                 double a = ((c.getAngle()) - (tableChange * 2)) % 360;
                 c.setAngle(a);
-                final Location s = c.getCenter();
+//                final Location s = c.getCenter();
                 Location n = getRelativeLocation(a, cupRadius, next);
 //                s.setHeadPose(s.getHeadPose().add(0, head, 0));
                 n.setYaw((float) -a);
@@ -361,19 +354,23 @@ public class TeacupsRide extends Ride {
                     Location l = getRelativeLocation(a - 90, riderRadius, n);
                     l.setYaw((float) -a + 270);
                     l.setY(l.getY() + 0.2);
-                    Location l2 = getRelativeLocation(a, riderRadius, n);
-                    l2.setYaw((float) -a + 180);
-                    l2.setY(l2.getY() + 0.2);
-                    Location l3 = getRelativeLocation(a + 90, riderRadius, n);
-                    l3.setYaw((float) -a + 90);
-                    l3.setY(l3.getY() + 0.2);
                     Vector v = new Vector(0, MovementUtil.getYMin(), 0);
                     teleport(stand, l);
-                    teleport(c.getSeat2(), l2);
-                    teleport(c.getSeat3(), l3);
                     stand.setVelocity(v);
-                    c.getSeat2().setVelocity(v);
-                    c.getSeat3().setVelocity(v);
+                    if (c.getSeat2() != null) {
+                        Location l2 = getRelativeLocation(a, riderRadius, n);
+                        l2.setYaw((float) -a + 180);
+                        l2.setY(l2.getY() + 0.2);
+                        teleport(c.getSeat2(), l2);
+                        c.getSeat2().setVelocity(v);
+                    }
+                    if (c.getSeat3() != null) {
+                        Location l3 = getRelativeLocation(a + 90, riderRadius, n);
+                        l3.setYaw((float) -a + 90);
+                        l3.setY(l3.getY() + 0.2);
+                        teleport(c.getSeat3(), l3);
+                        c.getSeat3().setVelocity(v);
+                    }
                 }
                 c.setCenter(n);
             }
@@ -419,8 +416,8 @@ public class TeacupsRide extends Ride {
             for (Cup c : cups) {
                 c.eject();
                 c.getStand().remove();
-                c.getSeat2().remove();
-                c.getSeat3().remove();
+                if (c.getSeat2() != null) c.getSeat2().remove();
+                if (c.getSeat3() != null) c.getSeat3().remove();
             }
             cups.clear();
         }
@@ -433,37 +430,56 @@ public class TeacupsRide extends Ride {
         @Getter private ArmorStand seat3;
         @Getter private int table;
         @Getter @Setter private double angle;
-//        @Getter private ArmorStand rider;
 
         public Cup(Location loc, int table, double angle, int num) {
+            this.center = loc;
             this.table = table;
             this.angle = angle;
             Location l = getRelativeLocation(angle - 90, riderRadius, loc);
             l.setYaw((float) (270 - angle));
             l.setY(loc.getY() + 0.2);
-            Location l2 = getRelativeLocation(angle, riderRadius, loc);
-            l2.setYaw((float) (180 - angle));
-            l2.setY(loc.getY() + 0.2);
-            Location l3 = getRelativeLocation(angle + 90, riderRadius, loc);
-            l3.setYaw((float) (90 - angle));
-            l3.setY(loc.getY() + 0.2);
             stand = lock(loc.getWorld().spawn(l, ArmorStand.class));
-//            stand.setGravity(false);
+            stand.setVisible(false);
             stand.setHelmet(new ItemStack(Material.DIAMOND_SWORD, 1, (short) (2 + num)));
-            seat2 = lock(loc.getWorld().spawn(l2, ArmorStand.class));
-//            seat2.setGravity(false);
-            seat3 = lock(loc.getWorld().spawn(l3, ArmorStand.class));
-//            seat3.setGravity(false);
+            spawnSeats();
+        }
+
+        public void spawnSeats() {
+            if (seat2 == null) {
+                Location l2 = getRelativeLocation(angle, riderRadius, center);
+                l2.setYaw((float) (180 - angle));
+                l2.setY(center.getY() + 0.2);
+                seat2 = lock(center.getWorld().spawn(l2, ArmorStand.class));
+                seat2.setVisible(false);
+            }
+            if (seat3 == null) {
+                Location l3 = getRelativeLocation(angle + 90, riderRadius, center);
+                l3.setYaw((float) (90 - angle));
+                l3.setY(center.getY() + 0.2);
+                seat3 = lock(center.getWorld().spawn(l3, ArmorStand.class));
+                seat3.setVisible(false);
+            }
+        }
+
+        public void removeExtraSeats() {
+            if (seat2 != null && seat2.getPassengers().isEmpty()) {
+                seat2.remove();
+                seat2 = null;
+            }
+            if (seat3 != null && seat3.getPassengers().isEmpty()) {
+                seat3.remove();
+                seat3 = null;
+            }
         }
 
         public boolean addPassenger(CPlayer player) {
             if (stand.getPassengers().isEmpty()) {
                 stand.addPassenger(player.getBukkitPlayer());
                 return true;
-            } else if (seat2.getPassengers().isEmpty()) {
+            } else if (seat2 != null && seat2.getPassengers().isEmpty()) {
                 seat2.addPassenger(player.getBukkitPlayer());
                 return true;
-            } else if (seat3.getPassengers().isEmpty()) {
+            } else if (seat3 != null && seat3.getPassengers().isEmpty()) {
                 seat3.addPassenger(player.getBukkitPlayer());
                 return true;
             }
@@ -474,25 +490,14 @@ public class TeacupsRide extends Ride {
             if (this.stand.getUniqueId().equals(stand)) {
                 this.stand.addPassenger(player.getBukkitPlayer());
                 return true;
-            } else if (seat2.getUniqueId().equals(stand)) {
+            } else if (seat2 != null && seat2.getUniqueId().equals(stand)) {
                 seat2.addPassenger(player.getBukkitPlayer());
                 return true;
-            } else if (seat3.getUniqueId().equals(stand)) {
+            } else if (seat3 != null && seat3.getUniqueId().equals(stand)) {
                 seat3.addPassenger(player.getBukkitPlayer());
                 return true;
             }
             return false;
-        }
-
-        public CPlayer getPassenger() {
-            if (stand == null || stand.getPassengers() == null || stand.getPassengers().isEmpty()) {
-                return null;
-            }
-            Entity pass = stand.getPassengers().get(0);
-            if (!(pass instanceof Player)) {
-                return null;
-            }
-            return Core.getPlayerManager().getPlayer((Player) pass);
         }
 
         public List<UUID> getPassengers() {
@@ -500,10 +505,10 @@ public class TeacupsRide extends Ride {
             if (!stand.getPassengers().isEmpty()) {
                 list.add(stand.getPassengers().get(0).getUniqueId());
             }
-            if (!seat2.getPassengers().isEmpty()) {
+            if (seat2 != null && !seat2.getPassengers().isEmpty()) {
                 list.add(seat2.getPassengers().get(0).getUniqueId());
             }
-            if (!seat3.getPassengers().isEmpty()) {
+            if (seat3 != null && !seat3.getPassengers().isEmpty()) {
                 list.add(seat3.getPassengers().get(0).getUniqueId());
             }
             return list;
@@ -513,24 +518,24 @@ public class TeacupsRide extends Ride {
             if (!stand.getPassengers().isEmpty()) {
                 emptyStand(stand);
             }
-            if (!seat2.getPassengers().isEmpty()) {
+            if (seat2 != null && !seat2.getPassengers().isEmpty()) {
                 emptyStand(seat2);
             }
-            if (!seat3.getPassengers().isEmpty()) {
+            if (seat3 != null && !seat3.getPassengers().isEmpty()) {
                 emptyStand(seat3);
             }
-            CPlayer passenger = getPassenger();
-            if (passenger != null) {
-                final Location playerLoc = passenger.getLocation();
-                stand.removePassenger(passenger.getBukkitPlayer());
-                Location loc = getExit();
-                if (state.equals(FlatState.LOADING)) {
-                    loc = stand.getLocation().add(0, 2, 0);
-                    loc.setYaw(playerLoc.getYaw());
-                    loc.setPitch(playerLoc.getPitch());
-                }
-                passenger.teleport(loc);
-            }
+//            CPlayer passenger = getPassenger();
+//            if (passenger != null) {
+//                final Location playerLoc = passenger.getLocation();
+//                stand.removePassenger(passenger.getBukkitPlayer());
+//                Location loc = getExit();
+//                if (state.equals(FlatState.LOADING)) {
+//                    loc = stand.getLocation().add(0, 2, 0);
+//                    loc.setYaw(playerLoc.getYaw());
+//                    loc.setPitch(playerLoc.getPitch());
+//                }
+//                passenger.teleport(loc);
+//            }
         }
 
         private void emptyStand(ArmorStand stand) {
@@ -547,13 +552,13 @@ public class TeacupsRide extends Ride {
         }
 
         public void eject(CPlayer player) {
-            if (!stand.getPassengers().isEmpty() && stand.getPassengers().contains(player.getUniqueId())) {
+            if (!stand.getPassengers().isEmpty() && stand.getPassengers().contains(player.getBukkitPlayer())) {
                 emptyStand(stand);
             }
-            if (!seat2.getPassengers().isEmpty() && seat2.getPassengers().contains(player.getUniqueId())) {
+            if (seat2 != null && !seat2.getPassengers().isEmpty() && seat2.getPassengers().contains(player.getBukkitPlayer())) {
                 emptyStand(seat2);
             }
-            if (!seat3.getPassengers().isEmpty() && seat3.getPassengers().contains(player.getUniqueId())) {
+            if (seat3 != null && !seat3.getPassengers().isEmpty() && seat3.getPassengers().contains(player.getBukkitPlayer())) {
                 emptyStand(seat3);
             }
         }

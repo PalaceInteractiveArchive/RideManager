@@ -123,6 +123,14 @@ public class MovementUtil {
                 ChatColor.GREEN + " rides!");
     }
 
+    public void addRide(Ride ride) {
+        rides.add(ride);
+    }
+
+    public void removeRide(Ride ride) {
+        rides.remove(ride);
+    }
+
     public List<Ride> getRides() {
         return new ArrayList<>(rides);
     }

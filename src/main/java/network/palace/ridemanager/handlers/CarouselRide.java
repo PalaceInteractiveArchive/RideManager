@@ -4,8 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
-import network.palace.ridemanager.RideManager;
-import org.bukkit.*;
+import network.palace.ridemanager.events.RideStartEvent;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -23,13 +26,15 @@ public class CarouselRide extends Ride {
     private final double riderRadius = 0.395;
     private final double poleAngle = 95;
     private final double poleY;
-    private FlatState state = FlatState.LOADING;
+    @Getter private FlatState state = FlatState.LOADING;
     @Getter private Location center;
     @Getter private boolean spawned = false;
     @Getter private List<Horse> horses = new ArrayList<>();
     @Getter @Setter private double speed = 0; //Full speed is 0.2
-    @Getter @Setter private double heightSpeed = 0;
+    @Getter @Setter private double heightSpeed = 0.2;
     @Getter private boolean started = false;
+    private long startTime = 0;
+    private long ticks = 0;
 
     public CarouselRide(String name, String displayName, double delay, Location exit, Location center) {
         super(name, displayName, 12, delay, exit);
@@ -315,130 +320,24 @@ public class CarouselRide extends Ride {
     }
 
     @Override
-    public void start() {
-        List<UUID> queue = getQueue();
-        List<UUID> riding = new ArrayList<>();
-        if (queue.size() < getRiders()) {
-            riding.addAll(queue);
-            queue.clear();
-        } else {
-            for (int i = 0; i < getRiders(); i++) {
-                riding.add(queue.get(0));
-                queue.remove(0);
+    public void start(List<CPlayer> riders) {
+        if (started) return;
+        new RideStartEvent(this).call();
+        state = FlatState.RUNNING;
+        for (CPlayer player : new ArrayList<>(riders)) {
+            if (getOnRide().contains(player.getUniqueId())) {
+                riders.remove(player);
             }
-        }
-        List<Player> riders = new ArrayList<>();
-        for (UUID uuid : riding) {
-            Player tp = Bukkit.getPlayer(uuid);
-            if (tp == null) {
-                continue;
-            }
-            if (!getOnRide().contains(tp.getUniqueId())) riders.add(tp);
         }
         int hc = 1;
         Horse h = getHorse(hc);
-        for (Player tp : riders) {
-            h.addPassenger(tp);
-            tp.sendMessage(ChatColor.GREEN + "Ride starting in 3 seconds!");
+        for (CPlayer tp : riders) {
+            h.addPassenger(tp.getBukkitPlayer());
             getOnRide().add(tp.getUniqueId());
             h = getHorse(hc++);
         }
-        state = FlatState.RUNNING;
-        int taskID = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
-            int time = 0;
-
-            @Override
-            public void run() {
-                switch (time) {
-                    case 0:
-                        speed = 1.5;
-                        heightSpeed = 0.2;
-//                        heightSpeed = 0.025;
-                        break;
-                    case 1:
-                        speed = 1;
-//                        heightSpeed = 0.035;
-                        break;
-                    case 2:
-                        speed = 0.9;
-//                        heightSpeed = 0.045;
-                        break;
-                    case 3:
-                        speed = 0.8;
-//                        heightSpeed = 0.055;
-                        break;
-                    case 4:
-                        speed = 0.7;
-//                        heightSpeed = 0.065;
-                        break;
-                    case 5:
-                        speed = 0.6;
-//                        heightSpeed = 0.085;
-                        break;
-                    case 6:
-                        speed = 0.5;
-//                        heightSpeed = 0.11;
-                        break;
-                    case 7:
-                        speed = 0.4;
-//                        heightSpeed = 0.13;
-                        break;
-                    case 8:
-                        speed = 0.3;
-//                        heightSpeed = 0.16;
-                        break;
-                    case 9:
-                        speed = 0.2;
-//                        heightSpeed = 0.2;
-                        break;
-                    case 53:
-                        speed = 0.3;
-                        break;
-                    case 54:
-                        speed = 0.4;
-                        break;
-                    case 55:
-                        speed = 0.5;
-                        break;
-                    case 56:
-                        speed = 0.6;
-                        break;
-                    case 57:
-                        speed = 0.7;
-                        break;
-                    case 58:
-                        speed = 0.8;
-                        break;
-                    case 59:
-                        speed = 0.9;
-                        break;
-                    case 60:
-                        speed = 1;
-                        break;
-                    case 61:
-                        speed = 1.5;
-                        break;
-                    case 63:
-                        speed = 2;
-                        break;
-                    case 64:
-                        speed = 0;
-                        heightSpeed = 0;
-                        break;
-                    case 67:
-                        ejectPlayers();
-                        state = FlatState.LOADING;
-                        break;
-                }
-                time++;
-            }
-        }, 60L, 20L).getTaskId();
-        Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                Bukkit.getScheduler().cancelTask(taskID);
-            }
-        }, 1400L);
+        started = true;
+        startTime = System.currentTimeMillis();
     }
 
     @Override
@@ -474,6 +373,84 @@ public class CarouselRide extends Ride {
 
     @Override
     public void move() {
+        if (started) {
+            if (ticks != 0 && ticks % 20 == 0) {
+                switch ((int) (ticks / 20)) {
+                    case 0:
+                        speed = 1.5;
+                        break;
+                    case 1:
+                        speed = 1;
+                        break;
+                    case 2:
+                        speed = 0.9;
+                        break;
+                    case 3:
+                        speed = 0.8;
+                        break;
+                    case 4:
+                        speed = 0.7;
+                        break;
+                    case 5:
+                        speed = 0.6;
+                        break;
+                    case 6:
+                        speed = 0.5;
+                        break;
+                    case 7:
+                        speed = 0.4;
+                        break;
+                    case 8:
+                        speed = 0.3;
+                        break;
+                    case 9:
+                        speed = 0.2;
+                        break;
+                    case 53:
+                        speed = 0.3;
+                        break;
+                    case 54:
+                        speed = 0.4;
+                        break;
+                    case 55:
+                        speed = 0.5;
+                        break;
+                    case 56:
+                        speed = 0.6;
+                        break;
+                    case 57:
+                        speed = 0.7;
+                        break;
+                    case 58:
+                        speed = 0.8;
+                        break;
+                    case 59:
+                        speed = 0.9;
+                        break;
+                    case 60:
+                        speed = 1;
+                        break;
+                    case 61:
+                        speed = 1.5;
+                        break;
+                    case 63:
+                        speed = 2;
+                        break;
+                    case 64:
+                        speed = 0;
+                        break;
+                    case 67:
+                        ejectPlayers();
+                        ticks = -1;
+                        started = false;
+                        state = FlatState.LOADING;
+                        break;
+                }
+            }
+            if (System.currentTimeMillis() - startTime >= 3000) {
+                ticks++;
+            }
+        }
         if (!isSpawned() || speed == 0) {
             return;
         }

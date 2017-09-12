@@ -83,7 +83,7 @@ public class FileRide extends Ride {
     }
 
     @Override
-    public void start() {
+    public void start(List<CPlayer> riders) {
         loadFile();
 //        if (spawn == null || actions.isEmpty()) {
 //            loadFile();

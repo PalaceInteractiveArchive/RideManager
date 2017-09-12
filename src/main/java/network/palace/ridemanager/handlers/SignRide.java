@@ -1,9 +1,9 @@
 package network.palace.ridemanager.handlers;
 
 import lombok.Getter;
-import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
+import network.palace.ridemanager.events.RideStartEvent;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -12,7 +12,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by Marc on 1/26/17.
@@ -45,25 +44,12 @@ public class SignRide extends Ride {
     }
 
     @Override
-    public void start() {
-        List<UUID> queue = getQueue();
-        List<UUID> riding = new ArrayList<>();
-        if (queue.size() < getRiders()) {
-            riding.addAll(queue);
-            queue.clear();
-        } else {
-            for (int i = 0; i < getRiders(); i++) {
-                riding.add(queue.get(0));
-                queue.remove(0);
+    public void start(List<CPlayer> riders) {
+        new RideStartEvent(this).call();
+        for (CPlayer player : riders) {
+            if (getOnRide().contains(player.getUniqueId())) {
+                riders.remove(player);
             }
-        }
-        List<CPlayer> riders = new ArrayList<>();
-        for (UUID uuid : riding) {
-            CPlayer tp = Core.getPlayerManager().getPlayer(uuid);
-            if (tp == null) {
-                continue;
-            }
-            riders.add(tp);
         }
         World w = Bukkit.getWorlds().get(0);
         Sign s = (Sign) w.getBlockAt(spawnSign).getState();

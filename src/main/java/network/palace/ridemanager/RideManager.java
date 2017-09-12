@@ -8,6 +8,7 @@ import network.palace.core.plugin.Plugin;
 import network.palace.core.plugin.PluginInfo;
 import network.palace.ridemanager.commands.CommandRideBuilder;
 import network.palace.ridemanager.commands.Commandtest;
+import network.palace.ridemanager.events.RideManagerStatusEvent;
 import network.palace.ridemanager.handlers.Ride;
 import network.palace.ridemanager.listeners.*;
 import network.palace.ridemanager.utils.MappingUtil;
@@ -23,7 +24,7 @@ import org.bukkit.configuration.ConfigurationSection;
 /**
  * Created by Marc on 1/15/17.
  */
-@PluginInfo(name = "RideManager", version = "1.0", depend = {"Core", "ProtocolLib"}, canReload = true)
+@PluginInfo(name = "RideManager", version = "1.0", depend = {"Core", "ProtocolLib"}, canReload = false)
 public class RideManager extends Plugin {
     @Getter private static RideManager instance;
     @Getter private static MovementUtil movementUtil;
@@ -52,10 +53,12 @@ public class RideManager extends Plugin {
         registerListener(new PacketListener());
         registerListener(new PlayerInteract());
         registerListener(new PlayerLeaveRide());
+        new RideManagerStatusEvent(RideManagerStatusEvent.Status.STARTING).call();
     }
 
     @Override
     protected void onPluginDisable() throws Exception {
+        new RideManagerStatusEvent(RideManagerStatusEvent.Status.STOPPING).call();
         movementUtil.stop();
         ProtocolLibrary.getProtocolManager().removePacketListeners(this);
         Bukkit.getScheduler().cancelTasks(this);

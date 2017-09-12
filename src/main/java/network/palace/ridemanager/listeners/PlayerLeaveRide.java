@@ -16,7 +16,7 @@ public class PlayerLeaveRide implements Listener {
         CPlayer player = event.getPlayer();
         Ride ride = event.getRide();
         if (ride.handleEject(player)) {
-            event.setCancelled(false);
+            event.setCancelled(true);
         }
     }
 }

@@ -8,8 +8,8 @@ import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.core.player.Rank;
 import network.palace.ridemanager.RideManager;
-import network.palace.ridemanager.handlers.*;
-import org.bukkit.Bukkit;
+import network.palace.ridemanager.handlers.Ride;
+import network.palace.ridemanager.handlers.TeacupsRide;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -33,7 +33,7 @@ public class Commandtest extends CoreCommand {
 //        player.sendMessage(RideManager.getMovementUtil().getRides().get(0).getRelativeLocation(Double.parseDouble(args[0]), 4, player.getLocation()) + "");
 
         CPlayer player = Core.getPlayerManager().getPlayer((Player) sender);
-        if (args.length == 1) {
+        /*if (args.length == 1) {
             Ride ride = RideManager.getMovementUtil().getRide(args[0]);
             if (ride instanceof TeacupsRide) {
                 TeacupsRide tea = (TeacupsRide) ride;
@@ -60,7 +60,7 @@ public class Commandtest extends CoreCommand {
                 r.joinQueue(player);
                 Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), r::start, 20L);
             }
-        }
+        }*/
         if (args.length == 2) {
             Ride ride = RideManager.getMovementUtil().getRide(args[0]);
             if (ride instanceof TeacupsRide) {
