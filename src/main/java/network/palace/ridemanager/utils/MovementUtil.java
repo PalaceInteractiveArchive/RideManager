@@ -167,6 +167,7 @@ public class MovementUtil {
     public boolean sitDown(CPlayer player, ArmorStand stand) {
         for (Ride ride : getRides()) {
             if (ride.sitDown(player, stand)) {
+                return true;
             }
         }
         return false;
