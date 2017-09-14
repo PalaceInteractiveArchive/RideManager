@@ -23,7 +23,7 @@ public class SignRide extends Ride {
     private List<OldCart> carts = new ArrayList<>();
 
     public SignRide(String name, String displayName, int riders, double delay, Location exit, Location spawnSign, String modelName) {
-        super(name, displayName, riders, delay, exit);
+        super(name, displayName, riders, delay, exit, CurrencyType.BALANCE, 0);
         this.spawnSign = spawnSign;
         this.yAxis = spawnSign.getBlockY();
         this.modelName = modelName;

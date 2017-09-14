@@ -28,7 +28,7 @@ public class MovementUtil {
     @Getter private static long tick = 0;
 
     public MovementUtil() {
-        loadRides();
+//        loadRides();
         taskid = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
             @Override
             public void run() {
@@ -46,7 +46,7 @@ public class MovementUtil {
         }, 0L, 1L).getTaskId();
     }
 
-    public void loadRides() {
+    /*public void loadRides() {
         despawnAll();
         rides.clear();
         File dir = new File("plugins/RideManager");
@@ -121,7 +121,7 @@ public class MovementUtil {
         }
         Core.logMessage("RideManager", ChatColor.GREEN + "Loaded " + ChatColor.BOLD + rides.size() +
                 ChatColor.GREEN + " rides!");
-    }
+    }*/
 
     public void addRide(Ride ride) {
         rides.add(ride);

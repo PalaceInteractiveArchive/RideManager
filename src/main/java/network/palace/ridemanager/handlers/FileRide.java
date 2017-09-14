@@ -34,7 +34,7 @@ public class FileRide extends Ride {
     @Getter private final ModelMap modelMap;
 
     public FileRide(String name, String displayName, int riders, double delay, Location exit, String fileName) {
-        super(name, displayName, riders, delay, exit);
+        super(name, displayName, riders, delay, exit, CurrencyType.BALANCE, 0);
         modelMap = RideManager.getMappingUtil().getMap(fileName);
         this.rideFile = new File("plugins/RideManager/rides/" + fileName + ".ride");
     }

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
+import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.ChatColor;
@@ -31,8 +32,8 @@ public class TeacupsRide extends Ride {
     private long startTime = 0;
     private long ticks = 0;
 
-    public TeacupsRide(String name, String displayName, double delay, Location exit, Location center) {
-        super(name, displayName, 18, delay, exit);
+    public TeacupsRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount) {
+        super(name, displayName, 18, delay, exit, currencyType, currencyAmount);
         this.center = center;
         loadSurroundingChunks(center);
         spawn();
@@ -177,7 +178,7 @@ public class TeacupsRide extends Ride {
         int table = 1;
         int cup = 1;
         Table t = getTable(1);
-        for (CPlayer tp : riders) {
+        for (CPlayer tp : new ArrayList<>(riders)) {
             if (cup > 6) {
                 table++;
                 t = getTable(table);
@@ -303,6 +304,9 @@ public class TeacupsRide extends Ride {
                         break;
                     case 63:
                         speed = 0;
+                        UUID[] arr = getOnRide().toArray(new UUID[]{});
+                        rewardCurrency(arr);
+                        new RideEndEvent(this, arr).call();
                         break;
                     case 66:
                         ejectPlayers();
@@ -440,7 +444,7 @@ public class TeacupsRide extends Ride {
             l.setY(loc.getY() + 0.2);
             stand = lock(loc.getWorld().spawn(l, ArmorStand.class));
             stand.setVisible(false);
-            stand.setHelmet(new ItemStack(Material.DIAMOND_SWORD, 1, (short) (2 + num)));
+            stand.setHelmet(new ItemStack(Material.SHEARS, 1, (short) (2 + num)));
             spawnSeats();
         }
 

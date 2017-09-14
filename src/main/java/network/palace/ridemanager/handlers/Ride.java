@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_11_R1.Entity;
 import net.minecraft.server.v1_11_R1.EntityArmorStand;
+import network.palace.core.Core;
+import network.palace.core.economy.EconomyManager;
 import network.palace.core.player.CPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -30,14 +32,18 @@ public abstract class Ride {
     @Getter private double delay;
     @Getter @Setter private Location exit;
     @Getter private List<UUID> onRide = new ArrayList<>();
+    @Getter private final CurrencyType currencyType;
+    @Getter private final int currencyAmount;
 
-    public Ride(String name, String displayName, int riders, double delay, Location exit) {
+    public Ride(String name, String displayName, int riders, double delay, Location exit, CurrencyType currencyType, int currencyAmount) {
         this.world = Bukkit.getWorlds().get(0);
         this.name = name;
         this.displayName = displayName;
         this.riders = riders;
         this.delay = delay;
         this.exit = exit;
+        this.currencyType = currencyType;
+        this.currencyAmount = currencyAmount;
     }
 
     public abstract void move();
@@ -94,6 +100,22 @@ public abstract class Ride {
                 if (!at.isLoaded()) {
                     at.load();
                 }
+            }
+        }
+    }
+
+    public void rewardCurrency(UUID[] uuids) {
+        EconomyManager man = Core.getEconomy();
+        if (man == null) return;
+        for (UUID uuid : uuids) {
+            if (Core.getPlayerManager().getPlayer(uuid) == null) continue;
+            switch (currencyType) {
+                case BALANCE:
+                    man.addBalance(uuid, currencyAmount, name);
+                    break;
+                case TOKENS:
+                    man.addTokens(uuid, currencyAmount, name);
+                    break;
             }
         }
     }

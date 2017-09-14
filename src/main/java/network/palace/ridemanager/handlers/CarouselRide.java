@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
+import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.events.RideStartEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -36,10 +37,10 @@ public class CarouselRide extends Ride {
     private long startTime = 0;
     private long ticks = 0;
 
-    public CarouselRide(String name, String displayName, double delay, Location exit, Location center) {
-        super(name, displayName, 12, delay, exit);
+    public CarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount) {
+        super(name, displayName, 12, delay, exit, currencyType, currencyAmount);
         this.center = center;
-        this.poleY = center.getY() + 2.3;
+        this.poleY = center.getY() + 2.5;
         loadSurroundingChunks(this.center);
         spawn();
     }
@@ -75,31 +76,6 @@ public class CarouselRide extends Ride {
         Location loc23 = getRelativeLocation(315.0, 5.0, this.center);
         Location loc24 = getRelativeLocation(345.0, 5.0, this.center);
 
-        double d2 = Math.toRadians(30.0);
-        double d3 = Math.toRadians(60.0);
-        double d4 = Math.toRadians(90.0);
-        double d5 = Math.toRadians(120.0);
-        double d6 = Math.toRadians(150.0);
-        double d7 = Math.toRadians(180.0);
-        double d8 = Math.toRadians(210.0);
-        double d9 = Math.toRadians(240.0);
-        double d10 = Math.toRadians(270.0);
-        double d11 = Math.toRadians(300.0);
-        double d12 = Math.toRadians(330.0);
-
-        double d13 = Math.toRadians(15.0);
-        double d14 = Math.toRadians(45.0);
-        double d15 = Math.toRadians(75.0);
-        double d16 = Math.toRadians(105.0);
-        double d17 = Math.toRadians(135.0);
-        double d18 = Math.toRadians(165.0);
-        double d19 = Math.toRadians(195.0);
-        double d20 = Math.toRadians(225.0);
-        double d21 = Math.toRadians(255.0);
-        double d22 = Math.toRadians(285.0);
-        double d23 = Math.toRadians(315.0);
-        double d24 = Math.toRadians(345.0);
-
         loc1.setYaw(270);
         loc2.setYaw(240);
         loc3.setYaw(210);
@@ -126,12 +102,12 @@ public class CarouselRide extends Ride {
         loc23.setYaw(-45);
         loc24.setYaw(-75);
 
-        ItemStack i1 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
-        ItemStack i2 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
-        ItemStack i3 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
-        ItemStack i4 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
-        ItemStack i5 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
-        ItemStack i6 = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 1);
+        ItemStack i1 = new ItemStack(Material.SHEARS, 1, (byte) 1);
+        ItemStack i2 = new ItemStack(Material.SHEARS, 1, (byte) 1);
+        ItemStack i3 = new ItemStack(Material.SHEARS, 1, (byte) 1);
+        ItemStack i4 = new ItemStack(Material.SHEARS, 1, (byte) 1);
+        ItemStack i5 = new ItemStack(Material.SHEARS, 1, (byte) 1);
+        ItemStack i6 = new ItemStack(Material.SHEARS, 1, (byte) 1);
 
         ArmorStand a1 = lock(w.spawn(loc1, ArmorStand.class));
         ArmorStand a2 = lock(w.spawn(loc2, ArmorStand.class));
@@ -332,6 +308,11 @@ public class CarouselRide extends Ride {
         int hc = 1;
         Horse h = getHorse(hc);
         for (CPlayer tp : riders) {
+            while (h.getPassenger() != null) {
+                h = getHorse(hc++);
+                if (h == null) break;
+            }
+            if (h == null) break;
             h.addPassenger(tp.getBukkitPlayer());
             getOnRide().add(tp.getUniqueId());
             h = getHorse(hc++);
@@ -356,7 +337,7 @@ public class CarouselRide extends Ride {
 
     @Override
     public boolean sitDown(CPlayer player, ArmorStand stand) {
-        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= 18 || getOnRide().contains(player.getUniqueId())) {
+        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= 24 || getOnRide().contains(player.getUniqueId())) {
             return false;
         }
         UUID uuid = stand.getUniqueId();
@@ -438,6 +419,12 @@ public class CarouselRide extends Ride {
                         break;
                     case 64:
                         speed = 0;
+                        UUID[] arr = getOnRide().toArray(new UUID[]{});
+                        try {
+                            rewardCurrency(arr);
+                        } catch (Exception ignored) {
+                        }
+                        new RideEndEvent(this, arr).call();
                         break;
                     case 67:
                         ejectPlayers();
@@ -475,7 +462,7 @@ public class CarouselRide extends Ride {
             n.setYaw((float) (old - tableChange));
 //            s.setHeadPose(s.getHeadPose().add(0, -head, 0));
             Location p = n.clone();
-            p.setY(poleY);
+            p.setY(height + 2.5);
             teleport(c.getPole(), getRelativeLocation(a + poleAngle, riderRadius, p));
             teleport(s, n);
 //            c.getPole().setHeadPose(c.getPole().getHeadPose().add(0, Math.toRadians(-tableChange), 0));
@@ -535,7 +522,7 @@ public class CarouselRide extends Ride {
             this.pole = lock(stand.getWorld().spawn(loc, ArmorStand.class));
             pole.setGravity(false);
             pole.setVisible(false);
-            pole.setHelmet(new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 2));
+            pole.setHelmet(new ItemStack(Material.SHEARS, 1, (byte) 2));
             pole.setHeadPose(pole.getHeadPose().setY(stand.getHeadPose().getY()));
         }
 
@@ -582,18 +569,19 @@ public class CarouselRide extends Ride {
             }
             ArmorStand stand = s.get();
             CPlayer passenger = getPassenger();
-            if (passenger != null) {
-                final Location playerLoc = passenger.getLocation();
-                stand.removePassenger(passenger.getBukkitPlayer());
-                Location loc = getExit();
-                if (state.equals(FlatState.LOADING)) {
-                    loc = stand.getLocation().add(0, 1, 0);
-                    loc.setYaw(playerLoc.getYaw());
-                    loc.setPitch(playerLoc.getPitch());
-                }
-                passenger.teleport(loc);
-                getOnRide().remove(passenger.getUniqueId());
+            if (passenger == null) {
+                return;
             }
+            final Location playerLoc = passenger.getLocation();
+            stand.removePassenger(passenger.getBukkitPlayer());
+            Location loc = getExit();
+            if (state.equals(FlatState.LOADING)) {
+                loc = stand.getLocation().add(0, 1, 0);
+                loc.setYaw(playerLoc.getYaw());
+                loc.setPitch(playerLoc.getPitch());
+            }
+            passenger.teleport(loc);
+            getOnRide().remove(passenger.getUniqueId());
         }
 
         public void despawn() {

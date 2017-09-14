@@ -27,7 +27,7 @@ public class Commandtest extends CoreCommand {
     @Override
     protected void handleCommandUnspecific(CommandSender sender, String[] args) throws CommandException {
         if (args.length == 0) {
-            RideManager.getMovementUtil().loadRides();
+//            RideManager.getMovementUtil().loadRides();
         }
 //        Player player = (Player) sender;
 //        player.sendMessage(RideManager.getMovementUtil().getRides().get(0).getRelativeLocation(Double.parseDouble(args[0]), 4, player.getLocation()) + "");
@@ -86,7 +86,7 @@ public class Commandtest extends CoreCommand {
 //            float yaw = RideManager.getYaw(direction);
 //            Location loc = new Location(w, sloc.getBlockX() + 0.5, Double.parseDouble(s.getLine(2)),
 //                    sloc.getBlockZ() + 0.5, yaw, 0);
-//            ItemStack item = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 5);
+//            ItemStack item = new ItemStack(Material.SHEARS, 1, (byte) 5);
 //            Cart c = new Cart(loc, item, 0.1, direction);
 //            c.addPassenger(Core.getPlayerManager().getPlayer((Player) sender));
 //        } catch (Exception e) {

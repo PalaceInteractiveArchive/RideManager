@@ -37,20 +37,20 @@ public class AerialCarouselRide extends Ride {
     @Getter private boolean canFly = false;
     private final int taskID;
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center) {
-        this(name, displayName, delay, exit, center, 6.5, 4.5);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, 6.5, 4.5);
     }
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, double aerialRadius, double supportRadius) {
-        this(name, displayName, delay, exit, center, aerialRadius, supportRadius, true);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, double aerialRadius, double supportRadius) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, aerialRadius, supportRadius, true);
     }
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, double aerialRadius, double supportRadius, boolean small) {
-        this(name, displayName, delay, exit, center, aerialRadius, supportRadius, small, 45, 3, 0.9);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, double aerialRadius, double supportRadius, boolean small) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, aerialRadius, supportRadius, small, 45, 3, 0.9);
     }
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, double aerialRadius, double supportRadius, boolean small, double angle, double height, double movein) {
-        super(name, displayName, 16, delay, exit);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, double aerialRadius, double supportRadius, boolean small, double angle, double height, double movein) {
+        super(name, displayName, 16, delay, exit, currencyType, currencyAmount);
         this.center = center;
         this.aerialRadius = aerialRadius;
         this.supportRadius = supportRadius;
@@ -174,7 +174,7 @@ public class AerialCarouselRide extends Ride {
         a11.setHeadPose(pose);
         a12.setHeadPose(pose);
 
-        ItemStack item = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 9);
+        ItemStack item = new ItemStack(Material.SHEARS, 1, (byte) 9);
 
         a1.setHelmet(item);
         a2.setHelmet(item);
@@ -495,7 +495,7 @@ public class AerialCarouselRide extends Ride {
             this.angle = angle;
             ArmorStand support = stand.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 2, 0), ArmorStand.class);
             this.supportID = support.getUniqueId();
-            ItemStack pole = new ItemStack(Material.DIAMOND_SWORD, 1, (byte) 10);
+            ItemStack pole = new ItemStack(Material.SHEARS, 1, (byte) 10);
             support.setGravity(false);
             support.setVisible(false);
             support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
