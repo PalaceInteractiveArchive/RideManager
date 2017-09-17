@@ -33,7 +33,7 @@ public class TeacupsRide extends Ride {
     private long ticks = 0;
 
     public TeacupsRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount) {
-        super(name, displayName, 18, delay, exit, currencyType, currencyAmount);
+        super(name, displayName, 54, delay, exit, currencyType, currencyAmount);
         this.center = center;
         loadSurroundingChunks(center);
         spawn();
@@ -200,7 +200,7 @@ public class TeacupsRide extends Ride {
 
     @Override
     public boolean sitDown(CPlayer player, ArmorStand stand) {
-        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= 18 || getOnRide().contains(player.getUniqueId())) {
+        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= getRiders() || getOnRide().contains(player.getUniqueId())) {
             return false;
         }
         UUID uuid = stand.getUniqueId();
@@ -491,13 +491,13 @@ public class TeacupsRide extends Ride {
         }
 
         public boolean addPassenger(CPlayer player, UUID stand) {
-            if (this.stand.getUniqueId().equals(stand)) {
+            if (this.stand.getUniqueId().equals(stand) && this.stand.getPassengers().isEmpty()) {
                 this.stand.addPassenger(player.getBukkitPlayer());
                 return true;
-            } else if (seat2 != null && seat2.getUniqueId().equals(stand)) {
+            } else if (seat2 != null && seat2.getUniqueId().equals(stand) && seat2.getPassengers().isEmpty()) {
                 seat2.addPassenger(player.getBukkitPlayer());
                 return true;
-            } else if (seat3 != null && seat3.getUniqueId().equals(stand)) {
+            } else if (seat3 != null && seat3.getUniqueId().equals(stand) && seat3.getPassengers().isEmpty()) {
                 seat3.addPassenger(player.getBukkitPlayer());
                 return true;
             }

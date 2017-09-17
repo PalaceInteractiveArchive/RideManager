@@ -46,7 +46,7 @@ public class RideManager extends Plugin {
         movementUtil = new MovementUtil();
         rideBuilderUtil = new RideBuilderUtil();
 //        registerCommand(new Commandtest());
-        registerCommand(new CommandRideBuilder());
+//        registerCommand(new CommandRideBuilder());
         registerListener(new BlockListener());
         registerListener(new ChunkListener());
         registerListener(new PacketListener());

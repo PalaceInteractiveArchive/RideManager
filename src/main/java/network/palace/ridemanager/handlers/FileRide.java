@@ -5,8 +5,6 @@ import lombok.Setter;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.actions.RideAction;
-import network.palace.ridemanager.threads.FileRideLoader;
-import network.palace.ridemanager.threads.RideCallback;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -44,7 +42,7 @@ public class FileRide extends Ride {
             return;
         }
         loading = true;
-        Bukkit.getScheduler().runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(this, rideFile, new RideCallback() {
+        /*Bukkit.getScheduler().runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(this, rideFile, new RideCallback() {
             @Override
             public void done(LinkedList<RideAction> list, Location spawn, double speed) {
                 actions = list;
@@ -52,7 +50,7 @@ public class FileRide extends Ride {
                 setSpeed(speed);
                 loading = false;
             }
-        }));
+        }));*/
         taskID = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
             @Override
             public void run() {

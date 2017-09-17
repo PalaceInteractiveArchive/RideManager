@@ -6,20 +6,25 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
+import network.palace.core.player.CPlayerParticlesManager;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.Cart;
+import network.palace.ridemanager.handlers.actions.InclineAction;
+import network.palace.ridemanager.handlers.actions.MoveAction;
 import network.palace.ridemanager.handlers.actions.RideAction;
+import network.palace.ridemanager.handlers.actions.SpeedAction;
 import network.palace.ridemanager.threads.FileRideLoader;
 import network.palace.ridemanager.threads.RideCallback;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -30,6 +35,85 @@ public class RideBuilderUtil {
     private HashMap<UUID, BuildSession> sessions = new HashMap<>();
 
     public RideBuilderUtil() {
+        Core.runTaskTimer(new Runnable() {
+            @Override
+            public void run() {
+                for (BuildSession session : new ArrayList<>(sessions.values())) {
+                    CPlayer player = Core.getPlayerManager().getPlayer(session.getUuid());
+                    if (player == null) {
+                        session.save();
+                        removeSession(session.getUuid());
+                        continue;
+                    }
+                    CPlayerParticlesManager part = player.getParticles();
+                    List<RideAction> actions = session.getActions();
+                    if (session.isShowArmorStands()) {
+                        HashMap<Location, ArmorStand> stands = session.getStands();
+                        MoveAction lastAction = (MoveAction) actions.stream().filter(a -> a instanceof MoveAction).findFirst().get();
+                        for (RideAction action : actions) {
+                            if (action instanceof ExitAction) {
+                                ExitAction act = (ExitAction) action;
+                                Location loc = lastAction.getFinalLocation();
+                                ArmorStand stand = getStand(stands, loc);
+                                stand.setCustomName(ChatColor.GREEN + "Exit");
+                            } else if (action instanceof InclineAction) {
+                                InclineAction act = (InclineAction) action;
+                            } else if (action instanceof RotateAction) {
+                                RotateAction act = (RotateAction) action;
+                                Location loc = lastAction.getFinalLocation();
+                                ArmorStand stand = getStand(stands, loc);
+                                stand.setCustomName(ChatColor.GREEN + "Rotate to " + act.getAngle() + " degrees over " + act.getTicks() + " ticks");
+                            } else if (action instanceof SpawnAction) {
+                                SpawnAction act = (SpawnAction) action;
+
+                            } else if (action instanceof SpeedAction) {
+                                SpeedAction act = (SpeedAction) action;
+
+                            } else if (action instanceof StraightAction) {
+                                StraightAction act = (StraightAction) action;
+
+                            } else if (action instanceof TeleportAction) {
+                                TeleportAction act = (TeleportAction) action;
+
+                            } else if (action instanceof TurnAction) {
+                                TurnAction act = (TurnAction) action;
+
+                            } else if (action instanceof WaitAction) {
+                                WaitAction act = (WaitAction) action;
+                            }
+                            if (action instanceof MoveAction) {
+                                lastAction = (MoveAction) action;
+                            }
+                        }
+                    }
+                    for (RideAction action : actions) {
+                        if (action instanceof WaitAction) {
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            private void particle(CPlayerParticlesManager part, Location loc) {
+                part.send(loc, Particle.REDSTONE, 1);
+            }
+
+            private ArmorStand getStand(HashMap<Location, ArmorStand> stands, Location loc) {
+                ArmorStand stand;
+                if (stands.get(loc) == null) {
+                    stand = loc.getWorld().spawn(loc.add(0, -1.87, 0), ArmorStand.class);
+                    stand.setCustomNameVisible(true);
+                    stand.setGravity(false);
+                    stand.setVisible(true);
+                    stand.setArms(false);
+                    stand.setBasePlate(false);
+                    stands.put(loc, stand);
+                } else {
+                    stand = stands.get(loc);
+                }
+                return stand;
+            }
+        }, 0L, 20L);
     }
 
     public BuildSession getSession(CPlayer player) {
@@ -54,18 +138,27 @@ public class RideBuilderUtil {
     }
 
     public BuildSession removeSession(UUID uuid) {
-        return sessions.remove(uuid);
+        BuildSession session = sessions.remove(uuid);
+        List<ArmorStand> stands = new ArrayList<>(session.getStands().values());
+        for (ArmorStand stand : stands) {
+            stand.remove();
+        }
+        return session;
     }
 
     @RequiredArgsConstructor
     public class BuildSession {
         @Getter private final UUID uuid;
+        @Getter @Setter private String name;
+        @Getter @Setter private String fileName;
         @Getter private List<RideAction> actions = new ArrayList<>();
         @Getter @Setter private Location spawn;
         @Getter @Setter private double speed;
         @Getter private boolean loading = false;
         @Getter @Setter private double lockY = 0;
         @Getter @Setter private RideAction currentAction = null;
+        @Getter @Setter private boolean showArmorStands = false;
+        @Getter HashMap<Location, ArmorStand> stands = new HashMap<>();
         private ConfirmCallback confirm = null;
 
         /**
@@ -75,9 +168,11 @@ public class RideBuilderUtil {
          */
         public void load(File file) {
             loading = true;
+            fileName = file.getName();
             Bukkit.getScheduler().runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(null, file, new RideCallback() {
                 @Override
-                public void done(LinkedList<RideAction> list, Location spawn, double speed) {
+                public void done(String name, LinkedList<RideAction> list, Location spawn, double speed) {
+                    setName(name);
                     actions = list;
                     setSpawn(spawn);
                     setSpeed(speed);
@@ -135,18 +230,68 @@ public class RideBuilderUtil {
          * @param block the block they place
          * @return true if the block event should be cancelled
          */
-        public boolean placeBlock(Block block) {
+        public boolean placeBlock(CPlayer player, Block block) {
             Location loc = block.getLocation();
             BlockAction a = BlockAction.fromBlock(block);
             if (a == null) {
-                return true;
+                return false;
             }
             if (currentAction == null) {
                 currentAction = a.newAction();
             }
+            String msg = ChatColor.GREEN + "You created a " + ChatColor.YELLOW;
+            switch (a) {
+                case SPAWN:
+                    msg += "Spawn";
+                    break;
+                case STRAIGHT:
+                    msg += "Straight";
+                    break;
+                case TURN:
+                    msg += "Turn";
+                    break;
+                case ROTATE:
+                    msg += "Rotate";
+                    break;
+                case WAIT:
+                    msg += "Wait";
+                    break;
+                case INCLINE:
+                    msg += "Incline";
+                    break;
+                case DECLINE:
+                    msg += "Decline";
+                    break;
+                case TELEPORT:
+                    msg += "Teleport";
+                    break;
+                case EXIT:
+                    msg += "Exit";
+                    break;
+            }
+            msg += " action!";
+            player.sendMessage(msg);
             return true;
         }
 
+        public void save() {
+            File file = new File("plugins/RideManager/rides/" + fileName + ".ride");
+            try {
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+                BufferedWriter bw = new BufferedWriter(new FileWriter(file, false));
+                bw.write("Name " + name);
+                bw.newLine();
+                for (RideAction a : getActions()) {
+                    bw.write(a.toString());
+                    bw.newLine();
+                }
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public interface ConfirmCallback {
@@ -173,6 +318,7 @@ public class RideBuilderUtil {
             return ItemUtil.create(type, 1, data);
         }
 
+        @SuppressWarnings("deprecation")
         public static BlockAction fromBlock(Block b) {
             for (BlockAction a : BlockAction.values()) {
                 if (a.type.equals(b.getType()) && a.data == b.getData()) {

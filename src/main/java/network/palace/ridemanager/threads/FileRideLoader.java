@@ -21,6 +21,7 @@ public class FileRideLoader implements Runnable {
 
     @Override
     public void run() {
+        StringBuilder name = new StringBuilder();
         LinkedList<RideAction> list = new LinkedList<>();
         Location spawn = null;
         double speed = 0.1;
@@ -40,6 +41,12 @@ public class FileRideLoader implements Runnable {
                     continue;
                 }
                 switch (tokens[0]) {
+                    case "Name": {
+                        for (int i = 1; i < tokens.length; i++) {
+                            name.append(tokens[i]).append(" ");
+                        }
+                        break;
+                    }
                     case "Spawn": {
                         spawn = strToLoc(tokens[1]);
                         if (spawn == null) {
@@ -105,7 +112,7 @@ public class FileRideLoader implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        callback.done(list, spawn, speed);
+        callback.done(name.toString().trim(), list, spawn, speed);
     }
 
     public static int getInt(String s) {
