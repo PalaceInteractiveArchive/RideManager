@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
  * Created by Marc on 1/15/17.
  */
 @CommandMeta(description = "Test ride system")
-@CommandPermission(rank = Rank.SETTLER)
+@CommandPermission(rank = Rank.DEVELOPER)
 public class Commandtest extends CoreCommand {
 
     public Commandtest() {

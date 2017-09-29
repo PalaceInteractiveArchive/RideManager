@@ -13,7 +13,7 @@ import network.palace.ridemanager.commands.ridebuilder.*;
  * @since 8/7/17
  */
 @CommandMeta(description = "Default Ride Builder command")
-@CommandPermission(rank = Rank.WIZARD)
+@CommandPermission(rank = Rank.DEVELOPER)
 public class CommandRideBuilder extends CoreCommand {
 
     public CommandRideBuilder() {

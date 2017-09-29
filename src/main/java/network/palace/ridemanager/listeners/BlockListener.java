@@ -20,7 +20,7 @@ public class BlockListener implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
         if (player == null) return;
-        if (player.getRank().getRankId() < Rank.WIZARD.getRankId()) return;
+        if (player.getRank().getRankId() < Rank.DEVELOPER.getRankId()) return;
         RideBuilderUtil rideBuilderUtil = RideManager.getRideBuilderUtil();
         RideBuilderUtil.BuildSession session = rideBuilderUtil.getSession(player.getUniqueId());
         if (session == null) {
