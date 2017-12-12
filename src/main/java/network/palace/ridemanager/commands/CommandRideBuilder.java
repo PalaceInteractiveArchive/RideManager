@@ -33,4 +33,9 @@ public class CommandRideBuilder extends CoreCommand {
     @Override
     protected void handleCommand(CPlayer player, String[] args) throws CommandException {
     }
+
+    @Override
+    protected boolean isUsingSubCommandsOnly() {
+        return true;
+    }
 }

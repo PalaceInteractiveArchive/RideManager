@@ -347,6 +347,7 @@ public class CarouselRide extends Ride {
             if (s.get().getUniqueId().equals(uuid)) {
                 c.addPassenger(player.getBukkitPlayer());
                 getOnRide().add(player.getUniqueId());
+                return true;
             }
         }
         return false;

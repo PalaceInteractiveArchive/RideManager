@@ -7,6 +7,7 @@ import network.palace.core.player.CPlayer;
 import network.palace.core.plugin.Plugin;
 import network.palace.core.plugin.PluginInfo;
 import network.palace.ridemanager.commands.CommandRideBuilder;
+import network.palace.ridemanager.commands.Commandtest;
 import network.palace.ridemanager.events.RideManagerStatusEvent;
 import network.palace.ridemanager.handlers.Ride;
 import network.palace.ridemanager.listeners.*;
@@ -45,13 +46,14 @@ public class RideManager extends Plugin {
         mappingUtil = new MappingUtil();
         movementUtil = new MovementUtil();
         rideBuilderUtil = new RideBuilderUtil();
-//        registerCommand(new Commandtest());
-//        registerCommand(new CommandRideBuilder());
+        registerCommand(new Commandtest());
+        registerCommand(new CommandRideBuilder());
         registerListener(new BlockListener());
         registerListener(new ChunkListener());
         registerListener(new PacketListener());
         registerListener(new PlayerInteract());
         registerListener(new PlayerLeaveRide());
+        registerListener(new PlayerMove());
         new RideManagerStatusEvent(RideManagerStatusEvent.Status.STARTING).call();
     }
 

@@ -26,6 +26,9 @@ public abstract class RideAction {
     @Override
     public abstract String toString();
 
-    public abstract RideAction load(Cart cart);
+    public RideAction load(Cart cart) {
+        setCart(cart);
+        return this;
+    }
 
 }

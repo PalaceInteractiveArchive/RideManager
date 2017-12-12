@@ -2,30 +2,29 @@ package network.palace.ridemanager.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.core.player.CPlayerParticlesManager;
 import network.palace.core.utils.ItemUtil;
-import network.palace.ridemanager.RideManager;
+import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.handlers.Cart;
-import network.palace.ridemanager.handlers.actions.InclineAction;
-import network.palace.ridemanager.handlers.actions.MoveAction;
-import network.palace.ridemanager.handlers.actions.RideAction;
-import network.palace.ridemanager.handlers.actions.SpeedAction;
-import network.palace.ridemanager.threads.FileRideLoader;
-import network.palace.ridemanager.threads.RideCallback;
-import org.bukkit.*;
+import network.palace.ridemanager.handlers.actions.*;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Marc
@@ -41,7 +40,11 @@ public class RideBuilderUtil {
                 for (BuildSession session : new ArrayList<>(sessions.values())) {
                     CPlayer player = Core.getPlayerManager().getPlayer(session.getUuid());
                     if (player == null) {
-                        session.save();
+                        try {
+                            session.save();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         removeSession(session.getUuid());
                         continue;
                     }
@@ -51,35 +54,35 @@ public class RideBuilderUtil {
                         HashMap<Location, ArmorStand> stands = session.getStands();
                         MoveAction lastAction = (MoveAction) actions.stream().filter(a -> a instanceof MoveAction).findFirst().get();
                         for (RideAction action : actions) {
-                            if (action instanceof ExitAction) {
-                                ExitAction act = (ExitAction) action;
+                            if (action instanceof FakeExitAction) {
+                                FakeExitAction act = (FakeExitAction) action;
                                 Location loc = lastAction.getFinalLocation();
                                 ArmorStand stand = getStand(stands, loc);
                                 stand.setCustomName(ChatColor.GREEN + "Exit");
                             } else if (action instanceof InclineAction) {
                                 InclineAction act = (InclineAction) action;
-                            } else if (action instanceof RotateAction) {
-                                RotateAction act = (RotateAction) action;
+                            } else if (action instanceof FakeRotateAction) {
+                                FakeRotateAction act = (FakeRotateAction) action;
                                 Location loc = lastAction.getFinalLocation();
                                 ArmorStand stand = getStand(stands, loc);
                                 stand.setCustomName(ChatColor.GREEN + "Rotate to " + act.getAngle() + " degrees over " + act.getTicks() + " ticks");
-                            } else if (action instanceof SpawnAction) {
-                                SpawnAction act = (SpawnAction) action;
+                            } else if (action instanceof FakeSpawnAction) {
+                                FakeSpawnAction act = (FakeSpawnAction) action;
 
                             } else if (action instanceof SpeedAction) {
                                 SpeedAction act = (SpeedAction) action;
 
-                            } else if (action instanceof StraightAction) {
-                                StraightAction act = (StraightAction) action;
+                            } else if (action instanceof FakeStraightAction) {
+                                FakeStraightAction act = (FakeStraightAction) action;
 
-                            } else if (action instanceof TeleportAction) {
-                                TeleportAction act = (TeleportAction) action;
+                            } else if (action instanceof FakeTeleportAction) {
+                                FakeTeleportAction act = (FakeTeleportAction) action;
 
-                            } else if (action instanceof TurnAction) {
-                                TurnAction act = (TurnAction) action;
+                            } else if (action instanceof FakeTurnAction) {
+                                FakeTurnAction act = (FakeTurnAction) action;
 
-                            } else if (action instanceof WaitAction) {
-                                WaitAction act = (WaitAction) action;
+                            } else if (action instanceof FakeWaitAction) {
+                                FakeWaitAction act = (FakeWaitAction) action;
                             }
                             if (action instanceof MoveAction) {
                                 lastAction = (MoveAction) action;
@@ -87,7 +90,7 @@ public class RideBuilderUtil {
                         }
                     }
                     for (RideAction action : actions) {
-                        if (action instanceof WaitAction) {
+                        if (action instanceof FakeWaitAction) {
                             continue;
                         }
                     }
@@ -146,152 +149,49 @@ public class RideBuilderUtil {
         return session;
     }
 
-    @RequiredArgsConstructor
-    public class BuildSession {
-        @Getter private final UUID uuid;
-        @Getter @Setter private String name;
-        @Getter @Setter private String fileName;
-        @Getter private List<RideAction> actions = new ArrayList<>();
-        @Getter @Setter private Location spawn;
-        @Getter @Setter private double speed;
-        @Getter private boolean loading = false;
-        @Getter @Setter private double lockY = 0;
-        @Getter @Setter private RideAction currentAction = null;
-        @Getter @Setter private boolean showArmorStands = false;
-        @Getter HashMap<Location, ArmorStand> stands = new HashMap<>();
-        private ConfirmCallback confirm = null;
-
-        /**
-         * Load actions from a file save
-         *
-         * @param file the file
-         */
-        public void load(File file) {
-            loading = true;
-            fileName = file.getName();
-            Bukkit.getScheduler().runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(null, file, new RideCallback() {
-                @Override
-                public void done(String name, LinkedList<RideAction> list, Location spawn, double speed) {
-                    setName(name);
-                    actions = list;
-                    setSpawn(spawn);
-                    setSpeed(speed);
-                    loading = false;
-                    Core.getPlayerManager().getPlayer(uuid).sendMessage(ChatColor.GREEN + "Your Build Session has loaded!");
-                }
-            }));
+    public void moveEvent(CPlayer player, Location from, Location to) {
+        BuildSession session = getSession(player);
+        if (session == null) return;
+        RideAction a = session.getCurrentAction();
+        if (a == null || !(a instanceof MoveAction) || a instanceof RotateAction) return;
+        MoveAction m = (MoveAction) a;
+        Vector diff;
+        if (session.isChangeY()) {
+            diff = new Vector(0, to.getY() - from.getY(), 0);
+        } else if (session.isSneaking()) {
+            diff = to.toVector().subtract(from.toVector());
+        } else {
+            return;
         }
+        MoveAction newAction = changeLocation(m, diff);
+        if (newAction == null) return;
+        session.setCurrentAction(newAction);
+    }
 
-        /**
-         * If there is a defined confirm callback, execute it
-         */
-        public void confirm() {
-            CPlayer player = Core.getPlayerManager().getPlayer(uuid);
-            if (confirm == null) {
-                player.sendMessage(ChatColor.RED + "You don't have anything to confirm!");
-                return;
-            }
-            player.sendMessage(ChatColor.GREEN + "Action confirmed!");
-            confirm.done(uuid);
-            confirm = null;
-        }
+    public void toggleShift(CPlayer player, boolean sneak) {
+        BuildSession session = getSession(player);
+        if (session == null) return;
+        session.setSneaking(sneak);
+    }
 
-        /**
-         * If there is a defined confirm callback, deny it
-         */
-        public void deny() {
-            CPlayer player = Core.getPlayerManager().getPlayer(uuid);
-            if (confirm == null) {
-                player.sendMessage(ChatColor.RED + "You don't have anything to deny!");
-                return;
-            }
-            player.sendMessage(ChatColor.GREEN + "Action denied!");
-            confirm = null;
+    public MoveAction changeLocation(MoveAction a, Vector v) {
+        if (a instanceof ExitAction) {
+            ExitAction act = (ExitAction) a;
+            return new ExitAction(act.getTo().add(v));
+        } else if (a instanceof SpawnAction) {
+            SpawnAction act = (SpawnAction) a;
+            return new SpawnAction(act.getLoc().add(v), act.getSpeed(), act.getYaw());
+        } else if (a instanceof StraightAction) {
+            StraightAction act = (StraightAction) a;
+            return new StraightAction(act.getTo().add(v));
+        } else if (a instanceof TeleportAction) {
+            TeleportAction act = (TeleportAction) a;
+            return new TeleportAction(act.getTo().add(v));
+        } else if (a instanceof TurnAction) {
+            TurnAction act = (TurnAction) a;
+            return new TurnAction(act.getOrigin().add(v), act.getAngle());
         }
-
-        public void setConfirm(CPlayer player, ConfirmCallback confirm) {
-            this.confirm = confirm;
-            player.sendMessage(ChatColor.RED + "Type " + ChatColor.GREEN + "/rb confirm " + ChatColor.RED +
-                    "to allow this action, or " + ChatColor.GREEN + "/rb deny " + ChatColor.RED + "to cancel.");
-        }
-
-        /**
-         * Return whether or not the session has a confirm callback defined
-         *
-         * @return true if confirm equals null
-         */
-        public boolean hasConfirm() {
-            return confirm != null;
-        }
-
-        /**
-         * Called when a player places a block
-         *
-         * @param block the block they place
-         * @return true if the block event should be cancelled
-         */
-        public boolean placeBlock(CPlayer player, Block block) {
-            Location loc = block.getLocation();
-            BlockAction a = BlockAction.fromBlock(block);
-            if (a == null) {
-                return false;
-            }
-            if (currentAction == null) {
-                currentAction = a.newAction();
-            }
-            String msg = ChatColor.GREEN + "You created a " + ChatColor.YELLOW;
-            switch (a) {
-                case SPAWN:
-                    msg += "Spawn";
-                    break;
-                case STRAIGHT:
-                    msg += "Straight";
-                    break;
-                case TURN:
-                    msg += "Turn";
-                    break;
-                case ROTATE:
-                    msg += "Rotate";
-                    break;
-                case WAIT:
-                    msg += "Wait";
-                    break;
-                case INCLINE:
-                    msg += "Incline";
-                    break;
-                case DECLINE:
-                    msg += "Decline";
-                    break;
-                case TELEPORT:
-                    msg += "Teleport";
-                    break;
-                case EXIT:
-                    msg += "Exit";
-                    break;
-            }
-            msg += " action!";
-            player.sendMessage(msg);
-            return true;
-        }
-
-        public void save() {
-            File file = new File("plugins/RideManager/rides/" + fileName + ".ride");
-            try {
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-                BufferedWriter bw = new BufferedWriter(new FileWriter(file, false));
-                bw.write("Name " + name);
-                bw.newLine();
-                for (RideAction a : getActions()) {
-                    bw.write(a.toString());
-                    bw.newLine();
-                }
-                bw.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        return null;
     }
 
     public interface ConfirmCallback {
@@ -342,21 +242,23 @@ public class RideBuilderUtil {
         public RideAction newAction() {
             switch (this) {
                 case SPAWN:
-                    return new SpawnAction();
+                    return new FakeSpawnAction();
                 case STRAIGHT:
-                    return new StraightAction();
+                    return new FakeStraightAction();
                 case TURN:
-                    return new TurnAction();
+                    return new FakeTurnAction();
                 case ROTATE:
-                    return new RotateAction();
+                    return new FakeRotateAction();
                 case WAIT:
-                    return new WaitAction();
+                    return new FakeWaitAction();
                 case INCLINE:
+                    return null;
                 case DECLINE:
+                    return null;
                 case TELEPORT:
-                    return new TeleportAction();
+                    return new FakeTeleportAction();
                 case EXIT:
-                    return new ExitAction();
+                    return new FakeExitAction();
             }
             return null;
         }
@@ -364,18 +266,18 @@ public class RideBuilderUtil {
 
     @Getter
     @Setter
-    public static class SpawnAction extends FakeAction {
+    public static class FakeSpawnAction extends FakeAction {
         private Location location;
         private double speed;
         private float yaw;
 
-        public SpawnAction() {
+        public FakeSpawnAction() {
             super(true);
         }
 
         @Override
         public RideAction duplicate() {
-            return new network.palace.ridemanager.handlers.actions.SpawnAction(location, speed, yaw);
+            return new SpawnAction(location, speed, yaw);
         }
 
         @Override
@@ -386,10 +288,10 @@ public class RideBuilderUtil {
 
     @Getter
     @Setter
-    public static class StraightAction extends FakeAction {
+    public static class FakeStraightAction extends FakeAction {
         private Location to;
 
-        public StraightAction() {
+        public FakeStraightAction() {
             super(true);
         }
 
@@ -406,11 +308,11 @@ public class RideBuilderUtil {
 
     @Getter
     @Setter
-    public static class TurnAction extends FakeAction {
+    public static class FakeTurnAction extends FakeAction {
         private Location origin;
         private int angle;
 
-        public TurnAction() {
+        public FakeTurnAction() {
             super(true);
         }
 
@@ -427,12 +329,12 @@ public class RideBuilderUtil {
 
     @Getter
     @Setter
-    public static class RotateAction extends FakeAction {
+    public static class FakeRotateAction extends FakeAction {
         private int angle;
         private boolean rightTurn;
         private long ticks;
 
-        public RotateAction() {
+        public FakeRotateAction() {
             super(true);
         }
 
@@ -449,10 +351,10 @@ public class RideBuilderUtil {
 
     @Getter
     @Setter
-    public static class WaitAction extends FakeAction {
+    public static class FakeWaitAction extends FakeAction {
         private long ticks;
 
-        public WaitAction() {
+        public FakeWaitAction() {
             super(true);
         }
 
@@ -469,10 +371,10 @@ public class RideBuilderUtil {
 
     @Getter
     @Setter
-    public static class TeleportAction extends FakeAction {
+    public static class FakeTeleportAction extends FakeAction {
         private Location to;
 
-        public TeleportAction() {
+        public FakeTeleportAction() {
             super(true);
         }
 
@@ -489,16 +391,16 @@ public class RideBuilderUtil {
 
     @Getter
     @Setter
-    public static class ExitAction extends FakeAction {
+    public static class FakeExitAction extends FakeAction {
         private Location to;
 
-        public ExitAction() {
+        public FakeExitAction() {
             super(true);
         }
 
         @Override
         public RideAction duplicate() {
-            return new network.palace.ridemanager.handlers.actions.ExitAction(to);
+            return new network.palace.ridemanager.handlers.actions.ExitAction(to.clone());
         }
 
         @Override

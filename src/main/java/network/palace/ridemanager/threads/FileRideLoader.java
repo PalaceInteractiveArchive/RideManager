@@ -25,6 +25,7 @@ public class FileRideLoader implements Runnable {
         LinkedList<RideAction> list = new LinkedList<>();
         Location spawn = null;
         double speed = 0.1;
+        boolean setYaw = true;
         try {
             String strLine = "";
             FileInputStream fstream = new FileInputStream(file);
@@ -53,9 +54,8 @@ public class FileRideLoader implements Runnable {
                             throw new Exception("Invalid Spawn Location");
                         }
                         speed = getDouble(tokens[2]);
-                        float yaw = getFloat(tokens[3]);
-                        SpawnAction a = new SpawnAction(spawn, speed, yaw);
-                        list.add(a);
+                        spawn.setYaw(getFloat(tokens[3]));
+                        if (tokens.length > 4) setYaw = getBoolean(tokens[4]);
                         break;
                     }
                     case "Straight": {
@@ -112,7 +112,7 @@ public class FileRideLoader implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        callback.done(name.toString().trim(), list, spawn, speed);
+        callback.done(name.toString().trim(), list, spawn, speed, setYaw);
     }
 
     public static int getInt(String s) {
@@ -149,6 +149,10 @@ public class FileRideLoader implements Runnable {
             System.out.println("Not a number [" + s + "]");
             return 0;
         }
+    }
+
+    public static boolean getBoolean(String s) {
+        return Boolean.parseBoolean(s);
     }
 
     public static Location strToLoc(String string) {

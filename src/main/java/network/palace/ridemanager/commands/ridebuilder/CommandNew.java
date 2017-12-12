@@ -4,8 +4,11 @@ import network.palace.core.command.CommandException;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
+import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.utils.RideBuilderUtil;
 import org.bukkit.ChatColor;
+
+import java.io.IOException;
 
 /**
  * @author Marc
@@ -33,10 +36,15 @@ public class CommandNew extends CoreCommand {
         for (int i = 1; i < args.length; i++) {
             name.append(args[i]).append(" ");
         }
-        RideBuilderUtil.BuildSession session = util.newSession(player);
+        BuildSession session = util.newSession(player);
         session.setName(name.toString().trim());
         session.setFileName(fileName);
-        session.save();
-        player.sendMessage(ChatColor.GREEN + "New ride session created!");
+        try {
+            session.save();
+            player.sendMessage(ChatColor.GREEN + "New ride session created!");
+        } catch (IOException e) {
+            e.printStackTrace();
+            player.sendMessage(ChatColor.RED + "There was an error saving your new session file: " + e.getMessage());
+        }
     }
 }

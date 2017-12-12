@@ -1,13 +1,13 @@
 package network.palace.ridemanager.handlers.actions;
 
-import network.palace.ridemanager.handlers.Cart;
+import lombok.Getter;
 
 /**
  * Created by Marc on 5/2/17.
  */
 public class SpeedAction extends RideAction {
-    private final double speed;
-    private double ticks;
+    @Getter private final double speed;
+    @Getter private double ticks;
     private double change = 0;
     private boolean finished = false;
 
@@ -44,11 +44,5 @@ public class SpeedAction extends RideAction {
     @Override
     public String toString() {
         return "";
-    }
-
-    @Override
-    public RideAction load(Cart cart) {
-        setCart(cart);
-        return this;
     }
 }

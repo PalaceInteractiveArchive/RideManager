@@ -10,6 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -19,19 +20,23 @@ import java.util.*;
 public class Cart {
     @Getter private final FileRide ride;
     private final LinkedHashMap<Integer, RideAction> actions;
+    @Getter private final ModelMap map;
     @Getter @Setter private ArmorStand stand;
     @Getter private final ItemStack model;
     @Getter private double power = 0;
     @Getter @Setter private float yaw = 0;
-    private int currentActionIndex = 0;
+    @Getter private int currentActionIndex = 0;
+    @Getter @Setter private long spawnTime;
+    private List<Seat> seats = new ArrayList<>();
 
-    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, ItemStack model, String modelName) {
-        this(ride, actions, model, modelName, 0.1);
+    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, ItemStack model, ModelMap map) {
+        this(ride, actions, model, map, 0.1);
     }
 
-    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, ItemStack model, String modelName, double power) {
+    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, ItemStack model, ModelMap map, double power) {
         this.ride = ride;
         this.actions = actions;
+        this.map = map;
         for (RideAction a : this.actions.values()) {
             a.setCart(this);
         }
@@ -55,6 +60,15 @@ public class Cart {
             despawn();
             return;
         }
+//        // Pause for 3 seconds before moving cart
+//        if (getCurrentActionIndex() > 0 && System.currentTimeMillis() - getSpawnTime() < 3000 && getSpawnTime() != 0) {
+//            Vector v = new Vector(0, MovementUtil.getYMin(), 0);
+//            stand.setVelocity(v);
+//            for (Seat s : getSeats()) {
+//                s.getStand().setVelocity(v);
+//            }
+//            return;
+//        }
         a.execute();
         if (a.isFinished()) {
             currentActionIndex++;
@@ -63,7 +77,11 @@ public class Cart {
 
     public void teleport(Location loc) {
         loc.setY(loc.getY() - MovementUtil.armorStandHeight);
+        if (getRide().isAutoYaw()) setYaw(loc.getYaw());
         ride.teleport(stand, loc);
+        for (Seat s : getSeats()) {
+            s.move(loc, yaw);
+        }
     }
 
     public void setPower(double p) {
@@ -76,24 +94,63 @@ public class Cart {
         return loc;
     }
 
+    public void spawn(Location loc) {
+        setYaw(loc.getYaw());
+        loc.setY(loc.getY() - MovementUtil.armorStandHeight);
+        ArmorStand stand = ride.lock(loc.getWorld().spawn(loc, ArmorStand.class));
+        stand.setGravity(true);
+        stand.setBasePlate(false);
+        stand.setArms(false);
+        stand.setHelmet(getModel());
+        stand.setVelocity(new Vector(0, MovementUtil.getYMin(), 0));
+        setStand(stand);
+        ModelMap map = getMap();
+        for (Seat seat : map.getSeats()) {
+            Seat copy = seat.copy();
+            copy.spawn(loc, ride);
+            addSeat(copy);
+        }
+    }
+
     public void despawn() {
-        if (stand == null) return;
-        if (!stand.getPassengers().isEmpty()) {
-            for (Entity e : stand.getPassengers()) {
-                stand.removePassenger(e);
-                e.teleport(getRide().getExit());
+        if (stand != null) {
+            if (!stand.getPassengers().isEmpty()) {
+                for (Entity e : stand.getPassengers()) {
+                    getRide().getOnRide().remove(e.getUniqueId());
+                    stand.removePassenger(e);
+                    e.teleport(getRide().getExit());
+                }
+            }
+            stand.remove();
+            stand = null;
+        }
+        if (!seats.isEmpty()) {
+            for (Seat s : getSeats()) {
+                s.getPassengers().forEach(p -> getRide().getOnRide().remove(p.getUniqueId()));
+                s.despawn(getRide().getExit());
             }
         }
-        stand.remove();
-        stand = null;
     }
 
     public void addPassenger(CPlayer tp) {
+        if (seats.size() > 0) {
+            for (Seat s : getSeats()) {
+                if (s.hasPassenger()) continue;
+                getRide().getOnRide().add(tp.getUniqueId());
+                s.addPassenger(tp);
+                break;
+            }
+            return;
+        }
+        if (!stand.getPassengers().isEmpty()) return;
         stand.addPassenger(tp.getBukkitPlayer());
     }
 
     public void removePassenger(CPlayer tp) {
         stand.removePassenger(tp.getBukkitPlayer());
+        for (Seat s : getSeats()) {
+            s.removePassenger(tp);
+        }
         tp.teleport(getRide().getExit());
     }
 
@@ -148,5 +205,18 @@ public class Cart {
 
     public boolean isFinished() {
         return stand == null && currentActionIndex >= actions.size();
+    }
+
+    public List<Seat> getSeats() {
+        return new ArrayList<>(seats);
+    }
+
+    public void addSeat(Seat seat) {
+        seats.add(seat);
+    }
+
+    public void setVelocity(Vector v) {
+        stand.setVelocity(v);
+        getSeats().forEach(s -> s.getStand().setVelocity(v));
     }
 }

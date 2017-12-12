@@ -56,7 +56,7 @@ public abstract class Ride {
         return false;
     }
 
-    public void teleport(org.bukkit.entity.Entity entity, Location loc) {
+    public static void teleport(org.bukkit.entity.Entity entity, Location loc) {
         Entity e = ((CraftEntity) entity).getHandle();
         e.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
         e.h(loc.getYaw());

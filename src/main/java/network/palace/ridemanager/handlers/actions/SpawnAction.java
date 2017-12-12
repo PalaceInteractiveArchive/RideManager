@@ -1,6 +1,8 @@
 package network.palace.ridemanager.handlers.actions;
 
-import network.palace.ridemanager.handlers.Cart;
+import lombok.Getter;
+import network.palace.ridemanager.handlers.ModelMap;
+import network.palace.ridemanager.handlers.Seat;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
@@ -11,9 +13,9 @@ import org.bukkit.util.Vector;
  * @since 8/10/17
  */
 public class SpawnAction extends MoveAction {
-    private final Location loc;
-    private final double speed;
-    private float yaw;
+    @Getter private final Location loc;
+    @Getter private final double speed;
+    @Getter private float yaw;
     private boolean finished = false;
 
     public SpawnAction(Location loc, double speed, float yaw) {
@@ -36,6 +38,21 @@ public class SpawnAction extends MoveAction {
         cart.setStand(stand);
         cart.setYaw(yaw);
         cart.setPower(speed);
+        ModelMap map = cart.getMap();
+        for (Seat seat : map.getSeats()) {
+            Seat copy = seat.copy();
+            copy.spawn(loc, cart.getRide());
+            cart.addSeat(copy);
+        }
+        /*
+        if (angle < 0) {
+            angle = 360 + angle;
+        }
+        double rad = Math.toRadians(angle);
+        double x = Math.sin(rad) * radius;
+        double z = Math.cos(rad) * radius;
+        return center.clone().add(x, 0, z);
+         */
         finished = true;
     }
 
@@ -46,17 +63,11 @@ public class SpawnAction extends MoveAction {
 
     @Override
     public RideAction duplicate() {
-        return new SpawnAction(loc, speed, yaw);
+        return new SpawnAction(loc.clone(), speed, yaw);
     }
 
     @Override
     public String toString() {
-        return "Spawn " + loc.getX() + "," + loc.getY() + "," + loc.getZ() + " " + speed;
-    }
-
-    @Override
-    public RideAction load(Cart cart) {
-        setCart(cart);
-        return this;
+        return "Spawn " + loc.getX() + "," + loc.getY() + "," + loc.getZ() + " " + speed + " " + yaw;
     }
 }

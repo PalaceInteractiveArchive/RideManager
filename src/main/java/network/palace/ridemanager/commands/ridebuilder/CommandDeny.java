@@ -4,6 +4,7 @@ import network.palace.core.command.CommandException;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
+import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.utils.RideBuilderUtil;
 import org.bukkit.ChatColor;
 
@@ -20,7 +21,7 @@ public class CommandDeny extends CoreCommand {
     @Override
     protected void handleCommand(CPlayer player, String[] args) throws CommandException {
         RideBuilderUtil rideBuilderUtil = RideManager.getRideBuilderUtil();
-        RideBuilderUtil.BuildSession session = rideBuilderUtil.getSession(player.getUniqueId());
+        BuildSession session = rideBuilderUtil.getSession(player.getUniqueId());
         if (session == null) {
             player.sendMessage(ChatColor.RED + "You aren't in a build session!");
             return;

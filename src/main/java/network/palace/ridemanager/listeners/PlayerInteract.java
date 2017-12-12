@@ -6,13 +6,9 @@ import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.AerialCarouselRide;
 import network.palace.ridemanager.handlers.Ride;
 import org.bukkit.Sound;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 /**
@@ -57,16 +53,20 @@ public class PlayerInteract implements Listener {
                 break;
         }
     }
-
-    @EventHandler
+/*
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onEntityClick(PlayerInteractEntityEvent event) {
         CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
+        Bukkit.broadcastMessage(event.getPlayer().getName());
         if (player == null) return;
         Entity e = event.getRightClicked();
+        Bukkit.broadcastMessage(e.getType().name());
         if (!e.getType().equals(EntityType.ARMOR_STAND)) return;
         ArmorStand stand = (ArmorStand) e;
+        Bukkit.broadcastMessage("HELLO THERE " + stand.getUniqueId());
         if (RideManager.getMovementUtil().sitDown(player, stand)) {
+            Bukkit.broadcastMessage("AYY " + player.getName() + " " + stand.getUniqueId());
             event.setCancelled(true);
         }
-    }
+    }*/
 }

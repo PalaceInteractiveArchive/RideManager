@@ -1,6 +1,6 @@
 package network.palace.ridemanager.handlers.actions;
 
-import network.palace.ridemanager.handlers.Cart;
+import lombok.Getter;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -10,7 +10,7 @@ import org.bukkit.util.Vector;
  * @since 8/10/17
  */
 public class ExitAction extends MoveAction {
-    private final Location to;
+    @Getter private final Location to;
     private boolean finished = false;
 
     public ExitAction(Location to) {
@@ -21,15 +21,23 @@ public class ExitAction extends MoveAction {
     @Override
     public void execute() {
         Location original = cart.getLocation();
-        float yaw = (float) Math.toDegrees(Math.atan2(Math.abs(original.getX() - to.getX()), Math.abs(to.getZ() - original.getZ())));
+        float yaw = (float) Math.toDegrees(Math.atan2(original.getZ() - to.getZ(), original.getX() - to.getX())) + 90;
         double distance = original.distance(to);
         Vector resultant = to.clone().subtract(original).toVector().normalize();
         double power = cart.getPower();
         Vector change = resultant.multiply(new Vector(power, power, power));
         Location next = cart.getLocation().add(change);
-        next.setYaw(yaw);
+        if (getCart().getRide().isAutoYaw()) {
+            next.setYaw(yaw);
+        } else {
+            next.setYaw(original.getYaw());
+        }
         if (next.distance(original) >= distance) {
-            to.setYaw(yaw);
+            if (getCart().getRide().isAutoYaw()) {
+                to.setYaw(yaw);
+            } else {
+                to.setYaw(original.getYaw());
+            }
             cart.teleport(to);
             finished = true;
             cart.empty();
@@ -38,7 +46,7 @@ public class ExitAction extends MoveAction {
             if (v.getY() == 0) {
                 v.setY(MovementUtil.getYMin());
             }
-            cart.getStand().setVelocity(v);
+            cart.setVelocity(v);
             cart.teleport(next);
         }
     }
@@ -50,17 +58,11 @@ public class ExitAction extends MoveAction {
 
     @Override
     public RideAction duplicate() {
-        return new ExitAction(to);
+        return new ExitAction(to.clone());
     }
 
     @Override
     public String toString() {
         return "Exit " + to.getX() + "," + to.getY() + "," + to.getZ();
-    }
-
-    @Override
-    public RideAction load(Cart cart) {
-        setCart(cart);
-        return this;
     }
 }

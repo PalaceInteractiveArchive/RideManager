@@ -1,6 +1,5 @@
 package network.palace.ridemanager.handlers.actions;
 
-import network.palace.ridemanager.handlers.Cart;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -69,14 +68,14 @@ public class InclineAction extends MoveAction {
             if (v.getY() == 0) {
                 v.setY(MovementUtil.getYMin());
             }
-            cart.getStand().setVelocity(v);
+            cart.setVelocity(v);
             cart.teleport(to);
         } else {
             v = next.toVector().subtract(cart.getLocation().toVector());
             if (v.getY() == 0) {
                 v.setY(MovementUtil.getYMin());
             }
-            cart.getStand().setVelocity(v);
+            cart.setVelocity(v);
             cart.teleport(next);
         }
     }
@@ -88,17 +87,11 @@ public class InclineAction extends MoveAction {
 
     @Override
     public RideAction duplicate() {
-        return new InclineAction(to, angle);
+        return new InclineAction(to.clone(), angle);
     }
 
     @Override
     public String toString() {
         return "";
-    }
-
-    @Override
-    public RideAction load(Cart cart) {
-        setCart(cart);
-        return this;
     }
 }

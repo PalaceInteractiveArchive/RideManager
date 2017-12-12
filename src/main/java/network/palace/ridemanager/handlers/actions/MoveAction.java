@@ -17,7 +17,7 @@ public abstract class MoveAction extends RideAction {
 
     @Override
     public RideAction load(Cart cart) {
-        setCart(cart);
+        super.load(cart);
         RideAction a = cart.getPreviousAction(id);
         while (!(a instanceof MoveAction)) {
             a = cart.getPreviousAction(a.getId());

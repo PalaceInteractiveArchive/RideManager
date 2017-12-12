@@ -1,5 +1,6 @@
 package network.palace.ridemanager.handlers.actions;
 
+import lombok.Getter;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -9,9 +10,9 @@ import org.bukkit.util.Vector;
  * @since 8/10/17
  */
 public class RotateAction extends MoveAction {
-    private final float angle;
-    private final boolean rightTurn;
-    private final long ticks;
+    @Getter private final float angle;
+    @Getter private final boolean rightTurn;
+    @Getter private final long ticks;
     private float change = 0;
     private boolean finished = false;
 
@@ -23,7 +24,7 @@ public class RotateAction extends MoveAction {
 
     @Override
     public void execute() {
-        cart.getStand().setVelocity(new Vector(0, MovementUtil.getYMin(), 0));
+        cart.setVelocity(new Vector(0, MovementUtil.getYMin(), 0));
         float current = cart.getLocation().getYaw() % 360;
         if (rightTurn && current >= angle) {
             finished = true;

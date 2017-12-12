@@ -4,6 +4,7 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.core.player.Rank;
 import network.palace.ridemanager.RideManager;
+import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.utils.RideBuilderUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,7 +23,7 @@ public class BlockListener implements Listener {
         if (player == null) return;
         if (player.getRank().getRankId() < Rank.DEVELOPER.getRankId()) return;
         RideBuilderUtil rideBuilderUtil = RideManager.getRideBuilderUtil();
-        RideBuilderUtil.BuildSession session = rideBuilderUtil.getSession(player.getUniqueId());
+        BuildSession session = rideBuilderUtil.getSession(player.getUniqueId());
         if (session == null) {
             return;
         }

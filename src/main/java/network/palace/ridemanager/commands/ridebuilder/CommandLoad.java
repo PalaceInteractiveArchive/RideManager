@@ -4,6 +4,7 @@ import network.palace.core.command.CommandException;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
+import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.utils.RideBuilderUtil;
 import org.bukkit.ChatColor;
 
@@ -26,7 +27,7 @@ public class CommandLoad extends CoreCommand {
             return;
         }
         RideBuilderUtil rideBuilderUtil = RideManager.getRideBuilderUtil();
-        RideBuilderUtil.BuildSession session = rideBuilderUtil.getSession(player.getUniqueId());
+        BuildSession session = rideBuilderUtil.getSession(player.getUniqueId());
         if (session != null) {
             player.sendMessage(ChatColor.RED + "You're already in a build session! Save or exit to load another one.");
             return;

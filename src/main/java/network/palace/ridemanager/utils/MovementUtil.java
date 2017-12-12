@@ -1,22 +1,22 @@
 package network.palace.ridemanager.utils;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
 import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
-import network.palace.ridemanager.handlers.*;
+import network.palace.ridemanager.handlers.Ride;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 /**
  * Created by Marc on 1/15/17.
@@ -29,7 +29,7 @@ public class MovementUtil {
 
     public MovementUtil() {
 //        loadRides();
-        taskid = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
+        taskid = Core.runTaskTimer(new Runnable() {
             @Override
             public void run() {
                 for (Ride ride : new ArrayList<>(rides)) {
@@ -43,7 +43,23 @@ public class MovementUtil {
                 }*/
                 tick++;
             }
-        }, 0L, 1L).getTaskId();
+        }, 0L, 1L);
+        ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(RideManager.getInstance(), PacketType.Play.Client.USE_ENTITY) {
+            @Override
+            public void onPacketReceiving(PacketEvent event) {
+                CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
+                if (player == null) return;
+                int id = event.getPacket().getIntegers().read(0);
+                Optional<Entity> opt = player.getWorld().getEntities().stream().filter(en -> en.getEntityId() == id).findFirst();
+                if (!opt.isPresent()) return;
+                Entity e = opt.get();
+                if (!e.getType().equals(EntityType.ARMOR_STAND)) return;
+                ArmorStand stand = (ArmorStand) e;
+                if (RideManager.getMovementUtil().sitDown(player, stand)) {
+                    event.setCancelled(true);
+                }
+            }
+        });
     }
 
     /*public void loadRides() {

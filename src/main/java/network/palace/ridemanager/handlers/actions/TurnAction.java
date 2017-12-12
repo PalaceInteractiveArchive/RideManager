@@ -1,6 +1,6 @@
 package network.palace.ridemanager.handlers.actions;
 
-import network.palace.ridemanager.handlers.Cart;
+import lombok.Getter;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -10,13 +10,13 @@ import org.bukkit.util.Vector;
  * Created by Marc on 5/2/17.
  */
 public class TurnAction extends MoveAction {
-    private final Location origin;
+    @Getter private final Location origin;
+    @Getter private int angle;
+
     private final boolean clockwise;
     private double radius;
-
     private float originAngle;
     private float targetAngle;
-    private int angle;
     private float yawDifference;
     private double originalY;
     private double yDifference;
@@ -68,7 +68,7 @@ public class TurnAction extends MoveAction {
         if (v.getY() == 0) {
             v.setY(MovementUtil.getYMin());
         }
-        cart.getStand().setVelocity(v);
+        cart.setVelocity(v);
         cart.teleport(target);
 //        if (original == null) {
 //            this.original = cart.getLocation();
@@ -105,17 +105,11 @@ public class TurnAction extends MoveAction {
 
     @Override
     public RideAction duplicate() {
-        return new TurnAction(origin, angle);
+        return new TurnAction(origin.clone(), angle);
     }
 
     @Override
     public String toString() {
         return "";
-    }
-
-    @Override
-    public RideAction load(Cart cart) {
-        setCart(cart);
-        return this;
     }
 }

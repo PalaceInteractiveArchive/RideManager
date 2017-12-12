@@ -1,7 +1,5 @@
 package network.palace.ridemanager.handlers;
 
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,18 +24,5 @@ public class ModelMap {
 
     public void addSeat(int pos, Seat seat) {
         seats.put(pos, seat);
-    }
-
-    @Getter
-    public static class Seat {
-        private final double x;
-        private final double y;
-        private final double z;
-
-        public Seat(double x, double y, double z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
     }
 }
