@@ -2,8 +2,8 @@ package network.palace.ridemanager.handlers;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.server.v1_11_R1.Entity;
-import net.minecraft.server.v1_11_R1.EntityArmorStand;
+import net.minecraft.server.v1_12_R1.Entity;
+import net.minecraft.server.v1_12_R1.EntityArmorStand;
 import network.palace.core.Core;
 import network.palace.core.economy.EconomyManager;
 import network.palace.core.player.CPlayer;
@@ -12,8 +12,8 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_11_R1.entity.CraftArmorStand;
-import org.bukkit.craftbukkit.v1_11_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftArmorStand;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftEntity;
 import org.bukkit.entity.ArmorStand;
 
 import java.lang.reflect.Field;
