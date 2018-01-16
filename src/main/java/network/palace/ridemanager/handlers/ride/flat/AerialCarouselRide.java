@@ -1,4 +1,4 @@
-package network.palace.ridemanager.handlers;
+package network.palace.ridemanager.handlers.ride.flat;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +9,8 @@ import network.palace.core.player.Rank;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
+import network.palace.ridemanager.handlers.CurrencyType;
+import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -607,5 +609,13 @@ public class AerialCarouselRide extends Ride {
 
     public enum FlyingState {
         HOVERING, ASCENDING, DESCENDING
+    }
+
+    @Override
+    public void onChunkLoad(Chunk chunk) {
+    }
+
+    @Override
+    public void onChunkUnload(Chunk chunk) {
     }
 }

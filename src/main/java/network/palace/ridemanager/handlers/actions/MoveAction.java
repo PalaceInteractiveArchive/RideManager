@@ -1,7 +1,7 @@
 package network.palace.ridemanager.handlers.actions;
 
 import lombok.Getter;
-import network.palace.ridemanager.handlers.Cart;
+import network.palace.ridemanager.handlers.ride.file.Cart;
 import org.bukkit.Location;
 
 /**

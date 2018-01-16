@@ -59,7 +59,7 @@ public class TurnAction extends MoveAction {
         rel.setY(current.getY());
         Location target = cart.getRide().getRelativeLocation(-dynamicAngle, radius, rel);
         target.setYaw(dynamicAngle + yawDifference);
-//        Bukkit.broadcastMessage(yDifference + " " + yChange + " " + cart.getPower() + " " + target.getY());
+//        Bukkit.broadcastMessage(yDifference + " " + yChange + " " + cart.getPower() + " " + target.getRelativeY());
         if (yDifference != 0) {
             target.setY(target.getY() + (yChange / (20 / cart.getPower())));
         }
@@ -72,12 +72,12 @@ public class TurnAction extends MoveAction {
         cart.teleport(target);
 //        if (original == null) {
 //            this.original = cart.getLocation();
-//            this.originAngle = (float) Math.toDegrees(Math.atan2(origin.getX() - original.getX(), original.getZ() - origin.getZ()));
+//            this.originAngle = (float) Math.toDegrees(Math.atan2(origin.getRelativeX() - original.getRelativeX(), original.getRelativeZ() - origin.getRelativeZ()));
 //            this.yawDifference = cart.getYaw() - originAngle;
-//            this.yDifference = origin.getY() - original.getY();
-//            this.radius = Math.sqrt(Math.pow(original.getX() - origin.getX(), 2) + Math.pow(original.getZ() - origin.getZ(), 2));
-//            this.angle = (float) Math.toDegrees(Math.acos(((original.getX() - origin.getX()) * (to.getX() - origin.getX()) +
-//                    (original.getZ() - origin.getZ()) * (to.getZ() - origin.getZ())) / Math.pow(radius, 2))) * (clockwise ? 1 : -1);
+//            this.yDifference = origin.getRelativeY() - original.getRelativeY();
+//            this.radius = Math.sqrt(Math.pow(original.getRelativeX() - origin.getRelativeX(), 2) + Math.pow(original.getRelativeZ() - origin.getRelativeZ(), 2));
+//            this.angle = (float) Math.toDegrees(Math.acos(((original.getRelativeX() - origin.getRelativeX()) * (to.getRelativeX() - origin.getRelativeX()) +
+//                    (original.getRelativeZ() - origin.getRelativeZ()) * (to.getRelativeZ() - origin.getRelativeZ())) / Math.pow(radius, 2))) * (clockwise ? 1 : -1);
 //            double distance = Math.abs((2 * Math.PI * radius) / (360 / angle));
 //            this.targetAngle = originAngle + angle;
 //            Bukkit.broadcastMessage(origin + "\n" + to);

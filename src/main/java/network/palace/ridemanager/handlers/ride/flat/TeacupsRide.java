@@ -1,4 +1,4 @@
-package network.palace.ridemanager.handlers;
+package network.palace.ridemanager.handlers.ride.flat;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,8 +6,11 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.events.RideStartEvent;
+import network.palace.ridemanager.handlers.CurrencyType;
+import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
@@ -406,6 +409,7 @@ public class TeacupsRide extends Ride {
     }
 
     private class Table {
+
         @Getter @Setter private Location location;
         @Getter private List<Cup> cups = new ArrayList<>();
         @Getter @Setter private double angle;
@@ -425,9 +429,11 @@ public class TeacupsRide extends Ride {
             }
             cups.clear();
         }
+
     }
 
     private class Cup {
+
         @Getter @Setter private Location center;
         @Getter private ArmorStand stand;
         @Getter private ArmorStand seat2;
@@ -566,5 +572,14 @@ public class TeacupsRide extends Ride {
                 emptyStand(seat3);
             }
         }
+
+    }
+
+    @Override
+    public void onChunkLoad(Chunk chunk) {
+    }
+
+    @Override
+    public void onChunkUnload(Chunk chunk) {
     }
 }

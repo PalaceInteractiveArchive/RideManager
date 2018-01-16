@@ -10,7 +10,7 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.PlayerLeaveRideEvent;
-import network.palace.ridemanager.handlers.Ride;
+import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.event.Listener;
 
 import java.lang.reflect.Field;

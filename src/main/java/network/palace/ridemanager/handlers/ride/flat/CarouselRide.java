@@ -1,4 +1,4 @@
-package network.palace.ridemanager.handlers;
+package network.palace.ridemanager.handlers.ride.flat;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,10 +6,9 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.events.RideStartEvent;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import network.palace.ridemanager.handlers.CurrencyType;
+import network.palace.ridemanager.handlers.ride.Ride;
+import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -591,5 +590,13 @@ public class CarouselRide extends Ride {
             s.ifPresent(Entity::remove);
             pole.remove();
         }
+    }
+
+    @Override
+    public void onChunkLoad(Chunk chunk) {
+    }
+
+    @Override
+    public void onChunkUnload(Chunk chunk) {
     }
 }

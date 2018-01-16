@@ -2,7 +2,7 @@ package network.palace.ridemanager.listeners;
 
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.PlayerLeaveRideEvent;
-import network.palace.ridemanager.handlers.Ride;
+import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 

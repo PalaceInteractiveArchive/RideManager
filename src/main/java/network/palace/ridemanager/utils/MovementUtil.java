@@ -8,7 +8,7 @@ import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
-import network.palace.ridemanager.handlers.Ride;
+import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;

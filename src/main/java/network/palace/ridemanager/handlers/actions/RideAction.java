@@ -3,7 +3,7 @@ package network.palace.ridemanager.handlers.actions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import network.palace.ridemanager.handlers.Cart;
+import network.palace.ridemanager.handlers.ride.file.Cart;
 
 import java.util.UUID;
 

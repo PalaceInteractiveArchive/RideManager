@@ -9,7 +9,7 @@ import network.palace.core.plugin.PluginInfo;
 import network.palace.ridemanager.commands.CommandRideBuilder;
 import network.palace.ridemanager.commands.Commandtest;
 import network.palace.ridemanager.events.RideManagerStatusEvent;
-import network.palace.ridemanager.handlers.Ride;
+import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.listeners.*;
 import network.palace.ridemanager.utils.MappingUtil;
 import network.palace.ridemanager.utils.MovementUtil;
@@ -30,22 +30,26 @@ public class RideManager extends Plugin {
     @Getter private static MovementUtil movementUtil;
     @Getter private static MappingUtil mappingUtil;
     @Getter private static RideBuilderUtil rideBuilderUtil;
+    @Getter private static String minecraftVersion = "";
 
     @Override
     protected void onPluginEnable() throws Exception {
         instance = this;
-        String mcv = Bukkit.getBukkitVersion();
-        mcv = mcv.replace("-SNAPSHOT", "").replace("R0.", "R").replace(".", "_").replaceAll("_[0-9]-R", "_R").replace("-", "_");
+
+        minecraftVersion = Bukkit.getBukkitVersion();
+        minecraftVersion = minecraftVersion.replace("-SNAPSHOT", "").replace("R0.", "R").replace(".", "_").replaceAll("_[0-9]-R", "_R").replace("-", "_");
         try {
-            Class.forName("net.minecraft.server.v" + mcv + ".MinecraftServer");
+            Class.forName("net.minecraft.server.v" + minecraftVersion + ".MinecraftServer");
         } catch (ClassNotFoundException e) {
-            Core.logMessage(ChatColor.RED + "RideManager", ChatColor.RED + "RideManager disabled! This version doesn't support MC v" + mcv);
+            Core.logMessage(ChatColor.RED + "RideManager", ChatColor.RED + "RideManager disabled! This version doesn't support MC v" + minecraftVersion);
             onDisable();
             return;
         }
+
         mappingUtil = new MappingUtil();
         movementUtil = new MovementUtil();
         rideBuilderUtil = new RideBuilderUtil();
+
         registerCommand(new Commandtest());
         registerCommand(new CommandRideBuilder());
         registerListener(new BlockListener());
@@ -54,6 +58,7 @@ public class RideManager extends Plugin {
         registerListener(new PlayerInteract());
         registerListener(new PlayerLeaveRide());
         registerListener(new PlayerMove());
+
         new RideManagerStatusEvent(RideManagerStatusEvent.Status.STARTING).call();
     }
 

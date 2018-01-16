@@ -1,22 +1,23 @@
-package network.palace.ridemanager.handlers;
+package network.palace.ridemanager.handlers.ride;
 
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_12_R1.Entity;
-import net.minecraft.server.v1_12_R1.EntityArmorStand;
 import network.palace.core.Core;
 import network.palace.core.economy.EconomyManager;
 import network.palace.core.player.CPlayer;
+import network.palace.ridemanager.RideManager;
+import network.palace.ridemanager.handlers.CurrencyType;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftArmorStand;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftEntity;
 import org.bukkit.entity.ArmorStand;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -63,21 +64,21 @@ public abstract class Ride {
         e.world.entityJoinedWorld(e, false);
         /*
         Location cur = entity.getLocation();
-        double y = loc.getY() - cur.getY();
+        double y = loc.getRelativeY() - cur.getRelativeY();
 //        entity.teleport(loc);
-//        entity.setVelocity(new Vector(loc.getX() - cur.getX(), y != 0 ? y : Double.MIN_VALUE, loc.getZ() - cur.getZ()));
+//        entity.setVelocity(new Vector(loc.getRelativeX() - cur.getRelativeX(), y != 0 ? y : Double.MIN_VALUE, loc.getRelativeZ() - cur.getRelativeZ()));
         Entity e = ((CraftEntity) entity).getHandle();
         if (position) {
-            e.locX = loc.getX();
-            e.locY = loc.getY();
-            e.locZ = loc.getZ();
+            e.locX = loc.getRelativeX();
+            e.locY = loc.getRelativeY();
+            e.locZ = loc.getRelativeZ();
             e.positionChanged = true;
         }
         e.yaw = loc.getYaw();
         e.pitch = loc.getPitch();
-        e.motX = loc.getX() - cur.getX();
+        e.motX = loc.getRelativeX() - cur.getRelativeX();
         e.motY = y != 0 ? y : Double.MIN_VALUE;
-        e.motZ = loc.getZ() - cur.getZ();
+        e.motZ = loc.getRelativeZ() - cur.getRelativeZ();
         e.velocityChanged = true;*/
     }
 
@@ -158,18 +159,26 @@ public abstract class Ride {
         return 0;
     }
 
-    public ArmorStand lock(ArmorStand stand) {
+    public static ArmorStand lock(ArmorStand stand) {
         try {
-            Field f = EntityArmorStand.class.getDeclaredField("bA");
+            Field f = Class.forName("net.minecraft.server.v" + RideManager.getMinecraftVersion() + ".EntityArmorStand")
+                    .getDeclaredField("bB");
             if (f != null) {
                 f.setAccessible(true);
-                f.set(((CraftArmorStand) stand).getHandle(), 2096896);
+                Object craftStand = Class.forName("org.bukkit.craftbukkit.v" + RideManager.getMinecraftVersion() +
+                        ".entity.CraftArmorStand").cast(stand);
+                Object handle = craftStand.getClass().getDeclaredMethod("getHandle").invoke(craftStand);
+                f.set(handle, 2096896);
             }
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return stand;
     }
 
     public abstract boolean sitDown(CPlayer player, ArmorStand stand);
+
+    public abstract void onChunkLoad(Chunk chunk);
+
+    public abstract void onChunkUnload(Chunk chunk);
 }

@@ -1,4 +1,4 @@
-package network.palace.ridemanager.handlers;
+package network.palace.ridemanager.handlers.ride;
 
 /**
  * Created by Marc on 1/22/17.

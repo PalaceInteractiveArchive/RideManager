@@ -19,4 +19,13 @@ public class MathUtil {
         int var3 = inverted ? -1 : 1;
         return var3 * (Math.pow(x - var1, 2) / Math.pow(endX - startX, 2)) * (endY - startY) + var2;
     }
+
+    public static int floor(double num) {
+        int floor = (int) num;
+        return floor == num ? floor : floor - (int) (Double.doubleToRawLongBits(num) >>> 63);
+    }
+
+    public static double square(double num) {
+        return num * num;
+    }
 }

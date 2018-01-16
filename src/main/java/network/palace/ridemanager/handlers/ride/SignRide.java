@@ -1,9 +1,10 @@
-package network.palace.ridemanager.handlers;
+package network.palace.ridemanager.handlers.ride;
 
 import lombok.Getter;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
+import network.palace.ridemanager.handlers.CurrencyType;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -81,5 +82,13 @@ public class SignRide extends Ride {
 
     private List<OldCart> getCarts() {
         return new ArrayList<>(carts);
+    }
+
+    @Override
+    public void onChunkLoad(Chunk chunk) {
+    }
+
+    @Override
+    public void onChunkUnload(Chunk chunk) {
     }
 }

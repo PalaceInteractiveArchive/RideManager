@@ -1,4 +1,4 @@
-package network.palace.ridemanager.handlers;
+package network.palace.ridemanager.handlers.ride.file;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,10 +6,14 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
+import network.palace.ridemanager.handlers.CurrencyType;
 import network.palace.ridemanager.handlers.actions.RideAction;
+import network.palace.ridemanager.handlers.ride.ModelMap;
+import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.threads.FileRideLoader;
 import network.palace.ridemanager.threads.RideCallback;
 import network.palace.ridemanager.utils.MovementUtil;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
@@ -25,7 +29,7 @@ import java.util.*;
 public class FileRide extends Ride {
     @Getter private File rideFile;
     @Getter @Setter private long lastSpawn = System.currentTimeMillis();
-    private Cart atStation = null;
+    private Optional<Cart> atStation = Optional.empty();
     private List<Cart> inRide = new ArrayList<>();
     private LinkedList<RideAction> actions = new LinkedList<>();
     @Getter @Setter private Location spawn = null;
@@ -41,6 +45,11 @@ public class FileRide extends Ride {
         this.rideFile = new File("plugins/RideManager/rides/" + fileName + ".ride");
     }
 
+    /**
+     * Called by the queue manager to load from file and spawn the carts
+     *
+     * @param delayInMillis The amount of delay left before spawning
+     */
     public void loadFile(long delayInMillis) {
         if (loading) {
             return;
@@ -67,9 +76,14 @@ public class FileRide extends Ride {
         }, 0L, 10L);
     }
 
+    /**
+     * Called periodically to move all carts to their next positions
+     * <p>
+     * Also update the cart in the station to keep it from falling
+     */
     @Override
     public void move() {
-        if (atStation != null) atStation.setVelocity(new Vector(0, MovementUtil.getYMin(), 0));
+        atStation.ifPresent(c -> c.setVelocity(new Vector(0, MovementUtil.getYMin(), 0)));
         for (Cart c : new ArrayList<>(inRide)) {
             if (c.isFinished()) {
                 inRide.remove(c);
@@ -79,17 +93,28 @@ public class FileRide extends Ride {
         }
     }
 
+    /**
+     * Despawn all carts
+     */
     @Override
     public void despawn() {
+        atStation.ifPresent(Cart::despawn);
+        atStation = Optional.empty();
         for (Cart c : new ArrayList<>(inRide)) {
             c.despawn();
             inRide.remove(c);
         }
     }
 
+    /**
+     * Start a new cart for the list of players
+     *
+     * @param riders players to be teleported into the station
+     */
     @Override
     public void start(List<CPlayer> riders) {
-        if (atStation == null) return;
+        if (!atStation.isPresent()) return;
+        Cart atStation = this.atStation.get();
         new RideStartEvent(this).call();
         for (CPlayer player : new ArrayList<>(riders)) {
             if (getOnRide().contains(player.getUniqueId())) {
@@ -114,21 +139,32 @@ public class FileRide extends Ride {
         atStation = null;
     }
 
+    /**
+     * Called when a player clicks on an armor stand you can sit on
+     *
+     * @param player the player who clicked
+     * @param stand  the stand they clicked
+     * @return true if the stand belongs to this ride
+     */
     @Override
     public boolean sitDown(CPlayer player, ArmorStand stand) {
-        if (atStation == null) return false;
+        if (!atStation.isPresent()) return false;
         UUID uuid = stand.getUniqueId();
-        for (Seat seat : atStation.getSeats()) {
-            ArmorStand seatStand = seat.getStand();
-            if (seatStand != null && seatStand.getUniqueId().equals(uuid) && !seat.hasPassenger()) {
+        for (Seat seat : atStation.get().getSeats()) {
+            if (!seat.getUniqueId().equals(uuid)) continue;
+            if (seat.addPassenger(player)) {
                 getOnRide().add(player.getUniqueId());
-                seat.addPassenger(player);
                 return true;
             }
         }
         return true;
     }
 
+    /**
+     * Spawn a cart or load from file if no file has been loaded yet
+     *
+     * @param delayInMillis The value to pass through to the loadFile method
+     */
     public void spawn(long delayInMillis) {
         if (spawn == null || actions.isEmpty()) {
             loadFile(delayInMillis);
@@ -143,6 +179,23 @@ public class FileRide extends Ride {
         Cart c = new Cart(this, cartActions, new ItemStack(Material.STONE), modelMap);
         c.setPower(speed);
         c.spawn(spawn.clone());
-        atStation = c;
+        atStation = Optional.of(c);
+    }
+
+    public List<Cart> getCarts() {
+        List<Cart> list = new ArrayList<>();
+        atStation.ifPresent(list::add);
+        list.addAll(inRide);
+        return list;
+    }
+
+    @Override
+    public void onChunkLoad(Chunk chunk) {
+        getCarts().forEach(c -> c.chunkLoaded(chunk));
+    }
+
+    @Override
+    public void onChunkUnload(Chunk chunk) {
+        getCarts().forEach(c -> c.chunkUnloaded(chunk));
     }
 }

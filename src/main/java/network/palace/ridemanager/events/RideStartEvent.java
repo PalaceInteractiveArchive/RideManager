@@ -3,7 +3,7 @@ package network.palace.ridemanager.events;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import network.palace.core.events.CoreEvent;
-import network.palace.ridemanager.handlers.Ride;
+import network.palace.ridemanager.handlers.ride.Ride;
 
 /**
  * @author Marc

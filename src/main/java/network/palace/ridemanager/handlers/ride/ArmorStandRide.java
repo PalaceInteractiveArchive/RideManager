@@ -1,12 +1,14 @@
-package network.palace.ridemanager.handlers;
+package network.palace.ridemanager.handlers.ride;
 
 import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideStartEvent;
+import network.palace.ridemanager.handlers.CurrencyType;
 import network.palace.ridemanager.threads.FileRideLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.potion.PotionEffect;
@@ -294,5 +296,13 @@ public class ArmorStandRide extends Ride {
         public WaitAction duplicate() {
             return new WaitAction(duration);
         }
+    }
+
+    @Override
+    public void onChunkLoad(Chunk chunk) {
+    }
+
+    @Override
+    public void onChunkUnload(Chunk chunk) {
     }
 }

@@ -3,7 +3,6 @@ package network.palace.ridemanager.handlers.actions;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
@@ -35,9 +34,8 @@ public class InclineAction extends MoveAction {
     @Override
     public void execute() {
         Location original = cart.getLocation();
-        ArmorStand stand = cart.getStand();
         double distance = original.distance(to);
-        EulerAngle head = stand.getHeadPose();
+        EulerAngle head = cart.getHeadPose();
         if (starting == 361) {
             //Location calculations
             yDifference = to.getY() - original.getY();
@@ -53,7 +51,7 @@ public class InclineAction extends MoveAction {
         }
 
         double change = (angle - starting) / (20 / cart.getPower());
-        stand.setHeadPose(stand.getHeadPose().add(Math.toRadians(-change), 0, 0));
+        cart.setHeadPose(cart.getHeadPose().add(Math.toRadians(-change), 0, 0));
         Bukkit.broadcastMessage(Math.toDegrees(head.getX()) + " " + change + " " + angle + " " + starting);
 
         Vector v = new Vector(to.getX() - original.getX(), 0, to.getZ() - original.getZ()).normalize();

@@ -1,4 +1,6 @@
-package network.palace.ridemanager.handlers;
+package network.palace.ridemanager.handlers.ride;
+
+import network.palace.ridemanager.handlers.ride.file.Seat;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -2,8 +2,8 @@ package network.palace.ridemanager.threads;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import network.palace.ridemanager.handlers.FileRide;
 import network.palace.ridemanager.handlers.actions.*;
+import network.palace.ridemanager.handlers.ride.file.FileRide;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 

@@ -1,8 +1,9 @@
 package network.palace.ridemanager.utils;
 
-import network.palace.ridemanager.handlers.ModelMap;
-import network.palace.ridemanager.handlers.Seat;
+import network.palace.ridemanager.handlers.ride.ModelMap;
+import network.palace.ridemanager.handlers.ride.file.Seat;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -38,9 +39,10 @@ public class MappingUtil {
         YamlConfiguration file = YamlConfiguration.loadConfiguration(f);
         ConfigurationSection sec = file.getConfigurationSection("seats");
         ModelMap map = new ModelMap();
+        World w = Bukkit.getWorlds().get(0);
         for (String s : sec.getKeys(false)) {
             ConfigurationSection seat = sec.getConfigurationSection(s);
-            map.addSeat(Integer.parseInt(s), new Seat(seat.getDouble("x"), seat.getDouble("y"), seat.getDouble("z")));
+            map.addSeat(Integer.parseInt(s), new Seat(seat.getDouble("x"), seat.getDouble("y"), seat.getDouble("z"), w));
         }
         maps.put(name, map);
         return map;

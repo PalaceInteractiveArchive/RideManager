@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import network.palace.core.events.CoreEvent;
 import network.palace.core.player.CPlayer;
-import network.palace.ridemanager.handlers.Ride;
+import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.event.Cancellable;
 
 /**

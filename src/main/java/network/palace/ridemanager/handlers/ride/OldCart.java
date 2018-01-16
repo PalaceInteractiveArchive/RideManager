@@ -1,4 +1,4 @@
-package network.palace.ridemanager.handlers;
+package network.palace.ridemanager.handlers.ride;
 
 import lombok.Getter;
 import net.minecraft.server.v1_12_R1.EntityArmorStand;
@@ -127,7 +127,7 @@ public class OldCart {
                 movement = new Vector();
             }
         }
-//        Bukkit.broadcastMessage(ChatColor.GREEN + "" + movement.getX() + " | " + movement.getZ());
+//        Bukkit.broadcastMessage(ChatColor.GREEN + "" + movement.getRelativeX() + " | " + movement.getRelativeZ());
         next.add(movement);
         boolean allowed = false;
         Location tloc = next.clone().add(lastMovement.getX(), 0, lastMovement.getZ());
@@ -196,7 +196,7 @@ public class OldCart {
                             if (targetDegree <= 0) {
                                 targetDegree += 360;
                             }
-//                            Bukkit.broadcastMessage(ChatColor.YELLOW + "" + rotatingDegree + " " + Math.toDegrees(stand.getHeadPose().getY()) + " " + targetDegree);
+//                            Bukkit.broadcastMessage(ChatColor.YELLOW + "" + rotatingDegree + " " + Math.toDegrees(stand.getHeadPose().getRelativeY()) + " " + targetDegree);
                             targetDegree %= 360;
                             double rad = Math.toRadians(targetDegree);
                             double x = Math.sin(rad) * -rotRadius;
@@ -235,7 +235,7 @@ public class OldCart {
             } else {
                 stand.setHeadPose(stand.getHeadPose().add(0, head, 0));
             }
-            //Bukkit.broadcastMessage(String.valueOf(Math.toDegrees(stand.getHeadPose().getY())));
+            //Bukkit.broadcastMessage(String.valueOf(Math.toDegrees(stand.getHeadPose().getRelativeY())));
 
             /**
              * Movement Calculations
@@ -245,7 +245,7 @@ public class OldCart {
             double x = round(Math.sin(rad) * -rotRadius, 6);
             double z = round(Math.cos(rad) * rotRadius, 6);
             next = rotOrigin.clone().add(x, 0, z);
-//            Bukkit.broadcastMessage(ChatColor.GREEN + "x: " + next.getX() + " | y: " + next.getY() + " | z: " + next.getZ());
+//            Bukkit.broadcastMessage(ChatColor.GREEN + "x: " + next.getRelativeX() + " | y: " + next.getRelativeY() + " | z: " + next.getRelativeZ());
             if (!rotating) {
                 Bukkit.broadcastMessage(ChatColor.RED + "TEST");
                 rotUpdateMove = true;
@@ -259,8 +259,8 @@ public class OldCart {
 //
 //                double rads = Math.toRadians(rotatingDegree);
 //
-//                double currentX = lastMovement.getX();
-//                double currentZ = lastMovement.getZ();
+//                double currentX = lastMovement.getRelativeX();
+//                double currentZ = lastMovement.getRelativeZ();
 //
 //                double cosine = Math.cos(rad);
 //                double sine = Math.sin(rad);
@@ -268,9 +268,9 @@ public class OldCart {
 //                double xPrime2 = (cosine * currentX - sine * currentZ);
 //                double zPrime2 = (sine * currentX + cosine * currentZ);
 //
-//                double u = rotOrigin.getX();
-//                double v = rotOrigin.getY();
-//                double w = rotOrigin.getZ();
+//                double u = rotOrigin.getRelativeX();
+//                double v = rotOrigin.getRelativeY();
+//                double w = rotOrigin.getRelativeZ();
 //
 //                double dr = Math.toRadians(rotatingDegree);
 //
@@ -288,8 +288,8 @@ public class OldCart {
                 /*if (!test) {
                     double radJ = Math.toRadians(rotatingDegree);
 
-                    double currentXJ = lastMovement.getX();
-                    double currentZJ = lastMovement.getZ();
+                    double currentXJ = lastMovement.getRelativeX();
+                    double currentZJ = lastMovement.getRelativeZ();
 
                     double cosineJ = Math.cos(radJ);
                     double sineJ = Math.sin(radJ);
@@ -341,7 +341,7 @@ public class OldCart {
                 next.setZ(loc.getZ() - 1);
             }
         }
-//        Bukkit.broadcastMessage(ChatColor.RED + "x: " + next.getX() + " | y: " + next.getY() + " | z: " + next.getZ());
+//        Bukkit.broadcastMessage(ChatColor.RED + "x: " + next.getRelativeX() + " | y: " + next.getRelativeY() + " | z: " + next.getRelativeZ());
         EntityArmorStand s = ((CraftArmorStand) stand).getHandle();
         s.locX = next.getX();
         s.locY = next.getY();
@@ -543,13 +543,13 @@ public class OldCart {
 //            double x = Math.cos(tempAng) * radius * (xPos ? 1 : -1);// * (xPos ? 1 : -1) * (xEven ? 1 : -1);
 //            double z = Math.sin(tempAng) * radius * (zPos ? 1 : -1);// * (zPos ? -1 : 1) * (zEven ? 1 : -1);
 //            Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "" + x + " " + z + " " + tempAng);
-//            return new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() + z, loc.getYaw(), loc.getPitch());
+//            return new Location(loc.getWorld(), loc.getRelativeX() + x, loc.getRelativeY(), loc.getRelativeZ() + z, loc.getYaw(), loc.getPitch());
 //        } else {
 //            double tempAng = Math.atan(vx / vz) * -1;
 //            double x = Math.cos(tempAng) * radius * (xPos ? -1 : 1);// * (xPos ? -1 : 1) * (xEven ? 1 : -1);
 //            double z = Math.sin(tempAng) * radius * (zPos ? 1 : -1);// * (zPos ? -1 : 1) * (zEven ? 1 : -1);
 //            Bukkit.broadcastMessage(ChatColor.BLUE + "" + x + " " + z + " " + tempAng);
-//            return new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() + z, loc.getYaw(), loc.getPitch());
+//            return new Location(loc.getWorld(), loc.getRelativeX() + x, loc.getRelativeY(), loc.getRelativeZ() + z, loc.getYaw(), loc.getPitch());
 //        }
     }
 

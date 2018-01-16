@@ -1,8 +1,8 @@
 package network.palace.ridemanager.handlers.actions;
 
 import lombok.Getter;
-import network.palace.ridemanager.handlers.ModelMap;
-import network.palace.ridemanager.handlers.Seat;
+import network.palace.ridemanager.handlers.ride.ModelMap;
+import network.palace.ridemanager.handlers.ride.file.Seat;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
@@ -35,13 +35,13 @@ public class SpawnAction extends MoveAction {
         stand.setArms(false);
         stand.setHelmet(cart.getModel());
         stand.setVelocity(new Vector(0, MovementUtil.getYMin(), 0));
-        cart.setStand(stand);
+//        cart.setStand(stand);
         cart.setYaw(yaw);
         cart.setPower(speed);
         ModelMap map = cart.getMap();
         for (Seat seat : map.getSeats()) {
             Seat copy = seat.copy();
-            copy.spawn(loc, cart.getRide());
+            copy.spawn(loc);
             cart.addSeat(copy);
         }
         /*

@@ -7,8 +7,8 @@ import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.core.player.Rank;
 import network.palace.ridemanager.RideManager;
-import network.palace.ridemanager.handlers.FileRide;
-import network.palace.ridemanager.handlers.Ride;
+import network.palace.ridemanager.handlers.ride.Ride;
+import network.palace.ridemanager.handlers.ride.file.FileRide;
 
 /**
  * Created by Marc on 1/15/17.
