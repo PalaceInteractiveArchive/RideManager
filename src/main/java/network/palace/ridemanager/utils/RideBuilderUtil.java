@@ -2,14 +2,14 @@ package network.palace.ridemanager.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.core.player.CPlayerParticlesManager;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.handlers.actions.*;
-import network.palace.ridemanager.handlers.ride.file.Cart;
+import network.palace.ridemanager.handlers.builder.PathDataTimer;
+import network.palace.ridemanager.handlers.builder.actions.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,10 +21,7 @@ import org.bukkit.util.Vector;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Marc
@@ -89,11 +86,6 @@ public class RideBuilderUtil {
                             }
                         }
                     }
-                    for (RideAction action : actions) {
-                        if (action instanceof FakeWaitAction) {
-                            continue;
-                        }
-                    }
                 }
             }
 
@@ -117,6 +109,12 @@ public class RideBuilderUtil {
                 return stand;
             }
         }, 0L, 20L);
+        Core.runTaskTimer(new PathDataTimer(), 0L, 20L);
+    }
+
+    private void pathParticle(CPlayer player, Location loc) {
+        if (player.getLocation().distance(loc) > 15) return;
+        player.getParticles().send(loc, Particle.REDSTONE, 1);
     }
 
     public BuildSession getSession(CPlayer player) {
@@ -130,6 +128,7 @@ public class RideBuilderUtil {
     public BuildSession newSession(CPlayer player) {
         BuildSession session = new BuildSession(player.getUniqueId());
         sessions.put(player.getUniqueId(), session);
+        session.updateBossBar();
         return session;
     }
 
@@ -137,6 +136,7 @@ public class RideBuilderUtil {
         BuildSession session = newSession(player);
         player.sendMessage(ChatColor.GREEN + "Session created, loading actions now...");
         session.load(file);
+        session.updateBossBar();
         return session;
     }
 
@@ -146,6 +146,7 @@ public class RideBuilderUtil {
         for (ArmorStand stand : stands) {
             stand.remove();
         }
+        session.removeBossBar();
         return session;
     }
 
@@ -192,6 +193,30 @@ public class RideBuilderUtil {
             return new TurnAction(act.getOrigin().add(v), act.getAngle());
         }
         return null;
+    }
+
+    public List<RideAction> getFakeActions(LinkedList<RideAction> list) {
+        List<RideAction> finalList = new ArrayList<>();
+        for (RideAction a : list) {
+            if (a instanceof ExitAction) {
+                finalList.add(new FakeExitAction(((ExitAction) a).getTo()));
+            } else if (a instanceof SpawnAction) {
+                finalList.add(new FakeSpawnAction(((SpawnAction) a).getLoc(), ((SpawnAction) a).getSpeed(), ((SpawnAction) a).getYaw()));
+            } else if (a instanceof StraightAction) {
+                finalList.add(new FakeStraightAction(((StraightAction) a).getTo()));
+            } else if (a instanceof TeleportAction) {
+                finalList.add(new FakeTeleportAction(((TeleportAction) a).getTo()));
+            } else if (a instanceof TurnAction) {
+                finalList.add(new FakeTurnAction(((TurnAction) a).getOrigin(), ((TurnAction) a).getAngle()));
+            } else if (a instanceof SpeedAction) {
+                finalList.add(new FakeSpeedAction(((SpeedAction) a).getSpeed(), ((SpeedAction) a).getTicks()));
+            }
+        }
+        return finalList;
+    }
+
+    public List<BuildSession> getSessions() {
+        return new ArrayList<>(sessions.values());
     }
 
     public interface ConfirmCallback {
@@ -261,173 +286,6 @@ public class RideBuilderUtil {
                     return new FakeExitAction();
             }
             return null;
-        }
-    }
-
-    @Getter
-    @Setter
-    public static class FakeSpawnAction extends FakeAction {
-        private Location location;
-        private double speed;
-        private float yaw;
-
-        public FakeSpawnAction() {
-            super(true);
-        }
-
-        @Override
-        public RideAction duplicate() {
-            return new SpawnAction(location, speed, yaw);
-        }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-    }
-
-    @Getter
-    @Setter
-    public static class FakeStraightAction extends FakeAction {
-        private Location to;
-
-        public FakeStraightAction() {
-            super(true);
-        }
-
-        @Override
-        public RideAction duplicate() {
-            return new network.palace.ridemanager.handlers.actions.StraightAction(to);
-        }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-    }
-
-    @Getter
-    @Setter
-    public static class FakeTurnAction extends FakeAction {
-        private Location origin;
-        private int angle;
-
-        public FakeTurnAction() {
-            super(true);
-        }
-
-        @Override
-        public RideAction duplicate() {
-            return new network.palace.ridemanager.handlers.actions.TurnAction(origin, angle);
-        }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-    }
-
-    @Getter
-    @Setter
-    public static class FakeRotateAction extends FakeAction {
-        private int angle;
-        private boolean rightTurn;
-        private long ticks;
-
-        public FakeRotateAction() {
-            super(true);
-        }
-
-        @Override
-        public RideAction duplicate() {
-            return new network.palace.ridemanager.handlers.actions.RotateAction(angle, rightTurn, ticks);
-        }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-    }
-
-    @Getter
-    @Setter
-    public static class FakeWaitAction extends FakeAction {
-        private long ticks;
-
-        public FakeWaitAction() {
-            super(true);
-        }
-
-        @Override
-        public RideAction duplicate() {
-            return new network.palace.ridemanager.handlers.actions.WaitAction(ticks);
-        }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-    }
-
-    @Getter
-    @Setter
-    public static class FakeTeleportAction extends FakeAction {
-        private Location to;
-
-        public FakeTeleportAction() {
-            super(true);
-        }
-
-        @Override
-        public RideAction duplicate() {
-            return new network.palace.ridemanager.handlers.actions.TeleportAction(to);
-        }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-    }
-
-    @Getter
-    @Setter
-    public static class FakeExitAction extends FakeAction {
-        private Location to;
-
-        public FakeExitAction() {
-            super(true);
-        }
-
-        @Override
-        public RideAction duplicate() {
-            return new network.palace.ridemanager.handlers.actions.ExitAction(to.clone());
-        }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-    }
-
-    private static abstract class FakeAction extends RideAction {
-
-        public FakeAction(boolean movementAction) {
-            super(movementAction);
-        }
-
-        @Override
-        public void execute() {
-        }
-
-        @Override
-        public boolean isFinished() {
-            return true;
-        }
-
-        @Override
-        public RideAction load(Cart cart) {
-            this.cart = cart;
-            return this;
         }
     }
 }

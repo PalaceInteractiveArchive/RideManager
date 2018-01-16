@@ -1,6 +1,7 @@
 package network.palace.ridemanager.commands.ridebuilder;
 
 import network.palace.core.command.CommandException;
+import network.palace.core.command.CommandMeta;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
@@ -14,9 +15,10 @@ import java.io.IOException;
  * @author Marc
  * @since 8/10/17
  */
-public class CommandNew extends CoreCommand {
+@CommandMeta(description = "Create a new ride")
+public class NewCommand extends CoreCommand {
 
-    public CommandNew() {
+    public NewCommand() {
         super("new");
     }
 

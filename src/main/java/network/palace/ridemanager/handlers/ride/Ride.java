@@ -82,7 +82,7 @@ public abstract class Ride {
         e.velocityChanged = true;*/
     }
 
-    public Location getRelativeLocation(double angle, double radius, Location center) {
+    public static Location getRelativeLocation(double angle, double radius, Location center) {
         if (angle < 0) {
             angle = 360 + angle;
         }

@@ -1,6 +1,7 @@
 package network.palace.ridemanager.commands.ridebuilder;
 
 import network.palace.core.command.CommandException;
+import network.palace.core.command.CommandMeta;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
@@ -12,9 +13,10 @@ import org.bukkit.ChatColor;
  * @author Marc
  * @since 8/10/17
  */
-public class CommandLockY extends CoreCommand {
+@CommandMeta(description = "Lock all actions to a specific y-value")
+public class LockYCommand extends CoreCommand {
 
-    public CommandLockY() {
+    public LockYCommand() {
         super("locky");
     }
 
@@ -32,6 +34,7 @@ public class CommandLockY extends CoreCommand {
         } else {
             if (args[0].equalsIgnoreCase("off")) {
                 session.setLockY(0);
+                session.updateBossBar();
                 player.sendMessage(ChatColor.RED + "Your session's Y values are no longer locked");
                 return;
             }
@@ -43,6 +46,7 @@ public class CommandLockY extends CoreCommand {
             }
         }
         session.setLockY(y);
+        session.updateBossBar();
         player.sendMessage(ChatColor.GREEN + "Your session's Y values are now locked at y=" + y);
     }
 }

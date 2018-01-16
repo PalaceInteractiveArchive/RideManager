@@ -1,6 +1,7 @@
 package network.palace.ridemanager.commands.ridebuilder;
 
 import network.palace.core.command.CommandException;
+import network.palace.core.command.CommandMeta;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
@@ -12,10 +13,11 @@ import org.bukkit.ChatColor;
  * @author Marc
  * @since 8/10/17
  */
-public class CommandConfirm extends CoreCommand {
+@CommandMeta(description = "Toggle editing y-value of ride")
+public class YCommand extends CoreCommand {
 
-    public CommandConfirm() {
-        super("confirm");
+    public YCommand() {
+        super("y");
     }
 
     @Override
@@ -26,6 +28,12 @@ public class CommandConfirm extends CoreCommand {
             player.sendMessage(ChatColor.RED + "You aren't in a build session!");
             return;
         }
-        session.confirm();
+        session.setChangeY(!session.isChangeY());
+        if (session.isChangeY()) {
+            player.sendMessage(ChatColor.GREEN + "You're now editing the y position!");
+        } else {
+            player.sendMessage(ChatColor.RED + "You're no longer editing the y position!");
+        }
+        session.updateBossBar();
     }
 }

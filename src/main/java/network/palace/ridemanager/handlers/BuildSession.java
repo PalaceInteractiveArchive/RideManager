@@ -10,10 +10,11 @@ import network.palace.ridemanager.handlers.actions.RideAction;
 import network.palace.ridemanager.threads.FileRideLoader;
 import network.palace.ridemanager.threads.RideCallback;
 import network.palace.ridemanager.utils.RideBuilderUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.ArmorStand;
 
 import java.io.BufferedWriter;
@@ -48,11 +49,11 @@ public class BuildSession {
     public void load(File file) {
         loading = true;
         fileName = file.getName();
-        Bukkit.getScheduler().runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(null, file, new RideCallback() {
+        Core.runTaskAsynchronously(new FileRideLoader(null, file, new RideCallback() {
             @Override
             public void done(String name, LinkedList<RideAction> list, Location spawn, double speed, boolean setYaw) {
                 setName(name);
-                actions = list;
+                actions = RideManager.getInstance().getRideBuilderUtil().getFakeActions(list);
                 setSpawn(spawn);
                 setSpeed(speed);
                 loading = false;
@@ -90,6 +91,7 @@ public class BuildSession {
 
     public void setConfirm(CPlayer player, RideBuilderUtil.ConfirmCallback confirm) {
         this.confirm = confirm;
+        player.getBossBar().setEverything(ChatColor.RED + "Confirm Action!", 1, BarColor.RED, BarStyle.SOLID);
         player.sendMessage(ChatColor.RED + "Type " + ChatColor.GREEN + "/rb confirm " + ChatColor.RED +
                 "to allow this action, or " + ChatColor.GREEN + "/rb deny " + ChatColor.RED + "to cancel.");
     }
@@ -166,5 +168,22 @@ public class BuildSession {
             bw.newLine();
         }
         bw.close();
+    }
+
+    public void updateBossBar() {
+        CPlayer player = Core.getPlayerManager().getPlayer(uuid);
+        if (player == null) return;
+        double roundedLockY = (double) ((int) (getLockY() * 100)) / 100.0;
+        ChatColor path = isPath() ? ChatColor.GREEN : ChatColor.RED;
+        ChatColor locky = roundedLockY != 0 ? ChatColor.GREEN : ChatColor.RED;
+        ChatColor edity = isChangeY() ? ChatColor.GREEN : ChatColor.RED;
+        player.getBossBar().setEverything(ChatColor.AQUA + "Ride " + name + " " + path + "Path " + locky +
+                "LockY: " + roundedLockY + edity + " Edit Y", 1, BarColor.BLUE, BarStyle.SOLID);
+    }
+
+    public void removeBossBar() {
+        CPlayer player = Core.getPlayerManager().getPlayer(uuid);
+        if (player == null) return;
+        player.getBossBar().remove();
     }
 }

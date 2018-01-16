@@ -1,6 +1,7 @@
 package network.palace.ridemanager.commands.ridebuilder;
 
 import network.palace.core.command.CommandException;
+import network.palace.core.command.CommandMeta;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
@@ -12,9 +13,10 @@ import org.bukkit.ChatColor;
  * @author Marc
  * @since 8/10/17
  */
-public class CommandDeny extends CoreCommand {
+@CommandMeta(description = "Deny an action instead of confirming it")
+public class DenyCommand extends CoreCommand {
 
-    public CommandDeny() {
+    public DenyCommand() {
         super("deny");
     }
 
@@ -26,6 +28,7 @@ public class CommandDeny extends CoreCommand {
             player.sendMessage(ChatColor.RED + "You aren't in a build session!");
             return;
         }
+        session.updateBossBar();
         session.deny();
     }
 }

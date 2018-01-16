@@ -1,6 +1,7 @@
 package network.palace.ridemanager.commands.ridebuilder;
 
 import network.palace.core.command.CommandException;
+import network.palace.core.command.CommandMeta;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
@@ -12,9 +13,10 @@ import org.bukkit.ChatColor;
  * @author Marc
  * @since 8/10/17
  */
-public class CommandPath extends CoreCommand {
+@CommandMeta(description = "Toggle seeing the ride's path with particles")
+public class PathCommand extends CoreCommand {
 
-    public CommandPath() {
+    public PathCommand() {
         super("path");
     }
 
@@ -32,5 +34,6 @@ public class CommandPath extends CoreCommand {
         } else {
             player.sendMessage(ChatColor.RED + "You have disabled the ride path!");
         }
+        session.updateBossBar();
     }
 }

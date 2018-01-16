@@ -1,6 +1,7 @@
 package network.palace.ridemanager.commands.ridebuilder;
 
 import network.palace.core.command.CommandException;
+import network.palace.core.command.CommandMeta;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
@@ -14,9 +15,10 @@ import java.io.File;
  * @author Marc
  * @since 8/10/17
  */
-public class CommandLoad extends CoreCommand {
+@CommandMeta(description = "Load a ride from file")
+public class LoadCommand extends CoreCommand {
 
-    public CommandLoad() {
+    public LoadCommand() {
         super("load");
     }
 
@@ -29,7 +31,7 @@ public class CommandLoad extends CoreCommand {
         RideBuilderUtil rideBuilderUtil = RideManager.getRideBuilderUtil();
         BuildSession session = rideBuilderUtil.getSession(player.getUniqueId());
         if (session != null) {
-            player.sendMessage(ChatColor.RED + "You're already in a build session! Save or exit to load another one.");
+            player.sendMessage(ChatColor.RED + "You're already in a build session! Save and exit to load another one.");
             return;
         }
         File file = new File("plugins/RideManager/rides/" + args[0] + ".ride");

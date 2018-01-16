@@ -1,6 +1,7 @@
 package network.palace.ridemanager.commands.ridebuilder;
 
 import network.palace.core.command.CommandException;
+import network.palace.core.command.CommandMeta;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
@@ -14,9 +15,10 @@ import java.util.UUID;
  * @author Marc
  * @since 8/10/17
  */
-public class CommandExit extends CoreCommand {
+@CommandMeta(description = "Exit the ride builder")
+public class ExitCommand extends CoreCommand {
 
-    public CommandExit() {
+    public ExitCommand() {
         super("exit");
     }
 

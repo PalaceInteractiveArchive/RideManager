@@ -1,6 +1,7 @@
 package network.palace.ridemanager.commands.ridebuilder;
 
 import network.palace.core.command.CommandException;
+import network.palace.core.command.CommandMeta;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
@@ -12,10 +13,11 @@ import org.bukkit.ChatColor;
  * @author Marc
  * @since 8/10/17
  */
-public class CommandY extends CoreCommand {
+@CommandMeta(description = "Confirm an action")
+public class ConfirmCommand extends CoreCommand {
 
-    public CommandY() {
-        super("y");
+    public ConfirmCommand() {
+        super("confirm");
     }
 
     @Override
@@ -26,5 +28,7 @@ public class CommandY extends CoreCommand {
             player.sendMessage(ChatColor.RED + "You aren't in a build session!");
             return;
         }
+        session.updateBossBar();
+        session.confirm();
     }
 }
