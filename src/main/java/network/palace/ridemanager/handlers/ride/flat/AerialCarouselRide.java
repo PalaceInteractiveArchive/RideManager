@@ -8,7 +8,7 @@ import network.palace.core.player.CPlayerActionBarManager;
 import network.palace.core.player.Rank;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.events.RideStartEvent;
-import network.palace.ridemanager.handlers.CurrencyType;
+import network.palace.core.economy.CurrencyType;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;

@@ -3,10 +3,10 @@ package network.palace.ridemanager.handlers.ride.flat;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
+import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.events.RideStartEvent;
-import network.palace.ridemanager.handlers.CurrencyType;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.ChatColor;
@@ -411,7 +411,7 @@ public class TeacupsRide extends Ride {
     private class Table {
 
         @Getter @Setter private Location location;
-        @Getter private List<Cup> cups = new ArrayList<>();
+        @Getter private List<Cup> cups;
         @Getter @Setter private double angle;
 
         public Table(Location stand, List<Cup> cups, double angle) {
