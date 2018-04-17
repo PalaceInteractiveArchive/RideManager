@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
+import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.handlers.CurrencyType;
@@ -176,7 +177,8 @@ public class FileRide extends Ride {
         for (RideAction a : new ArrayList<>(actions)) {
             cartActions.put(i++, a.duplicate());
         }
-        Cart c = new Cart(this, cartActions, new ItemStack(Material.STONE), modelMap);
+        ItemStack model = ItemUtil.create(Material.SHEARS, 1, (byte) 13);
+        Cart c = new Cart(this, cartActions, model, modelMap);
         c.setPower(speed);
         c.spawn(spawn.clone());
         atStation = Optional.of(c);

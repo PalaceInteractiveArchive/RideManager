@@ -7,10 +7,11 @@ import network.palace.core.player.CPlayer;
 import network.palace.core.player.CPlayerActionBarManager;
 import network.palace.core.player.Rank;
 import network.palace.core.utils.ItemUtil;
-import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.handlers.CurrencyType;
 import network.palace.ridemanager.handlers.ride.Ride;
+import network.palace.ridemanager.utils.MathUtil;
+import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -41,7 +42,7 @@ public class AerialCarouselRide extends Ride {
     @Getter private boolean started = false;
     private long startTime = 0;
     private long ticks = 0;
-    private final int taskID;
+    private int taskID;
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount) {
         this(name, displayName, delay, exit, center, currencyType, currencyAmount, 6.5, 4.5);
@@ -67,7 +68,12 @@ public class AerialCarouselRide extends Ride {
         this.small = small;
         loadSurroundingChunks(center);
         spawn();
-        taskID = Bukkit.getScheduler().runTaskTimer(RideManager.getInstance(), new Runnable() {
+        startTask();
+    }
+
+    private void startTask() {
+        stopTask();
+        taskID = Core.runTaskTimer(new Runnable() {
             @Override
             public void run() {
                 for (Vehicle v : getVehicles()) {
@@ -91,7 +97,11 @@ public class AerialCarouselRide extends Ride {
                     }
                 }
             }
-        }, 0L, 5L).getTaskId();
+        }, 0L, 5L);
+    }
+
+    private void stopTask() {
+        if (taskID != 0) Core.cancelTask(taskID);
     }
 
     public void spawn() {
@@ -532,12 +542,81 @@ public class AerialCarouselRide extends Ride {
     }
 
     public class Vehicle {
+        private Optional<ArmorStand> stand = Optional.empty();
+        private Optional<ArmorStand> support = Optional.empty();
+
+        private boolean spawned = false;
+        @Getter private World world;
+        @Getter private double x, y, z;
+        private int chunkX, chunkZ;
+        @Getter @Setter private float yaw = 0;
+
         private UUID standID;
         @Getter @Setter private double angle;
         private UUID supportID;
         @Getter private UUID id = UUID.randomUUID();
         @Getter @Setter private FlyingState flyingState = FlyingState.HOVERING;
         @Getter @Setter private FlyingState lastFlyingState = FlyingState.HOVERING;
+
+        public Vehicle(Location loc, double angle) {
+            this.angle = angle;
+            spawn(loc);
+
+            ArmorStand stand = lock(loc.getWorld().spawn(loc, ArmorStand.class));
+            this.stand = Optional.of(stand);
+            ArmorStand support = lock(loc.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 2, 0), ArmorStand.class));
+            ItemStack pole = new ItemStack(Material.SHEARS, 1, (byte) 10);
+            support.setGravity(false);
+            support.setVisible(false);
+            support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
+            support.setHelmet(pole);
+            this.support = Optional.of(support);
+        }
+
+        public void updateLocation(Location loc) {
+            this.world = loc.getWorld();
+            this.x = loc.getX();
+            this.y = loc.getY();
+            this.z = loc.getZ();
+            chunkX = MathUtil.floor(x) >> 4;
+            chunkZ = MathUtil.floor(z) >> 4;
+        }
+
+        public Location getLocation() {
+            return new Location(world, x, y, z).add(0, MovementUtil.armorStandHeight, 0);
+        }
+
+        public Chunk getChunk() {
+            return world.getChunkAt(chunkX, chunkZ);
+        }
+
+        public void spawn(Location loc) {
+            setYaw(loc.getYaw());
+            loc.setY(loc.getY() - MovementUtil.armorStandHeight);
+            updateLocation(loc);
+            spawned = true;
+
+            if (!getChunk().isLoaded()) return;
+
+            chunkLoaded(getChunk());
+        }
+
+        public void chunkLoaded(Chunk c) {
+            if (!spawned || stand.isPresent() || !c.equals(getChunk()) || !c.isLoaded()) return;
+
+            Location loc = getLocation();
+
+            ArmorStand stand = lock(loc.getWorld().spawn(loc, ArmorStand.class));
+            this.stand = Optional.of(stand);
+            ArmorStand support = lock(loc.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 2, 0), ArmorStand.class));
+            ItemStack pole = new ItemStack(Material.SHEARS, 1, (byte) 10);
+            support.setGravity(false);
+            support.setVisible(false);
+            support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
+            support.setHelmet(pole);
+            this.support = Optional.of(support);
+            Bukkit.broadcastMessage("Spawned!");
+        }
 
         public Vehicle(ArmorStand stand, double angle) {
             this.standID = stand.getUniqueId();
