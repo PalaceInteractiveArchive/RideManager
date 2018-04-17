@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_12_R1.Entity;
 import network.palace.core.Core;
-import network.palace.core.economy.EconomyManager;
+import network.palace.core.economy.CurrencyType;
+import network.palace.core.mongo.MongoHandler;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
-import network.palace.ridemanager.handlers.CurrencyType;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -106,18 +106,12 @@ public abstract class Ride {
     }
 
     public void rewardCurrency(UUID[] uuids) {
-        EconomyManager man = Core.getEconomy();
-        if (man == null) return;
+        MongoHandler mongo = Core.getMongoHandler();
+        if (mongo == null) return;
         for (UUID uuid : uuids) {
             if (Core.getPlayerManager().getPlayer(uuid) == null) continue;
-            switch (currencyType) {
-                case BALANCE:
-                    man.addBalance(uuid, currencyAmount, name);
-                    break;
-                case TOKENS:
-                    man.addTokens(uuid, currencyAmount, name);
-                    break;
-            }
+            mongo.changeAmount(uuid, currencyAmount, "Ride " + name + " " + Core.getInstanceName(),
+                    currencyType, false);
         }
     }
 

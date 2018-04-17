@@ -4,7 +4,7 @@ import lombok.Getter;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
-import network.palace.ridemanager.handlers.CurrencyType;
+import network.palace.core.economy.CurrencyType;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;

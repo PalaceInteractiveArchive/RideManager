@@ -6,7 +6,7 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.events.RideStartEvent;
-import network.palace.ridemanager.handlers.CurrencyType;
+import network.palace.core.economy.CurrencyType;
 import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
