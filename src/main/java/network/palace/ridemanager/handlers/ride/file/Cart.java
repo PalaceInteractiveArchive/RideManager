@@ -5,6 +5,7 @@ import lombok.Setter;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.handlers.actions.RideAction;
 import network.palace.ridemanager.handlers.ride.ModelMap;
+import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Bukkit;
@@ -28,6 +29,7 @@ public class Cart {
     @Getter private final ItemStack model;
     @Getter private double power = 0;
     @Getter @Setter private float yaw = 0;
+    @Getter @Setter private float pitch = 0;
     @Getter private int currentActionIndex = 0;
     @Getter @Setter private long spawnTime;
     @Getter @Setter private EulerAngle headPose;
@@ -39,7 +41,8 @@ public class Cart {
     // Position variables.
     @Getter private World world;
     @Getter private double x, y, z;
-    private int chunkX, chunkZ;
+    private int chunkX;
+    private int chunkZ;
 
     // The entities that represent seats.
     private final List<Seat> seats;
@@ -71,20 +74,22 @@ public class Cart {
     }
 
     public Location getLocation() {
-        return new Location(world, x, y, z).add(0, MovementUtil.armorStandHeight, 0);
+        return new Location(world, x, y, z, yaw, pitch).add(0, MovementUtil.armorStandHeight, 0);
     }
 
-    private void updateLocation(World world, double x, double y, double z) {
+    private void updateLocation(World world, double x, double y, double z, float yaw, float pitch) {
         this.world = world;
         this.x = x;
         this.y = y;
         this.z = z;
+        this.yaw = yaw;
+        this.pitch = pitch;
         chunkX = MathUtil.floor(x) >> 4;
         chunkZ = MathUtil.floor(z) >> 4;
     }
 
     private void updateLocation(Location loc) {
-        updateLocation(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ());
+        updateLocation(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
     }
 
     public List<Seat> getSeatsUnsafe() {
@@ -113,13 +118,13 @@ public class Cart {
     }
 
     private void teleport(World world, double x, double y, double z) {
-        updateLocation(world, x, y, z);
+        updateLocation(world, x, y, z, yaw, pitch);
         Location loc = new Location(world, x, y, z);
         loc.setYaw(getYaw());
 
         seats.forEach(s -> s.move(loc));
 
-        base.ifPresent(base -> ride.teleport(base, loc));
+        base.ifPresent(base -> Ride.teleport(base, loc));
     }
 
     public void move() {
@@ -145,6 +150,7 @@ public class Cart {
 
     public void spawn(Location loc) {
         setYaw(loc.getYaw());
+        setPitch(loc.getPitch());
         loc.setY(loc.getY() - MovementUtil.armorStandHeight);
         updateLocation(loc);
         spawned = true;
@@ -175,7 +181,8 @@ public class Cart {
 
         Location loc = getLocation();
 
-        ArmorStand stand = ride.lock(loc.getWorld().spawn(loc.add(0, -MovementUtil.armorStandHeight, 0), ArmorStand.class));
+        ArmorStand stand = Ride.lock(loc.getWorld().spawn(loc.add(0, -MovementUtil.armorStandHeight, 0), ArmorStand.class));
+        stand.teleport(loc);
         stand.setGravity(true);
         stand.setBasePlate(false);
         stand.setArms(false);

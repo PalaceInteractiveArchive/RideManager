@@ -17,6 +17,7 @@ import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.Vector;
 
 import java.io.File;
@@ -29,6 +30,7 @@ import java.util.*;
  */
 public class RideBuilderUtil {
     private HashMap<UUID, BuildSession> sessions = new HashMap<>();
+    private List<UUID> inventory = new ArrayList<>();
 
     public RideBuilderUtil() {
         Core.runTaskTimer(new Runnable() {
@@ -47,9 +49,17 @@ public class RideBuilderUtil {
                     }
                     CPlayerParticlesManager part = player.getParticles();
                     List<RideAction> actions = session.getActions();
+                    RideAction current = session.getCurrentAction();
+                    if (current != null) {
+                        actions.add(current);
+                    }
+                    System.out.println(actions.size());
+
                     if (session.isShowArmorStands()) {
                         HashMap<Location, ArmorStand> stands = session.getStands();
-                        MoveAction lastAction = (MoveAction) actions.stream().filter(a -> a instanceof MoveAction).findFirst().get();
+                        Optional<RideAction> optional = actions.stream().filter(a -> a instanceof MoveAction).findFirst();
+                        if (!optional.isPresent()) continue;
+                        MoveAction lastAction = (MoveAction) optional.get();
                         for (RideAction action : actions) {
                             if (action instanceof FakeExitAction) {
                                 FakeExitAction act = (FakeExitAction) action;
@@ -85,6 +95,40 @@ public class RideBuilderUtil {
                                 lastAction = (MoveAction) action;
                             }
                         }
+                    }
+
+                    player.sendMessage("A");
+                    Location start;
+                    if (actions.isEmpty() || !(actions.get(0) instanceof FakeSpawnAction)) {
+                        player.sendMessage("B");
+                        continue;
+                    }
+                    player.sendMessage("C");
+                    start = ((FakeSpawnAction) actions.get(0)).getLocation();
+                    player.sendMessage("D " + start.getBlockX() + "," + start.getBlockY() + "," + start.getBlockZ());
+                    if (start == null) continue;
+                    player.sendMessage("E");
+                    particle(player.getParticles(), start);
+                    player.sendMessage("F");
+                    for (int i = 1; i < actions.size(); i++) {
+                        RideAction action = actions.get(i);
+                        if (!(action instanceof MoveAction)) continue;
+                        MoveAction move = (MoveAction) action;
+                        Location finalLoc = move.getFinalLocation();
+
+                        for (double n = 0; n < finalLoc.distance(start); n += 0.5) {
+                            double dx = finalLoc.getX() - start.getX();
+                            double dy = finalLoc.getY() - start.getY();
+                            double dz = finalLoc.getZ() - start.getZ();
+                            Vector v = new Vector(dx, dy, dz);
+                            double dis = 2 * start.distance(finalLoc);
+                            v.divide(new Vector(dis, dis, dis));
+                            start.add(v);
+                            particle(player.getParticles(), start);
+                        }
+
+//                        particle(player.getParticles(), start);
+                        start = move.getFinalLocation();
                     }
                 }
             }
@@ -136,7 +180,6 @@ public class RideBuilderUtil {
         BuildSession session = newSession(player);
         player.sendMessage(ChatColor.GREEN + "Session created, loading actions now...");
         session.load(file);
-        session.updateBossBar();
         return session;
     }
 
@@ -154,7 +197,7 @@ public class RideBuilderUtil {
         BuildSession session = getSession(player);
         if (session == null) return;
         RideAction a = session.getCurrentAction();
-        if (a == null || !(a instanceof MoveAction) || a instanceof RotateAction) return;
+        if (!(a instanceof MoveAction) || a instanceof RotateAction) return;
         MoveAction m = (MoveAction) a;
         Vector diff;
         if (session.isChangeY()) {
@@ -219,6 +262,31 @@ public class RideBuilderUtil {
         return new ArrayList<>(sessions.values());
     }
 
+    public void setInventory(UUID uuid, boolean value) {
+        CPlayer player = Core.getPlayerManager().getPlayer(uuid);
+        if (value) {
+            if (inventory.contains(uuid)) return;
+            inventory.add(uuid);
+            if (player == null) return;
+            int i = 0;
+            PlayerInventory inv = player.getInventory();
+            for (BlockAction b : BlockAction.values()) {
+                ItemStack item = b.getItem();
+                inv.setItem(i++, item);
+            }
+        } else {
+            if (!inventory.contains(uuid)) return;
+            inventory.remove(uuid);
+            if (player == null) return;
+            PlayerInventory inv = player.getInventory();
+            for (int i = 0; i < 9; i++) {
+                inv.setItem(i, ItemUtil.create(Material.AIR));
+            }
+            inv.setItem(0, ItemUtil.create(Material.COMPASS));
+            inv.setItem(1, ItemUtil.create(Material.WOOD_AXE));
+        }
+    }
+
     public interface ConfirmCallback {
 
         /**
@@ -232,15 +300,22 @@ public class RideBuilderUtil {
     @AllArgsConstructor
     @Getter
     public enum BlockAction {
-        SPAWN(Material.STAINED_CLAY, (byte) 5), STRAIGHT(Material.STAINED_CLAY, (byte) 4), TURN(Material.STAINED_CLAY, (byte) 14),
-        ROTATE(Material.STAINED_CLAY, (byte) 1), WAIT(Material.STAINED_CLAY, (byte) 13), INCLINE(Material.STAINED_CLAY, (byte) 3),
-        DECLINE(Material.STAINED_CLAY, (byte) 11), TELEPORT(Material.STAINED_CLAY, (byte) 9), EXIT(Material.STAINED_CLAY, (byte) 15);
+        SPAWN(Material.STAINED_CLAY, (byte) 5, ChatColor.GREEN, FakeSpawnAction.class),
+        STRAIGHT(Material.STAINED_CLAY, (byte) 4, ChatColor.YELLOW, FakeStraightAction.class),
+        TURN(Material.STAINED_CLAY, (byte) 14, ChatColor.RED, FakeTurnAction.class),
+        ROTATE(Material.STAINED_CLAY, (byte) 1, ChatColor.GOLD, FakeRotateAction.class),
+        WAIT(Material.STAINED_CLAY, (byte) 13, ChatColor.DARK_GREEN, FakeWaitAction.class),
+        INCLINE(Material.STAINED_CLAY, (byte) 3, ChatColor.AQUA, null),
+        DECLINE(Material.STAINED_CLAY, (byte) 11, ChatColor.BLUE, null),
+        TELEPORT(Material.STAINED_CLAY, (byte) 9, ChatColor.GRAY, FakeTeleportAction.class),
+        EXIT(Material.STAINED_CLAY, (byte) 15, ChatColor.DARK_GRAY, FakeExitAction.class);
         private final Material type;
-
         private final byte data;
+        private final ChatColor color;
+        private final Class clazz;
 
         public ItemStack getItem() {
-            return ItemUtil.create(type, 1, data);
+            return ItemUtil.create(type, getName(), data);
         }
 
         @SuppressWarnings("deprecation")
@@ -264,28 +339,19 @@ public class RideBuilderUtil {
             return array;
         }
 
+        public String getName() {
+            String s = name().toLowerCase();
+            return getColor() + s.substring(0, 1).toUpperCase() + s.substring(1);
+        }
+
         public RideAction newAction() {
-            switch (this) {
-                case SPAWN:
-                    return new FakeSpawnAction();
-                case STRAIGHT:
-                    return new FakeStraightAction();
-                case TURN:
-                    return new FakeTurnAction();
-                case ROTATE:
-                    return new FakeRotateAction();
-                case WAIT:
-                    return new FakeWaitAction();
-                case INCLINE:
-                    return null;
-                case DECLINE:
-                    return null;
-                case TELEPORT:
-                    return new FakeTeleportAction();
-                case EXIT:
-                    return new FakeExitAction();
+            if (clazz == null) return null;
+            try {
+                return (RideAction) clazz.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+                return null;
             }
-            return null;
         }
     }
 }

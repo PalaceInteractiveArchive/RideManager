@@ -7,8 +7,9 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.actions.RideAction;
+import network.palace.ridemanager.handlers.builder.actions.FakeSpawnAction;
+import network.palace.ridemanager.handlers.builder.actions.FakeStraightAction;
 import network.palace.ridemanager.threads.FileRideLoader;
-import network.palace.ridemanager.threads.RideCallback;
 import network.palace.ridemanager.utils.RideBuilderUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -21,14 +22,17 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 public class BuildSession {
     @Getter private final UUID uuid;
     @Getter @Setter private String name;
     @Getter @Setter private String fileName;
-    @Getter private List<RideAction> actions = new ArrayList<>();
+    private List<RideAction> actions = new ArrayList<>();
     @Getter @Setter private Location spawn;
     @Getter @Setter private double speed;
     @Getter private boolean loading = false;
@@ -49,16 +53,15 @@ public class BuildSession {
     public void load(File file) {
         loading = true;
         fileName = file.getName();
-        Core.runTaskAsynchronously(new FileRideLoader(null, file, new RideCallback() {
-            @Override
-            public void done(String name, LinkedList<RideAction> list, Location spawn, double speed, boolean setYaw) {
-                setName(name);
-                actions = RideManager.getInstance().getRideBuilderUtil().getFakeActions(list);
-                setSpawn(spawn);
-                setSpeed(speed);
-                loading = false;
-                Core.getPlayerManager().getPlayer(uuid).sendMessage(ChatColor.GREEN + "Your Build Session has loaded!");
-            }
+        Core.runTaskAsynchronously(new FileRideLoader(null, file, (name, list, spawn, speed, setYaw) -> {
+            setName(name);
+            actions = RideManager.getRideBuilderUtil().getFakeActions(list);
+            setSpawn(spawn);
+            setSpeed(speed);
+            loading = false;
+            Core.getPlayerManager().getPlayer(uuid).sendMessage(ChatColor.GREEN + "Your Build Session has loaded!");
+            RideManager.getRideBuilderUtil().setInventory(uuid, true);
+            updateBossBar();
         }));
     }
 
@@ -113,20 +116,26 @@ public class BuildSession {
      */
     public boolean placeBlock(CPlayer player, Block block) {
         RideBuilderUtil.BlockAction a = RideBuilderUtil.BlockAction.fromBlock(block);
-        if (a == null) {
-            return false;
-        }
+        if (a == null) return false;
+
         if (currentAction != null) {
-            //TODO do something
+            if (!a.getClazz().equals(currentAction.getClass())) {
+                actions.add(currentAction);
+//            } else {
+                // Modify currentAction value
+            }
         }
+
         currentAction = a.newAction();
         String msg = ChatColor.GREEN + "You created a " + ChatColor.YELLOW;
         switch (a) {
             case SPAWN:
                 msg += "Spawn";
+                ((FakeSpawnAction) currentAction).setLocation(block.getLocation());
                 break;
             case STRAIGHT:
                 msg += "Straight";
+                ((FakeStraightAction) currentAction).setTo(block.getLocation());
                 break;
             case TURN:
                 msg += "Turn";
@@ -155,6 +164,10 @@ public class BuildSession {
         return true;
     }
 
+    public List<RideAction> getActions() {
+        return new ArrayList<>(actions);
+    }
+
     public void save() throws IOException {
         File file = new File("plugins/RideManager/rides/" + fileName + ".ride");
         if (!file.exists()) {
@@ -177,8 +190,9 @@ public class BuildSession {
         ChatColor path = isPath() ? ChatColor.GREEN : ChatColor.RED;
         ChatColor locky = roundedLockY != 0 ? ChatColor.GREEN : ChatColor.RED;
         ChatColor edity = isChangeY() ? ChatColor.GREEN : ChatColor.RED;
+        ChatColor stands = isShowArmorStands() ? ChatColor.GREEN : ChatColor.RED;
         player.getBossBar().setEverything(ChatColor.AQUA + "Ride " + name + " " + path + "Path " + locky +
-                "LockY: " + roundedLockY + edity + " Edit Y", 1, BarColor.BLUE, BarStyle.SOLID);
+                "LockY: " + roundedLockY + edity + " Edit Y" + stands + " Stands", 1, BarColor.BLUE, BarStyle.SOLID);
     }
 
     public void removeBossBar() {

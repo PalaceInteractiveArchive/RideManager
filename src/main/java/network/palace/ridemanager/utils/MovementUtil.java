@@ -29,20 +29,17 @@ public class MovementUtil {
 
     public MovementUtil() {
 //        loadRides();
-        taskid = Core.runTaskTimer(new Runnable() {
-            @Override
-            public void run() {
-                for (Ride ride : new ArrayList<>(rides)) {
-                    ride.move();
-                }
-                /*
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    Vector v = p.getVelocity();
-//                    p.sendMessage(v.toString());
-                    p.setVelocity(new Vector(0.1, v.getY(), 0));
-                }*/
-                tick++;
+        taskid = Core.runTaskTimer(() -> {
+            for (Ride ride : new ArrayList<>(rides)) {
+                ride.move();
             }
+            /*
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                Vector v = p.getVelocity();
+//                    p.sendMessage(v.toString());
+                p.setVelocity(new Vector(0.1, v.getY(), 0));
+            }*/
+            tick++;
         }, 0L, 1L);
         ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(RideManager.getInstance(), PacketType.Play.Client.USE_ENTITY) {
             @Override

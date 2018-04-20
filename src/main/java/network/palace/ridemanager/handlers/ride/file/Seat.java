@@ -30,7 +30,10 @@ public class Seat {
 
     @Getter private World world;
     @Getter private double x, y, z;
-    private int chunkX, chunkZ;
+    @Getter private float yaw;
+    @Getter private float pitch;
+    private int chunkX;
+    private int chunkZ;
 
     @Getter private boolean spawned = false;
     @Getter private Vector velocity = new Vector();
@@ -43,7 +46,7 @@ public class Seat {
     }
 
     public Location getLocation() {
-        return new Location(world, x, y, z);
+        return new Location(world, x, y, z, yaw, pitch);
     }
 
     public double getRelativeX() {
@@ -58,11 +61,13 @@ public class Seat {
         return relative_z;
     }
 
-    private void updateLocation(World world, double x, double y, double z) {
+    private void updateLocation(World world, double x, double y, double z, float yaw, float pitch) {
         this.world = world;
         this.x = x;
         this.y = y;
         this.z = z;
+        this.yaw = yaw;
+        this.pitch = pitch;
         chunkX = MathUtil.floor(x) >> 4;
         chunkZ = MathUtil.floor(z) >> 4;
     }
@@ -75,7 +80,7 @@ public class Seat {
         spawned = true;
         Location rel = getRelative(loc, loc.getYaw());
 
-        updateLocation(rel.getWorld(), rel.getX(), rel.getY(), rel.getZ());
+        updateLocation(rel.getWorld(), rel.getX(), rel.getY(), rel.getZ(), rel.getYaw(), rel.getPitch());
 
         if (!getChunk().isLoaded()) return;
 
@@ -88,7 +93,7 @@ public class Seat {
 
     public void move(Location loc, float yaw) {
         Location rel = getRelative(loc, yaw);
-        updateLocation(rel.getWorld(), rel.getX(), rel.getY(), rel.getZ());
+        updateLocation(rel.getWorld(), rel.getX(), rel.getY(), rel.getZ(), rel.getYaw(), rel.getPitch());
         stand.ifPresent(s -> {
             Ride.teleport(s, rel);
             s.setVelocity(velocity);
@@ -149,6 +154,7 @@ public class Seat {
         Location loc = getLocation();
 
         ArmorStand stand = Ride.lock(loc.getWorld().spawn(loc, ArmorStand.class));
+        stand.teleport(loc);
         stand.setGravity(true);
         stand.setBasePlate(false);
         stand.setArms(false);

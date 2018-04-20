@@ -3,16 +3,15 @@ package network.palace.ridemanager.handlers.ride.file;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
+import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
-import network.palace.core.economy.CurrencyType;
 import network.palace.ridemanager.handlers.actions.RideAction;
 import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.threads.FileRideLoader;
-import network.palace.ridemanager.threads.RideCallback;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -56,24 +55,18 @@ public class FileRide extends Ride {
             return;
         }
         loading = true;
-        Core.runTaskAsynchronously(new FileRideLoader(this, rideFile, new RideCallback() {
-            @Override
-            public void done(String name, LinkedList<RideAction> list, Location spawn, double speed, boolean setYaw) {
-                actions = list;
-                setSpawn(spawn);
-                setSpeed(speed);
-                setAutoYaw(setYaw);
-                loading = false;
-            }
+        Core.runTaskAsynchronously(new FileRideLoader(this, rideFile, (name, list, spawn, speed, setYaw) -> {
+            actions = list;
+            setSpawn(spawn);
+            setSpeed(speed);
+            setAutoYaw(setYaw);
+            loading = false;
         }));
         if (delayInMillis < 0) return;
-        taskID = Core.runTaskTimer(new Runnable() {
-            @Override
-            public void run() {
-                if (loading) return;
-                spawn(delayInMillis);
-                Core.cancelTask(taskID);
-            }
+        taskID = Core.runTaskTimer(() -> {
+            if (loading) return;
+            spawn(delayInMillis);
+            Core.cancelTask(taskID);
         }, 0L, 10L);
     }
 
@@ -177,7 +170,7 @@ public class FileRide extends Ride {
         for (RideAction a : new ArrayList<>(actions)) {
             cartActions.put(i++, a.duplicate());
         }
-        ItemStack model = ItemUtil.create(Material.SHEARS, 1, (byte) 13);
+        ItemStack model = ItemUtil.create(Material.SHEARS, 1, (byte) 14);
         Cart c = new Cart(this, cartActions, model, modelMap);
         c.setPower(speed);
         c.spawn(spawn.clone());

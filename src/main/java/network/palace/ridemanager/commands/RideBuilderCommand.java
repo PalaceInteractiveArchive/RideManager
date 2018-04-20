@@ -25,6 +25,7 @@ public class RideBuilderCommand extends CoreCommand {
         registerSubCommand(new NewCommand());
         registerSubCommand(new PathCommand());
         registerSubCommand(new SaveCommand());
+        registerSubCommand(new StandCommand());
         registerSubCommand(new YCommand());
     }
 

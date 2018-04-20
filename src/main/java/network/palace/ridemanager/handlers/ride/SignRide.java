@@ -66,12 +66,7 @@ public class SignRide extends Ride {
             tp.sendMessage(ChatColor.GREEN + "Ride starting in 1 second!");
             getOnRide().add(tp.getUniqueId());
         }
-        Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                c.setPower(0.1);
-            }
-        }, 20L);
+        Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), () -> c.setPower(0.1), 20L);
         carts.add(c);
     }
 

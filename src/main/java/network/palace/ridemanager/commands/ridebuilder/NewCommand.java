@@ -41,6 +41,8 @@ public class NewCommand extends CoreCommand {
         BuildSession session = util.newSession(player);
         session.setName(name.toString().trim());
         session.setFileName(fileName);
+        session.updateBossBar();
+        util.setInventory(player.getUniqueId(), true);
         try {
             session.save();
             player.sendMessage(ChatColor.GREEN + "New ride session created!");

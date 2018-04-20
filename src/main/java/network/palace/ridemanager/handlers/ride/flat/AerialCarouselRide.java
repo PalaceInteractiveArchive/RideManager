@@ -73,28 +73,25 @@ public class AerialCarouselRide extends Ride {
 
     private void startTask() {
         stopTask();
-        taskID = Core.runTaskTimer(new Runnable() {
-            @Override
-            public void run() {
-                for (Vehicle v : getVehicles()) {
-                    CPlayer p = v.getPassenger();
-                    if (p == null) continue;
-                    CPlayerActionBarManager ab = p.getActionBar();
-                    if (!canFly) {
-                        ab.show(ChatColor.RED + "Flying Disabled");
-                        continue;
-                    }
-                    switch (v.getFlyingState()) {
-                        case HOVERING:
-                            ab.show(ChatColor.YELLOW + "Hovering");
-                            break;
-                        case ASCENDING:
-                            ab.show(ChatColor.GREEN + "▲ Ascending ▲");
-                            break;
-                        case DESCENDING:
-                            ab.show(ChatColor.RED + "▼ Descending ▼");
-                            break;
-                    }
+        taskID = Core.runTaskTimer(() -> {
+            for (Vehicle v : getVehicles()) {
+                CPlayer p = v.getPassenger();
+                if (p == null) continue;
+                CPlayerActionBarManager ab = p.getActionBar();
+                if (!canFly) {
+                    ab.show(ChatColor.RED + "Flying Disabled");
+                    continue;
+                }
+                switch (v.getFlyingState()) {
+                    case HOVERING:
+                        ab.show(ChatColor.YELLOW + "Hovering");
+                        break;
+                    case ASCENDING:
+                        ab.show(ChatColor.GREEN + "▲ Ascending ▲");
+                        break;
+                    case DESCENDING:
+                        ab.show(ChatColor.RED + "▼ Descending ▼");
+                        break;
                 }
             }
         }, 0L, 5L);
