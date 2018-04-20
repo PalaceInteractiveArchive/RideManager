@@ -3,11 +3,11 @@ package network.palace.ridemanager.handlers.ride.file;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
+import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
-import network.palace.core.economy.CurrencyType;
 import network.palace.ridemanager.handlers.actions.RideAction;
 import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.Ride;
@@ -191,11 +191,21 @@ public class FileRide extends Ride {
         return list;
     }
 
+    /**
+     * Load all armor stands inside a chunk
+     *
+     * @param chunk the chunk that was loaded
+     */
     @Override
     public void onChunkLoad(Chunk chunk) {
         getCarts().forEach(c -> c.chunkLoaded(chunk));
     }
 
+    /**
+     * Unload all armor stands inside a chunk
+     *
+     * @param chunk the chunk that was unloaded
+     */
     @Override
     public void onChunkUnload(Chunk chunk) {
         getCarts().forEach(c -> c.chunkUnloaded(chunk));
