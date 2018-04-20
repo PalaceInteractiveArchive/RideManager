@@ -184,11 +184,21 @@ public class FileRide extends Ride {
         return list;
     }
 
+    /**
+     * Load all armor stands inside a chunk
+     *
+     * @param chunk the chunk that was loaded
+     */
     @Override
     public void onChunkLoad(Chunk chunk) {
         getCarts().forEach(c -> c.chunkLoaded(chunk));
     }
 
+    /**
+     * Unload all armor stands inside a chunk
+     *
+     * @param chunk the chunk that was unloaded
+     */
     @Override
     public void onChunkUnload(Chunk chunk) {
         getCarts().forEach(c -> c.chunkUnloaded(chunk));
