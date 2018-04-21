@@ -13,17 +13,25 @@ import org.bukkit.event.world.ChunkUnloadEvent;
  */
 public class ChunkListener implements Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onChunkLoad(ChunkLoadEvent event) {
         for (Ride ride : RideManager.getMovementUtil().getRides()) {
-            ride.onChunkLoad(event.getChunk());
+            try {
+                ride.onChunkLoad(event.getChunk());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onChunkUnload(ChunkUnloadEvent event) {
         for (Ride ride : RideManager.getMovementUtil().getRides()) {
-            ride.onChunkUnload(event.getChunk());
+            try {
+                ride.onChunkUnload(event.getChunk());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -47,11 +47,11 @@ public abstract class Ride {
         this.currencyAmount = currencyAmount;
     }
 
+    public abstract void start(List<CPlayer> riders);
+
     public abstract void move();
 
     public abstract void despawn();
-
-    public abstract void start(List<CPlayer> riders);
 
     public boolean handleEject(CPlayer player) {
         return false;
@@ -62,24 +62,6 @@ public abstract class Ride {
         e.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
         e.h(loc.getYaw());
         e.world.entityJoinedWorld(e, false);
-        /*
-        Location cur = entity.getLocation();
-        double y = loc.getRelativeY() - cur.getRelativeY();
-//        entity.teleport(loc);
-//        entity.setVelocity(new Vector(loc.getRelativeX() - cur.getRelativeX(), y != 0 ? y : Double.MIN_VALUE, loc.getRelativeZ() - cur.getRelativeZ()));
-        Entity e = ((CraftEntity) entity).getHandle();
-        if (position) {
-            e.locX = loc.getRelativeX();
-            e.locY = loc.getRelativeY();
-            e.locZ = loc.getRelativeZ();
-            e.positionChanged = true;
-        }
-        e.yaw = loc.getYaw();
-        e.pitch = loc.getPitch();
-        e.motX = loc.getRelativeX() - cur.getRelativeX();
-        e.motY = y != 0 ? y : Double.MIN_VALUE;
-        e.motZ = loc.getRelativeZ() - cur.getRelativeZ();
-        e.velocityChanged = true;*/
     }
 
     public static Location getRelativeLocation(double angle, double radius, Location center) {

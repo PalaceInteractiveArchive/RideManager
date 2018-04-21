@@ -7,47 +7,32 @@ import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.events.RideStartEvent;
-import network.palace.ridemanager.handlers.ride.Ride;
+import network.palace.ridemanager.handlers.ride.ChunkStand;
 import network.palace.ridemanager.utils.MovementUtil;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import java.util.*;
 
-/**
- * Created by Marc on 1/26/17.
- */
-public class TeacupsRide extends Ride {
+public class TeacupsRide extends FlatRide {
     private final int tableRadius = 7;
     private final int cupRadius = 3;
     private final double riderRadius = 0.5;
-    @Getter private FlatState state = FlatState.LOADING;
     @Getter private Location center;
-    @Getter private boolean spawned = false;
     private List<Table> tables = new ArrayList<>();
-    @Getter @Setter private double speed = 0; //Full speed is 0.3
-    @Getter private boolean started = false;
-    private long startTime = 0;
-    private long ticks = 0;
 
-    public TeacupsRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount) {
+    public TeacupsRide(String name, String displayName, double delay, Location exit, Location center,
+                       CurrencyType currencyType, int currencyAmount) {
         super(name, displayName, 54, delay, exit, currencyType, currencyAmount);
         this.center = center;
-        loadSurroundingChunks(center);
         spawn();
     }
 
     public void spawn() {
-        if (isSpawned()) {
-            return;
-        }
-//        World w = center.getWorld();
+        if (isSpawned()) return;
+
         Location loc1 = getRelativeLocation(0, tableRadius, center);
         Location loc2 = getRelativeLocation(120, tableRadius, center);
         Location loc3 = getRelativeLocation(240, tableRadius, center);
@@ -91,67 +76,6 @@ public class TeacupsRide extends Ride {
         loc35.setYaw(120);
         loc36.setYaw(60);
 
-        /*a11.setGravity(false);
-        a12.setGravity(false);
-        a13.setGravity(false);
-        a14.setGravity(false);
-        a15.setGravity(false);
-        a16.setGravity(false);
-        a21.setGravity(false);
-        a22.setGravity(false);
-        a23.setGravity(false);
-        a24.setGravity(false);
-        a25.setGravity(false);
-        a26.setGravity(false);
-        a31.setGravity(false);
-        a32.setGravity(false);
-        a33.setGravity(false);
-        a34.setGravity(false);
-        a35.setGravity(false);
-        a36.setGravity(false);*/
-
-//        a11.setHelmet(h1);
-//        a12.setHelmet(h2);
-//        a13.setHelmet(h3);
-//        a14.setHelmet(h4);
-//        a15.setHelmet(h5);
-//        a16.setHelmet(h6);
-//        a21.setHelmet(h1);
-//        a22.setHelmet(h2);
-//        a23.setHelmet(h3);
-//        a24.setHelmet(h4);
-//        a25.setHelmet(h5);
-//        a26.setHelmet(h6);
-//        a31.setHelmet(h1);
-//        a32.setHelmet(h2);
-//        a33.setHelmet(h3);
-//        a34.setHelmet(h4);
-//        a35.setHelmet(h5);
-//        a36.setHelmet(h6);
-//        double d1 = -Math.toRadians(-90);
-//        double d2 = -Math.toRadians(-30);
-//        double d3 = -Math.toRadians(30);
-//        double d4 = -Math.toRadians(90);
-//        double d5 = -Math.toRadians(150);
-//        double d6 = -Math.toRadians(210);
-//        a11.setHeadPose(a11.getHeadPose().add(0, d1, 0));
-//        a12.setHeadPose(a12.getHeadPose().add(0, d2, 0));
-//        a13.setHeadPose(a13.getHeadPose().add(0, d3, 0));
-//        a14.setHeadPose(a14.getHeadPose().add(0, d4, 0));
-//        a15.setHeadPose(a15.getHeadPose().add(0, d5, 0));
-//        a16.setHeadPose(a16.getHeadPose().add(0, d6, 0));
-//        a21.setHeadPose(a21.getHeadPose().add(0, d1, 0));
-//        a22.setHeadPose(a22.getHeadPose().add(0, d2, 0));
-//        a23.setHeadPose(a23.getHeadPose().add(0, d3, 0));
-//        a24.setHeadPose(a24.getHeadPose().add(0, d4, 0));
-//        a25.setHeadPose(a25.getHeadPose().add(0, d5, 0));
-//        a26.setHeadPose(a26.getHeadPose().add(0, d6, 0));
-//        a31.setHeadPose(a31.getHeadPose().add(0, d1, 0));
-//        a32.setHeadPose(a32.getHeadPose().add(0, d2, 0));
-//        a33.setHeadPose(a33.getHeadPose().add(0, d3, 0));
-//        a34.setHeadPose(a34.getHeadPose().add(0, d4, 0));
-//        a35.setHeadPose(a35.getHeadPose().add(0, d5, 0));
-//        a36.setHeadPose(a36.getHeadPose().add(0, d6, 0));
         Table table1 = new Table(loc1, new LinkedList<>(Arrays.asList(new Cup(loc11, 1, 0, 1),
                 new Cup(loc12, 1, 60, 2), new Cup(loc13, 1, 120, 3),
                 new Cup(loc14, 1, 180, 4), new Cup(loc15, 1, 240, 5),
@@ -164,7 +88,7 @@ public class TeacupsRide extends Ride {
                 new Cup(loc32, 3, 60, 2), new Cup(loc33, 3, 120, 3),
                 new Cup(loc34, 3, 180, 4), new Cup(loc35, 3, 240, 5),
                 new Cup(loc36, 3, 300, 6))), 240);
-        tables = new LinkedList<>(Arrays.asList(table1, table2, table3));
+        tables = new ArrayList<>(Arrays.asList(table1, table2, table3));
         spawned = true;
     }
 
@@ -181,17 +105,21 @@ public class TeacupsRide extends Ride {
         }
         int table = 1;
         int cup = 1;
-        Table t = getTable(1);
+        Table t = getTable(table);
         for (CPlayer tp : new ArrayList<>(riders)) {
-            if (cup > 6) {
-                table++;
-                t = getTable(table);
+            while (t != null) {
+                if (cup > 6) {
+                    table++;
+                    t = getTable(table);
+                    cup = 1;
+                }
+                Cup c = t.getCups().get(cup - 1);
+                if (c.addPassenger(tp)) {
+                    getOnRide().add(tp.getUniqueId());
+                    break;
+                }
+                cup++;
             }
-            Cup c = t.getCups().get(cup - 1);
-            if (c.addPassenger(tp)) {
-                getOnRide().add(tp.getUniqueId());
-            }
-            cup++;
         }
         started = true;
         startTime = System.currentTimeMillis();
@@ -203,49 +131,8 @@ public class TeacupsRide extends Ride {
     }
 
     @Override
-    public boolean sitDown(CPlayer player, ArmorStand stand) {
-        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= getRiders() || getOnRide().contains(player.getUniqueId())) {
-            return false;
-        }
-        UUID uuid = stand.getUniqueId();
-        for (int i = 1; i <= 3; i++) {
-            Table t = getTable(i);
-            for (Cup c : t.getCups()) {
-
-                if (c.getStand().isPresent() && c.getStand().get().getUniqueId().equals(uuid) ||
-                        c.getStand().isPresent() && c.getSeat2().get().getUniqueId().equals(uuid) ||
-                        c.getSeat3().isPresent() && c.getSeat3().get().getUniqueId().equals(uuid)) {
-                    if (c.addPassenger(player, uuid)) {
-                        getOnRide().add(player.getUniqueId());
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean handleEject(CPlayer player) {
-        for (Table t : tables) {
-            for (Cup c : t.getCups()) {
-                if (!c.getPassengers().contains(player.getUniqueId())) {
-                    continue;
-                }
-                getOnRide().remove(player.getUniqueId());
-                c.eject(player);
-                if (!state.equals(FlatState.LOADING)) {
-                    player.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
     public void move() {
-        if (started) {
+        if (isStarted()) {
             if (ticks != 0 && ticks % 20 == 0) {
                 switch ((int) (ticks / 20)) {
                     case 0:
@@ -321,7 +208,7 @@ public class TeacupsRide extends Ride {
                         state = FlatState.LOADING;
                         for (Table t : tables) {
                             for (Cup c : t.getCups()) {
-                                c.spawnSeats();
+                                c.spawn();
                             }
                         }
                         break;
@@ -331,67 +218,135 @@ public class TeacupsRide extends Ride {
                 ticks++;
             }
         }
-        if (isSpawned() && speed == 0) {
-            Vector v = new Vector(0, MovementUtil.getYMin(), 0);
+
+        if (!isSpawned()) return;
+
+        Vector v = new Vector(0, MovementUtil.getYMin(), 0);
+        if (speed == 0) {
             for (Table t : tables) {
                 for (Cup c : t.getCups()) {
                     c.setVelocity(v);
-//                    c.getStand().setVelocity(v);
-//                    if (c.getSeat2() != null) c.getSeat2().setVelocity(v);
-//                    if (c.getSeat3() != null) c.getSeat3().setVelocity(v);
                 }
             }
-        }
-        if (!isSpawned() || speed == 0) {
             return;
         }
+
         double tableChange = 360 / (speed * 20 * 60);
-//        double head = Math.toRadians(tableChange * 2);
+
         for (Table t : tables) {
             List<Cup> cups = t.getCups();
+
             double angle = (t.getAngle() + tableChange) % 360;
             t.setAngle(angle);
+
             Location next = getRelativeLocation(angle, tableRadius, center);
             t.setLocation(next);
+
             for (Cup c : cups) {
                 double a = ((c.getAngle()) - (tableChange * 2)) % 360;
                 c.setAngle(a);
-//                final Location s = c.getCenter();
+
                 Location n = getRelativeLocation(a, cupRadius, next);
-//                s.setHeadPose(s.getHeadPose().add(0, head, 0));
                 n.setYaw((float) -a);
+
                 c.setCenter(n);
                 c.move(n, a);
+                Bukkit.broadcastMessage(n.getY() + "");
+                c.setVelocity(v);
             }
         }
     }
 
     @Override
     public void despawn() {
-        if (!isSpawned()) {
-            return;
-        }
+        if (!isSpawned()) return;
         spawned = false;
         for (Table t : tables) {
             t.despawn();
         }
     }
 
-    private Table getTable(int i) {
-        return tables.get(i - 1);
+    @Override
+    public boolean sitDown(CPlayer player, ArmorStand stand) {
+        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= getRiders() || getOnRide().contains(player.getUniqueId())) {
+            return false;
+        }
+        UUID uuid = stand.getUniqueId();
+        for (int i = 1; i <= 3; i++) {
+            Table t = getTable(i);
+            for (Cup c : t.getCups()) {
+                Optional<ArmorStand> seat1 = c.getSeat1().getStand();
+                Optional<ArmorStand> seat2 = c.getSeat2().getStand();
+                Optional<ArmorStand> seat3 = c.getSeat3().getStand();
+
+                if (((seat1.isPresent() && seat1.get().getUniqueId().equals(uuid)) ||
+                        (seat2.isPresent() && seat2.get().getUniqueId().equals(uuid)) ||
+                        (seat3.isPresent() && seat3.get().getUniqueId().equals(uuid)))
+                        && c.addPassenger(player, uuid)) {
+                    getOnRide().add(player.getUniqueId());
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
-    private void ejectPlayers() {
+    @Override
+    public boolean handleEject(CPlayer player) {
         for (Table t : tables) {
+            for (Cup c : t.getCups()) {
+                if (!c.getPassengers().contains(player.getUniqueId())) continue;
+
+                getOnRide().remove(player.getUniqueId());
+                c.eject(player);
+
+                if (!state.equals(FlatState.LOADING)) {
+                    player.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void ejectPlayers() {
+        for (int i = 1; i <= 3; i++) {
+            Table t = getTable(i);
             for (Cup c : t.getCups()) {
                 c.eject();
             }
         }
-        getOnRide().clear();
+    }
+
+    @Override
+    public void onChunkLoad(Chunk chunk) {
+        if (!isSpawned()) return;
+        for (int i = 1; i <= 3; i++) {
+            Table t = getTable(i);
+            t.chunkLoaded(chunk);
+        }
+    }
+
+    @Override
+    public void onChunkUnload(Chunk chunk) {
+        if (!isSpawned()) return;
+        for (int i = 1; i <= 3; i++) {
+            Table t = getTable(i);
+            t.chunkUnloaded(chunk);
+        }
+    }
+
+    /**
+     * Get one of the three tables
+     *
+     * @param i the table number from 1 to 3
+     * @return a Table object or null if none found
+     */
+    public Table getTable(int i) {
+        return tables.get(i - 1);
     }
 
     private class Table {
-
         @Getter @Setter private Location location;
         @Getter private List<Cup> cups;
         @Getter @Setter private double angle;
@@ -406,27 +361,31 @@ public class TeacupsRide extends Ride {
             for (Cup c : cups) {
                 c.eject();
                 c.despawn();
-//                c.getStand().remove();
-//                if (c.getSeat2() != null) c.getSeat2().remove();
-//                if (c.getSeat3() != null) c.getSeat3().remove();
             }
             cups.clear();
         }
 
+        public void chunkLoaded(Chunk chunk) {
+            for (Cup c : getCups()) {
+                c.chunkLoaded(chunk);
+            }
+        }
+
+        public void chunkUnloaded(Chunk chunk) {
+            for (Cup c : getCups()) {
+                c.chunkUnloaded(chunk);
+            }
+        }
     }
 
     private class Cup {
-
         @Getter @Setter private Location center;
-        @Getter private Optional<ArmorStand> stand = Optional.empty();
-        @Getter private Optional<ArmorStand> seat2 = Optional.empty();
-        @Getter private Optional<ArmorStand> seat3 = Optional.empty();
-        @Getter @Setter private boolean standSpawned = false;
-        @Getter @Setter private boolean seat2Spawned = false;
-        @Getter @Setter private boolean seat3Spawned = false;
+        @Getter private ChunkStand seat1;
+        @Getter private ChunkStand seat2;
+        @Getter private ChunkStand seat3;
         @Getter private int table;
         @Getter @Setter private double angle;
-        @Getter private Vector velocity;
+        @Getter private Vector velocity = new Vector(0, MovementUtil.getYMin(), 0);
         private int num;
 
         public Cup(Location loc, int table, double angle, int num) {
@@ -434,204 +393,143 @@ public class TeacupsRide extends Ride {
             this.table = table;
             this.angle = angle;
             this.num = num;
-//            Location l = getRelativeLocation(angle - 90, riderRadius, loc);
-//            l.setYaw((float) (270 - angle));
-//            l.setY(loc.getY() + 0.2);
-//            stand = lock(loc.getWorld().spawn(l, ArmorStand.class));
-//            stand.setVisible(false);
-//            stand.setHelmet(new ItemStack(Material.SHEARS, 1, (short) (2 + num)));
-            spawnSeats();
+
+            Location l = getRelativeLocation(angle - 90, riderRadius, loc);
+            l.setYaw((float) (270 - angle));
+            l.setY(l.getY() + 0.2);
+
+            Location l2 = getRelativeLocation(angle, riderRadius, loc);
+            l2.setYaw((float) (180 - angle));
+            l2.setY(l2.getY() + 0.2);
+
+            Location l3 = getRelativeLocation(angle + 90, riderRadius, loc);
+            l3.setYaw((float) (90 - angle));
+            l3.setY(l3.getY() + 0.2);
+
+            seat1 = new ChunkStand(l);
+            seat2 = new ChunkStand(l2);
+            seat3 = new ChunkStand(l3);
+            spawn();
+        }
+
+        public void move(Location next, double angle) {
+            Location l = getRelativeLocation(angle - 90, riderRadius, next);
+            l.setYaw((float) (270 - this.angle));
+            l.setY(l.getY() + 0.2);
+            seat1.teleport(l);
+//            seat1.setVelocity(velocity);
+
+            Location l2 = getRelativeLocation(angle, riderRadius, next);
+            l2.setYaw((float) (180 - this.angle));
+            l2.setY(l2.getY() + 0.2);
+            seat2.teleport(l2);
+//            seat2.setVelocity(velocity);
+
+            Location l3 = getRelativeLocation(angle + 90, riderRadius, next);
+            l3.setYaw((float) (90 - this.angle));
+            l3.setY(l3.getY() + 0.2);
+            seat3.teleport(l3);
+//            seat3.setVelocity(velocity);
         }
 
         public void chunkLoaded(Chunk c) {
-            if (!c.isLoaded()) return;
-            if (standSpawned && !stand.isPresent() && c.equals(getChunk(stand))) {
-                Location l = getRelativeLocation(angle - 90, riderRadius, this.center);
-                l.setYaw((float) (270 - angle));
-                l.setY(this.center.getY() + 0.2);
-                ArmorStand stand = lock(center.getWorld().spawn(l, ArmorStand.class));
-                stand.setVelocity(velocity);
-                stand.setVisible(false);
-                stand.setHelmet(new ItemStack(Material.SHEARS, 1, (short) (2 + num)));
-                this.stand = Optional.of(stand);
-            }
-            if (seat2Spawned && !seat2.isPresent() && c.equals(getChunk(seat2))) {
-                Location l2 = getRelativeLocation(angle, riderRadius, center);
-                l2.setYaw((float) (180 - angle));
-                l2.setY(center.getY() + 0.2);
-                ArmorStand seat2 = lock(center.getWorld().spawn(l2, ArmorStand.class));
-                seat2.setVelocity(velocity);
-                seat2.setVisible(false);
-                this.seat2 = Optional.of(seat2);
-            }
-            if (seat3Spawned && !seat3.isPresent() && c.equals(getChunk(seat3))) {
-                Location l3 = getRelativeLocation(angle + 90, riderRadius, center);
-                l3.setYaw((float) (90 - angle));
-                l3.setY(center.getY() + 0.2);
-                ArmorStand seat3 = lock(center.getWorld().spawn(l3, ArmorStand.class));
-                seat3.setVelocity(velocity);
-                seat3.setVisible(false);
-                this.seat3 = Optional.of(seat3);
-            }
+            seat1.chunkLoaded(c);
+            seat2.chunkLoaded(c);
+            seat3.chunkLoaded(c);
+        }
+
+        public void chunkUnloaded(Chunk c) {
+            seat1.chunkUnloaded(c);
+            seat2.chunkUnloaded(c);
+            seat3.chunkUnloaded(c);
         }
 
         public void setVelocity(Vector v) {
             this.velocity = v;
-            stand.ifPresent(s -> s.setVelocity(v));
-            seat2.ifPresent(s -> s.setVelocity(v));
-            seat3.ifPresent(s -> s.setVelocity(v));
+            seat1.setVelocity(v);
+            seat2.setVelocity(v);
+            seat3.setVelocity(v);
         }
 
-        public void move(Location n, double a) {
-            if (getStand().isPresent()) {
-                Location l = getRelativeLocation(a - 90, riderRadius, n);
-                l.setYaw((float) -a + 270);
-                l.setY(l.getY() + 0.2);
-                teleport(stand.get(), l);
-            }
-            if (getSeat2().isPresent()) {
-                Location l2 = getRelativeLocation(a, riderRadius, n);
-                l2.setYaw((float) -a + 180);
-                l2.setY(l2.getY() + 0.2);
-                teleport(getSeat2().get(), l2);
-            }
-            if (getSeat3().isPresent()) {
-                Location l3 = getRelativeLocation(a + 90, riderRadius, n);
-                l3.setYaw((float) -a + 90);
-                l3.setY(l3.getY() + 0.2);
-                teleport(getSeat3().get(), l3);
-            }
-            setVelocity(new Vector(0, MovementUtil.getYMin(), 0));
-        }
-
-        private Chunk getChunk(Optional<ArmorStand> stand) {
-            return stand.map(armorStand -> armorStand.getLocation().getChunk()).orElse(null);
-        }
-
-        public void spawnSeats() {
-            standSpawned = true;
-            seat2Spawned = true;
-            seat3Spawned = true;
-            if (standSpawned && !stand.isPresent()) {
-                Location l = getRelativeLocation(angle - 90, riderRadius, this.center);
-                l.setYaw((float) (270 - angle));
-                l.setY(this.center.getY() + 0.2);
-                ArmorStand stand = lock(center.getWorld().spawn(l, ArmorStand.class));
-                stand.setVelocity(velocity);
-                stand.setVisible(false);
-                stand.setHelmet(new ItemStack(Material.SHEARS, 1, (short) (2 + num)));
-                this.stand = Optional.of(stand);
-            }
-            if (seat2Spawned && !seat2.isPresent()) {
-                Location l2 = getRelativeLocation(angle, riderRadius, center);
-                l2.setYaw((float) (180 - angle));
-                l2.setY(center.getY() + 0.2);
-                ArmorStand seat2 = lock(center.getWorld().spawn(l2, ArmorStand.class));
-                seat2.setVelocity(velocity);
-                seat2.setVisible(false);
-                this.seat2 = Optional.of(seat2);
-            }
-            if (seat3Spawned && !seat3.isPresent()) {
-                Location l3 = getRelativeLocation(angle + 90, riderRadius, center);
-                l3.setYaw((float) (90 - angle));
-                l3.setY(center.getY() + 0.2);
-                ArmorStand seat3 = lock(center.getWorld().spawn(l3, ArmorStand.class));
-                seat3.setVelocity(velocity);
-                seat3.setVisible(false);
-                this.seat3 = Optional.of(seat3);
-            }
+        private void spawn() {
+            seat1.spawn();
+            seat1.setHelmet(new ItemStack(Material.SHEARS, 1, (short) (2 + num)));
+            seat2.spawn();
+            seat3.spawn();
         }
 
         public void despawn() {
-            standSpawned = false;
-            seat2Spawned = false;
-            seat3Spawned = false;
-            stand.ifPresent(Entity::remove);
-            seat2.ifPresent(Entity::remove);
-            seat3.ifPresent(Entity::remove);
-            stand = Optional.empty();
-            seat2 = Optional.empty();
-            seat3 = Optional.empty();
+            seat1.despawn();
+            seat2.despawn();
+            seat3.despawn();
         }
 
         public void removeExtraSeats() {
-            if (seat2.isPresent() && seat2.get().getPassengers().isEmpty()) {
-                seat2Spawned = false;
-                seat2.get().remove();
+            Optional<ArmorStand> stand2 = seat2.getStand();
+            Optional<ArmorStand> stand3 = seat3.getStand();
+
+            if (stand2.isPresent() && stand2.get().getPassengers().isEmpty()) {
+                seat2.despawn();
             }
-            if (seat3.isPresent() && seat3.get().getPassengers().isEmpty()) {
-                seat3Spawned = false;
-                seat3.get().remove();
+
+            if (stand3.isPresent() && stand3.get().getPassengers().isEmpty()) {
+                seat3.despawn();
             }
         }
 
         public boolean addPassenger(CPlayer player) {
-            if (stand.isPresent() && stand.get().getPassengers().isEmpty()) {
-                stand.get().addPassenger(player.getBukkitPlayer());
-                return true;
-            } else if (seat2.isPresent() && seat2.get().getPassengers().isEmpty()) {
-                seat2.get().addPassenger(player.getBukkitPlayer());
-                return true;
-            } else if (seat3.isPresent() && seat3.get().getPassengers().isEmpty()) {
-                seat3.get().addPassenger(player.getBukkitPlayer());
-                return true;
-            }
-            return false;
+            if (seat1.addPassenger(player)) return true;
+            if (seat2.addPassenger(player)) return true;
+            return seat3.addPassenger(player);
         }
 
         public boolean addPassenger(CPlayer player, UUID stand) {
-            if (this.stand.isPresent() && this.stand.get().getUniqueId().equals(stand) && this.stand.get().getPassengers().isEmpty()) {
-                this.stand.get().addPassenger(player.getBukkitPlayer());
+            if (seat1.getStand().isPresent() && seat1.getStand().get().getUniqueId().equals(stand) &&
+                    seat1.addPassenger(player)) {
                 return true;
-            } else if (seat2.isPresent() && seat2.get().getUniqueId().equals(stand) && seat2.get().getPassengers().isEmpty()) {
-                seat2.get().addPassenger(player.getBukkitPlayer());
+            } else if (seat2.getStand().isPresent() && seat2.getStand().get().getUniqueId().equals(stand) &&
+                    seat2.addPassenger(player)) {
                 return true;
-            } else if (seat3.isPresent() && seat3.get().getUniqueId().equals(stand) && seat3.get().getPassengers().isEmpty()) {
-                seat3.get().addPassenger(player.getBukkitPlayer());
-                return true;
+            } else {
+                return seat3.getStand().isPresent() && seat3.getStand().get().getUniqueId().equals(stand) &&
+                        seat3.addPassenger(player);
             }
-            return false;
         }
 
         public List<UUID> getPassengers() {
             List<UUID> list = new ArrayList<>();
-            if (stand.isPresent() && !stand.get().getPassengers().isEmpty()) {
-                list.add(stand.get().getPassengers().get(0).getUniqueId());
-            }
-            if (seat2.isPresent() && !seat2.get().getPassengers().isEmpty()) {
-                list.add(seat2.get().getPassengers().get(0).getUniqueId());
-            }
-            if (seat3.isPresent() && !seat3.get().getPassengers().isEmpty()) {
-                list.add(seat3.get().getPassengers().get(0).getUniqueId());
-            }
+            list.add(seat1.getPassenger());
+            list.add(seat2.getPassenger());
+            list.add(seat3.getPassenger());
             return list;
         }
 
         public void eject() {
-            if (stand.isPresent() && !stand.get().getPassengers().isEmpty()) {
-                emptyStand(stand.get());
+            if (seat1.getPassenger() != null) {
+                emptyStand(seat1.getStand().get());
             }
-            if (seat2.isPresent() && !seat2.get().getPassengers().isEmpty()) {
-                emptyStand(seat2.get());
+            if (seat2.getPassenger() != null) {
+                emptyStand(seat2.getStand().get());
             }
-            if (seat3.isPresent() && !seat3.get().getPassengers().isEmpty()) {
-                emptyStand(seat3.get());
+            if (seat3.getPassenger() != null) {
+                emptyStand(seat3.getStand().get());
             }
-//            CPlayer passenger = getPassenger();
-//            if (passenger != null) {
-//                final Location playerLoc = passenger.getLocation();
-//                stand.removePassenger(passenger.getBukkitPlayer());
-//                Location loc = getExit();
-//                if (state.equals(FlatState.LOADING)) {
-//                    loc = stand.getLocation().add(0, 2, 0);
-//                    loc.setYaw(playerLoc.getYaw());
-//                    loc.setPitch(playerLoc.getPitch());
-//                }
-//                passenger.teleport(loc);
-//            }
+        }
+
+        public void eject(CPlayer player) {
+            if (seat1.getPassenger() != null && player.getUniqueId().equals(seat1.getPassenger())) {
+                emptyStand(seat1.getStand().get());
+            }
+            if (seat2.getPassenger() != null && player.getUniqueId().equals(seat2.getPassenger())) {
+                emptyStand(seat2.getStand().get());
+            }
+            if (seat3.getPassenger() != null && player.getUniqueId().equals(seat3.getPassenger())) {
+                emptyStand(seat3.getStand().get());
+            }
         }
 
         private void emptyStand(ArmorStand stand) {
+            if (stand.getPassengers().isEmpty()) return;
             CPlayer p = Core.getPlayerManager().getPlayer(stand.getPassengers().get(0).getUniqueId());
             final Location pLoc = p.getLocation();
             stand.removePassenger(p.getBukkitPlayer());
@@ -644,25 +542,5 @@ public class TeacupsRide extends Ride {
             p.teleport(loc);
         }
 
-        public void eject(CPlayer player) {
-            if (stand.isPresent() && !stand.get().getPassengers().isEmpty() && stand.get().getPassengers().contains(player.getBukkitPlayer())) {
-                emptyStand(stand.get());
-            }
-            if (seat2.isPresent() && !seat2.get().getPassengers().isEmpty() && seat2.get().getPassengers().contains(player.getBukkitPlayer())) {
-                emptyStand(seat2.get());
-            }
-            if (seat3.isPresent() && !seat3.get().getPassengers().isEmpty() && seat3.get().getPassengers().contains(player.getBukkitPlayer())) {
-                emptyStand(seat3.get());
-            }
-        }
-
-    }
-
-    @Override
-    public void onChunkLoad(Chunk chunk) {
-    }
-
-    @Override
-    public void onChunkUnload(Chunk chunk) {
     }
 }

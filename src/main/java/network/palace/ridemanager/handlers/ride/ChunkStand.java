@@ -1,55 +1,72 @@
 package network.palace.ridemanager.handlers.ride;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public abstract class ChunkStand {
-    private List<Optional<ArmorStand>> stands = new ArrayList<>();
+@NoArgsConstructor
+public class ChunkStand {
+    @Getter private Optional<ArmorStand> stand = Optional.empty();
     @Getter private boolean spawned = false;
     @Getter private World world;
     @Getter private double x, y, z;
     private int chunkX, chunkZ;
     @Getter @Setter private float yaw = 0;
+    @Getter @Setter private float pitch = 0;
+    private ItemStack helmet = null;
+    @Getter private Vector velocity = new Vector(0, MovementUtil.getYMin(), 0);
 
     public ChunkStand(Location loc) {
         updateLocation(loc);
-        spawn(loc);
     }
 
     private void updateLocation(World world, double x, double y, double z) {
+        updateLocation(world, x, y, z, 0, 0);
+    }
+
+    private void updateLocation(World world, double x, double y, double z, float yaw, float pitch) {
         this.world = world;
         this.x = x;
         this.y = y;
         this.z = z;
+        this.yaw = yaw;
+        this.pitch = pitch;
         chunkX = MathUtil.floor(x) >> 4;
         chunkZ = MathUtil.floor(z) >> 4;
     }
 
     private void updateLocation(Location loc) {
-        updateLocation(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ());
+        updateLocation(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
     }
 
     public Location getLocation() {
-        return new Location(world, x, y, z).add(0, MovementUtil.armorStandHeight, 0);
+        return new Location(world, x, y, z, yaw, pitch).add(0, MovementUtil.armorStandHeight, 0);
     }
 
     public Chunk getChunk() {
         return world.getChunkAt(chunkX, chunkZ);
     }
 
+    public void spawn() {
+        spawn(getLocation());
+    }
+
     public void spawn(Location loc) {
         setYaw(loc.getYaw());
+        setPitch(loc.getPitch());
         loc.setY(loc.getY() - MovementUtil.armorStandHeight);
         updateLocation(loc);
         spawned = true;
@@ -59,40 +76,73 @@ public abstract class ChunkStand {
         chunkLoaded(getChunk());
     }
 
+    public void despawn() {
+        spawned = false;
+
+        if (!getChunk().isLoaded()) return;
+
+        chunkUnloaded(getChunk());
+    }
+
     public void chunkLoaded(Chunk c) {
-        if (!spawned || stands.isEmpty() || present(stands) || !c.equals(getChunk()) || !c.isLoaded()) return;
+        if (!spawned || stand.isPresent() || !c.equals(getChunk())) return;
 
         Location loc = getLocation();
 
-        for (Optional<ArmorStand> opt : stands) {
-            ArmorStand stand = Ride.lock(loc.getWorld().spawn(loc, ArmorStand.class));
-            opt = Optional.of(stand);
-        }
+        ArmorStand stand = Ride.lock(loc.getWorld().spawn(loc, ArmorStand.class));
+        stand.setVisible(false);
+        stand.setHelmet(helmet);
+        stand.setVelocity(velocity);
+        this.stand = Optional.of(stand);
+    }
 
-        Bukkit.broadcastMessage("Spawned!");
+    public void chunkUnloaded(Chunk c) {
+        if (!c.equals(getChunk())) return;
+
+        stand.ifPresent(Entity::remove);
+        stand = Optional.empty();
     }
 
     public void teleport(Location loc) {
-        loc.setY(loc.getY() - MovementUtil.armorStandHeight);
-        setYaw(loc.getYaw());
-        teleport(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ());
+        teleport(loc, false);
+    }
+
+    public void teleport(Location loc, boolean adjust) {
+        if (adjust) {
+            loc.setY(loc.getY() - MovementUtil.armorStandHeight);
+        }
+        teleport(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
     }
 
     private void teleport(World world, double x, double y, double z) {
-        updateLocation(world, x, y, z);
-        Location loc = new Location(world, x, y, z);
-        loc.setYaw(getYaw());
+        teleport(world, x, y, z, getYaw(), getPitch());
+    }
 
-        stands.forEach(s -> {
-            if (!s.isPresent()) return;
-            Ride.teleport(s.get(), loc);
+    private void teleport(World world, double x, double y, double z, float yaw, float pitch) {
+        updateLocation(world, x, y, z, yaw, pitch);
+        Location loc = new Location(world, x, y, z, yaw, pitch);
+        stand.ifPresent(armorStand -> {
+            Ride.teleport(armorStand, loc);
+            armorStand.setVelocity(velocity);
         });
     }
 
-    private boolean present(List<Optional<ArmorStand>> stands) {
-        for (Optional<ArmorStand> opt : stands) {
-            if (!opt.isPresent()) return false;
-        }
-        return true;
+    public void setHelmet(ItemStack item) {
+        this.helmet = item;
+        stand.ifPresent(armorStand -> armorStand.setHelmet(item));
+    }
+
+    public void setVelocity(Vector velocity) {
+        this.velocity = velocity;
+        stand.ifPresent(armorStand -> armorStand.setVelocity(velocity));
+    }
+
+    public boolean addPassenger(CPlayer player) {
+        return getStand().isPresent() && stand.get().getPassengers().isEmpty() && stand.get().addPassenger(player.getBukkitPlayer());
+    }
+
+    public UUID getPassenger() {
+        return stand.filter(armorStand -> !armorStand.getPassengers().isEmpty())
+                .map(armorStand -> armorStand.getPassengers().get(0).getUniqueId()).orElse(null);
     }
 }
