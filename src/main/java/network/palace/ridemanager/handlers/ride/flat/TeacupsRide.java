@@ -2,14 +2,16 @@ package network.palace.ridemanager.handlers.ride.flat;
 
 import lombok.Getter;
 import lombok.Setter;
-import network.palace.core.Core;
 import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.handlers.ride.ChunkStand;
 import network.palace.ridemanager.utils.MovementUtil;
-import org.bukkit.*;
+import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
@@ -251,7 +253,6 @@ public class TeacupsRide extends FlatRide {
 
                 c.setCenter(n);
                 c.move(n, a);
-                Bukkit.broadcastMessage(n.getY() + "");
                 c.setVelocity(v);
             }
         }
@@ -506,12 +507,15 @@ public class TeacupsRide extends FlatRide {
 
         public void eject() {
             if (seat1.getPassenger() != null) {
+                getOnRide().remove(seat1.getPassenger());
                 emptyStand(seat1.getStand().get());
             }
             if (seat2.getPassenger() != null) {
+                getOnRide().remove(seat2.getPassenger());
                 emptyStand(seat2.getStand().get());
             }
             if (seat3.getPassenger() != null) {
+                getOnRide().remove(seat3.getPassenger());
                 emptyStand(seat3.getStand().get());
             }
         }
@@ -519,27 +523,16 @@ public class TeacupsRide extends FlatRide {
         public void eject(CPlayer player) {
             if (seat1.getPassenger() != null && player.getUniqueId().equals(seat1.getPassenger())) {
                 emptyStand(seat1.getStand().get());
+                getOnRide().remove(player.getUniqueId());
             }
             if (seat2.getPassenger() != null && player.getUniqueId().equals(seat2.getPassenger())) {
                 emptyStand(seat2.getStand().get());
+                getOnRide().remove(player.getUniqueId());
             }
             if (seat3.getPassenger() != null && player.getUniqueId().equals(seat3.getPassenger())) {
                 emptyStand(seat3.getStand().get());
+                getOnRide().remove(player.getUniqueId());
             }
-        }
-
-        private void emptyStand(ArmorStand stand) {
-            if (stand.getPassengers().isEmpty()) return;
-            CPlayer p = Core.getPlayerManager().getPlayer(stand.getPassengers().get(0).getUniqueId());
-            final Location pLoc = p.getLocation();
-            stand.removePassenger(p.getBukkitPlayer());
-            Location loc = getExit();
-            if (state.equals(FlatState.LOADING)) {
-                loc = stand.getLocation().add(0, 2, 0);
-                loc.setYaw(pLoc.getYaw());
-                loc.setPitch(pLoc.getPitch());
-            }
-            p.teleport(loc);
         }
 
     }

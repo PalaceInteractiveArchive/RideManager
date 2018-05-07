@@ -12,6 +12,7 @@ import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
 import java.util.Optional;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class ChunkStand {
     @Getter private Optional<ArmorStand> stand = Optional.empty();
     @Getter private boolean spawned = false;
+    @Getter private boolean gravity = true;
     @Getter private World world;
     @Getter private double x, y, z;
     private int chunkX, chunkZ;
@@ -28,8 +30,19 @@ public class ChunkStand {
     @Getter @Setter private float pitch = 0;
     private ItemStack helmet = null;
     @Getter private Vector velocity = new Vector(0, MovementUtil.getYMin(), 0);
+    private EulerAngle headPose = null;
 
     public ChunkStand(Location loc) {
+        this(loc, true);
+    }
+
+    public ChunkStand(Location loc, boolean gravity) {
+        this(loc, gravity, null);
+    }
+
+    public ChunkStand(Location loc, boolean gravity, EulerAngle headPose) {
+        this.gravity = gravity;
+        this.headPose = headPose;
         updateLocation(loc);
     }
 
@@ -87,12 +100,14 @@ public class ChunkStand {
     public void chunkLoaded(Chunk c) {
         if (!spawned || stand.isPresent() || !c.equals(getChunk())) return;
 
-        Location loc = getLocation();
+        Location loc = getLocation().clone().add(0, -MovementUtil.armorStandHeight, 0);
 
         ArmorStand stand = Ride.lock(loc.getWorld().spawn(loc, ArmorStand.class));
         stand.setVisible(false);
         stand.setHelmet(helmet);
+        stand.setGravity(gravity);
         stand.setVelocity(velocity);
+        if (headPose != null) stand.setHeadPose(headPose);
         this.stand = Optional.of(stand);
     }
 
@@ -125,6 +140,16 @@ public class ChunkStand {
             Ride.teleport(armorStand, loc);
             armorStand.setVelocity(velocity);
         });
+    }
+
+    public void setHeadPose(EulerAngle headPose) {
+        this.headPose = headPose;
+        stand.ifPresent(armorStand -> armorStand.setHeadPose(headPose));
+    }
+
+    public void setGravity(boolean gravity) {
+        this.gravity = gravity;
+        stand.ifPresent(armorStand -> armorStand.setGravity(gravity));
     }
 
     public void setHelmet(ItemStack item) {
