@@ -30,6 +30,9 @@ public class PathDataTimer implements Runnable {
                 } else if (action instanceof FakeStraightAction || action instanceof FakeExitAction) {
                     Location original = start.clone();
                     Location to = action instanceof FakeStraightAction ? ((FakeStraightAction) action).getTo() : ((FakeExitAction) action).getTo();
+
+                    pathParticle(player, start, true);
+
                     while (!finished) {
                         float yaw = (float) Math.toDegrees(Math.atan2(original.getZ() - to.getZ(), original.getX() - to.getX())) + 90;
                         double distance = original.distance(to);
@@ -50,7 +53,7 @@ public class PathDataTimer implements Runnable {
                             }
                             start = next;
                         }
-                        pathParticle(player, start);
+                        pathParticle(player, start, false);
                     }
                 } else if (action instanceof FakeTurnAction) {
                     Location original = start.clone();
@@ -66,6 +69,8 @@ public class PathDataTimer implements Runnable {
                     double originalY = 0;
                     double yDifference = 0;
                     double yChange = 0;
+
+                    pathParticle(player, start, true);
 
                     while (!finished) {
                         if (radius == 0) {
@@ -107,7 +112,7 @@ public class PathDataTimer implements Runnable {
 //                            cart.setVelocity(v);
 //                            cart.teleport(target);
                         start = target;
-                        pathParticle(player, start);
+                        pathParticle(player, start, false);
                     }
                 } else if (action instanceof FakeSpeedAction) {
                     FakeSpeedAction ac = (FakeSpeedAction) action;
@@ -117,8 +122,12 @@ public class PathDataTimer implements Runnable {
         }
     }
 
-    private void pathParticle(CPlayer player, Location loc) {
+    private void pathParticle(CPlayer player, Location loc, boolean action) {
         if (player.getLocation().distance(loc) > 15) return;
-        player.getParticles().send(loc, Particle.REDSTONE, 1);
+        if (action) {
+            player.getParticles().send(loc, Particle.DRIP_LAVA, 1);
+        } else {
+            player.getParticles().send(loc, Particle.DRIP_WATER, 1);
+        }
     }
 }

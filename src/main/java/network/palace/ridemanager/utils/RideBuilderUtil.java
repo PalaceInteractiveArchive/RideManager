@@ -47,7 +47,7 @@ public class RideBuilderUtil {
                         removeSession(session.getUuid());
                         continue;
                     }
-                    CPlayerParticlesManager part = player.getParticles();
+                    CPlayerParticlesManager particles = player.getParticles();
                     List<RideAction> actions = session.getActions();
                     RideAction current = session.getCurrentAction();
                     if (current != null) {
@@ -97,24 +97,26 @@ public class RideBuilderUtil {
                         }
                     }
 
-                    player.sendMessage("A");
+//                    player.sendMessage("A");
                     Location start;
                     if (actions.isEmpty() || !(actions.get(0) instanceof FakeSpawnAction)) {
-                        player.sendMessage("B");
+//                        player.sendMessage("B");
                         continue;
                     }
-                    player.sendMessage("C");
+//                    player.sendMessage("C");
                     start = ((FakeSpawnAction) actions.get(0)).getLocation();
-                    player.sendMessage("D " + start.getBlockX() + "," + start.getBlockY() + "," + start.getBlockZ());
+//                    player.sendMessage("D " + start.getBlockX() + "," + start.getBlockY() + "," + start.getBlockZ());
                     if (start == null) continue;
-                    player.sendMessage("E");
-                    particle(player.getParticles(), start);
-                    player.sendMessage("F");
+//                    player.sendMessage("E");
+//                    particle(particles, start, true);
+//                    player.sendMessage("F");
                     for (int i = 1; i < actions.size(); i++) {
                         RideAction action = actions.get(i);
                         if (!(action instanceof MoveAction)) continue;
                         MoveAction move = (MoveAction) action;
                         Location finalLoc = move.getFinalLocation();
+
+//                        particle(particles, start, true);
 
                         for (double n = 0; n < finalLoc.distance(start); n += 0.5) {
                             double dx = finalLoc.getX() - start.getX();
@@ -124,17 +126,21 @@ public class RideBuilderUtil {
                             double dis = 2 * start.distance(finalLoc);
                             v.divide(new Vector(dis, dis, dis));
                             start.add(v);
-                            particle(player.getParticles(), start);
+                            particle(particles, start, false);
                         }
 
-//                        particle(player.getParticles(), start);
                         start = move.getFinalLocation();
                     }
                 }
             }
 
-            private void particle(CPlayerParticlesManager part, Location loc) {
-                part.send(loc, Particle.REDSTONE, 1);
+            private void particle(CPlayerParticlesManager part, Location loc, boolean action) {
+                System.out.println(action);
+                if (action) {
+                    part.send(loc, Particle.VILLAGER_HAPPY, 2);
+                } else {
+                    part.send(loc, Particle.REDSTONE, 1);
+                }
             }
 
             private ArmorStand getStand(HashMap<Location, ArmorStand> stands, Location loc) {
@@ -154,11 +160,6 @@ public class RideBuilderUtil {
             }
         }, 0L, 20L);
         Core.runTaskTimer(new PathDataTimer(), 0L, 20L);
-    }
-
-    private void pathParticle(CPlayer player, Location loc) {
-        if (player.getLocation().distance(loc) > 15) return;
-        player.getParticles().send(loc, Particle.REDSTONE, 1);
     }
 
     public BuildSession getSession(CPlayer player) {
@@ -221,13 +222,13 @@ public class RideBuilderUtil {
     public MoveAction changeLocation(MoveAction a, Vector v) {
         if (a instanceof ExitAction) {
             ExitAction act = (ExitAction) a;
-            return new ExitAction(act.getTo().add(v));
+            return new ExitAction(act.getTo().add(v), act.getAutoYaw());
         } else if (a instanceof SpawnAction) {
             SpawnAction act = (SpawnAction) a;
             return new SpawnAction(act.getLoc().add(v), act.getSpeed(), act.getYaw());
         } else if (a instanceof StraightAction) {
             StraightAction act = (StraightAction) a;
-            return new StraightAction(act.getTo().add(v));
+            return new StraightAction(act.getTo().add(v), act.getAutoYaw());
         } else if (a instanceof TeleportAction) {
             TeleportAction act = (TeleportAction) a;
             return new TeleportAction(act.getTo().add(v));
@@ -242,11 +243,11 @@ public class RideBuilderUtil {
         List<RideAction> finalList = new ArrayList<>();
         for (RideAction a : list) {
             if (a instanceof ExitAction) {
-                finalList.add(new FakeExitAction(((ExitAction) a).getTo()));
+                finalList.add(new FakeExitAction(((ExitAction) a).getTo(), ((ExitAction) a).getAutoYaw()));
             } else if (a instanceof SpawnAction) {
                 finalList.add(new FakeSpawnAction(((SpawnAction) a).getLoc(), ((SpawnAction) a).getSpeed(), ((SpawnAction) a).getYaw()));
             } else if (a instanceof StraightAction) {
-                finalList.add(new FakeStraightAction(((StraightAction) a).getTo()));
+                finalList.add(new FakeStraightAction(((StraightAction) a).getTo(), ((StraightAction) a).getAutoYaw()));
             } else if (a instanceof TeleportAction) {
                 finalList.add(new FakeTeleportAction(((TeleportAction) a).getTo()));
             } else if (a instanceof TurnAction) {

@@ -32,7 +32,7 @@ public class TurnAction extends MoveAction {
     @Override
     public void execute() {
         if (radius == 0) {
-            if (angle > 180 || angle == 0) {
+            if (Math.abs(angle) > 180 || angle == 0) {
                 finished = true;
                 Bukkit.getLogger().severe("Cannot have a turn travel more than 180 degrees or equal 0!");
                 return;
@@ -46,7 +46,7 @@ public class TurnAction extends MoveAction {
             yChange = MovementUtil.pythag((Math.abs(angle) * radius * Math.PI) / 180, yDifference);
             targetAngle = originAngle + angle;
         }
-        double angleChange = angle / ((Math.abs((2 * Math.PI * radius) / (360 / angle))) / (cart.getPower() * 1.66));
+        double angleChange = angle / ((Math.abs((2 * Math.PI * radius) / (360 / angle))) / cart.getPower());
         float dynamicAngle;
         if ((clockwise && originAngle + angleChange > targetAngle) || (!clockwise && originAngle + angleChange < targetAngle)) {
             dynamicAngle = targetAngle;

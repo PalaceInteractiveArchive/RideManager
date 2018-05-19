@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.handlers.actions.RideAction;
+import network.palace.ridemanager.handlers.actions.sensors.RideSensor;
 import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.utils.MathUtil;
@@ -25,6 +26,7 @@ import java.util.*;
 public class Cart {
     @Getter private final FileRide ride;
     private final LinkedHashMap<Integer, RideAction> actions;
+    private final LinkedList<RideSensor> sensors;
     @Getter private final ModelMap map;
     @Getter private final ItemStack model;
     @Getter private double power = 0;
@@ -50,17 +52,19 @@ public class Cart {
     @Getter private long creationTimestamp;
     private boolean deleted;
 
-    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, ItemStack model, ModelMap map) {
-        this(ride, actions, model, map, 0.1);
+    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, LinkedList<RideSensor> sensors, ItemStack model, ModelMap map) {
+        this(ride, actions, sensors, model, map, 0.1);
     }
 
-    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, ItemStack model, ModelMap map, double power) {
+    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, LinkedList<RideSensor> sensors, ItemStack model, ModelMap map, double power) {
         this.ride = ride;
         this.actions = actions;
+        this.sensors = sensors;
         this.map = map;
         this.seats = new ArrayList<>();
         creationTimestamp = System.currentTimeMillis();
         this.actions.values().forEach(a -> a.setCart(this));
+        this.sensors.forEach(s -> s.setCart(this));
         setPower(power);
         this.model = model;
     }
@@ -142,6 +146,12 @@ public class Cart {
         if (a.isFinished()) {
             currentActionIndex++;
         }
+        final Location currentLocation = getLocation();
+        for (RideSensor sensor : sensors) {
+            if (!sensor.isActivated() && sensor.isInRadius(currentLocation)) {
+                sensor.activate();
+            }
+        }
     }
 
     public void setPower(double p) {
@@ -177,7 +187,7 @@ public class Cart {
     }
 
     public void chunkLoaded(Chunk c) {
-        if (!spawned || base.isPresent() || !c.equals(getChunk()) || !c.isLoaded()) return;
+        if (!spawned || base.isPresent() || !c.equals(getChunk())) return;
 
         Location loc = getLocation();
 
@@ -189,13 +199,12 @@ public class Cart {
         stand.setHelmet(getModel());
         stand.setVelocity(new Vector(0, MovementUtil.getYMin(), 0));
         base = Optional.of(stand);
-        Bukkit.broadcastMessage("Spawned!");
 
         getSeats().forEach(Seat::chunkLoaded);
     }
 
     public void chunkUnloaded(Chunk c) {
-        if (c != null && (!c.equals(getChunk()) || !c.isLoaded())) return;
+        if (c != null && !c.equals(getChunk())) return;
         base.ifPresent(b -> {
             b.remove();
             Bukkit.broadcastMessage("Despawned!");

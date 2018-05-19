@@ -2,10 +2,14 @@ package network.palace.ridemanager.threads;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import network.palace.ridemanager.handlers.SensorType;
 import network.palace.ridemanager.handlers.actions.*;
+import network.palace.ridemanager.handlers.actions.sensors.*;
 import network.palace.ridemanager.handlers.ride.file.FileRide;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 
 import java.io.*;
 import java.util.LinkedList;
@@ -22,7 +26,8 @@ public class FileRideLoader implements Runnable {
     @Override
     public void run() {
         StringBuilder name = new StringBuilder();
-        LinkedList<RideAction> list = new LinkedList<>();
+        LinkedList<RideAction> actions = new LinkedList<>();
+        LinkedList<RideSensor> sensors = new LinkedList<>();
         Location spawn = null;
         double speed = 0.1;
         boolean setYaw = true;
@@ -48,6 +53,36 @@ public class FileRideLoader implements Runnable {
                         }
                         break;
                     }
+                    case "Sensor": {
+                        Location loc = strToLoc(tokens[1]);
+                        double radius = getDouble(tokens[2]);
+                        SensorType type = SensorType.fromString(tokens[3].toLowerCase());
+                        RideSensor sensor;
+                        switch (type) {
+                            case BLOCK:
+                                Location blockLoc = strToLoc(tokens[4]);
+                                Material btype = Material.valueOf(tokens[5]);
+                                sensor = new BlockSensor(loc, radius, blockLoc, btype);
+                                break;
+                            case SHOW:
+                                sensor = new ShowSensor(loc, radius, tokens[4]);
+                                break;
+                            case SPEED:
+                                sensor = new SpeedSensor(loc, radius, getDouble(tokens[4]), getLong(tokens[5]));
+                                break;
+                            case TEXT:
+                                StringBuilder message = new StringBuilder();
+                                for (int i = 4; i < tokens.length; i++) {
+                                    message.append(tokens[i]);
+                                }
+                                sensor = new TextSensor(loc, radius, ChatColor.translateAlternateColorCodes('&', message.toString()));
+                                break;
+                            default:
+                                continue;
+                        }
+                        if (sensor != null) sensors.add(sensor);
+                        break;
+                    }
                     case "Spawn": {
                         spawn = strToLoc(tokens[1]);
                         if (spawn == null) {
@@ -60,15 +95,21 @@ public class FileRideLoader implements Runnable {
                     }
                     case "Straight": {
                         Location to = strToLoc(tokens[1]);
-                        StraightAction a = new StraightAction(to);
-                        list.add(a);
+                        String autoYaw;
+                        if (tokens.length > 2) {
+                            autoYaw = tokens[2];
+                        } else {
+                            autoYaw = "";
+                        }
+                        StraightAction a = new StraightAction(to, autoYaw);
+                        actions.add(a);
                         break;
                     }
                     case "Turn": {
                         Location origin = strToLoc(tokens[1]);
                         int angle = getInt(tokens[2]);
                         TurnAction a = new TurnAction(origin, angle);
-                        list.add(a);
+                        actions.add(a);
                         break;
                     }
                     case "Rotate": {
@@ -76,20 +117,20 @@ public class FileRideLoader implements Runnable {
                         boolean right = Boolean.parseBoolean(tokens[2]);
                         long ticks = getLong(tokens[3]);
                         RotateAction a = new RotateAction(angle, right, ticks);
-                        list.add(a);
+                        actions.add(a);
                         break;
                     }
                     case "Wait": {
                         long delay = getLong(tokens[1]);
                         WaitAction a = new WaitAction(delay);
-                        list.add(a);
+                        actions.add(a);
                         break;
                     }
                     case "Incline": {
                         Location to = strToLoc(tokens[1]);
                         int angle = getInt(tokens[2]);
                         InclineAction a = new InclineAction(to, angle);
-                        list.add(a);
+                        actions.add(a);
                         break;
                     }
                     case "Decline": {
@@ -98,13 +139,19 @@ public class FileRideLoader implements Runnable {
                     case "Teleport": {
                         Location to = strToLoc(tokens[1]);
                         TeleportAction a = new TeleportAction(to);
-                        list.add(a);
+                        actions.add(a);
                         break;
                     }
                     case "Exit": {
                         Location to = strToLoc(tokens[1]);
-                        ExitAction a = new ExitAction(to);
-                        list.add(a);
+                        String autoYaw;
+                        if (tokens.length > 2) {
+                            autoYaw = tokens[2];
+                        } else {
+                            autoYaw = "";
+                        }
+                        ExitAction a = new ExitAction(to, autoYaw);
+                        actions.add(a);
                         break;
                     }
                 }
@@ -112,7 +159,7 @@ public class FileRideLoader implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        callback.done(name.toString().trim(), list, spawn, speed, setYaw);
+        callback.done(name.toString().trim(), actions, sensors, spawn, speed, setYaw);
     }
 
     public static int getInt(String s) {

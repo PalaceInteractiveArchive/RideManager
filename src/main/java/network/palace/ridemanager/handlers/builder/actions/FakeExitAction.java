@@ -9,19 +9,21 @@ import org.bukkit.Location;
 @Setter
 public class FakeExitAction extends FakeAction {
     private Location to;
+    private String autoYaw;
 
     public FakeExitAction() {
-        this(null);
+        this(null, "");
     }
 
-    public FakeExitAction(Location to) {
+    public FakeExitAction(Location to, String autoYaw) {
         super(true);
         this.to = to;
+        this.autoYaw = autoYaw;
     }
 
     @Override
     public RideAction duplicate() {
-        return new network.palace.ridemanager.handlers.actions.ExitAction(to.clone());
+        return new network.palace.ridemanager.handlers.actions.ExitAction(to.clone(), autoYaw);
     }
 
     @Override

@@ -11,10 +11,12 @@ import org.bukkit.util.Vector;
  */
 public class ExitAction extends MoveAction {
     @Getter private final Location to;
+    @Getter private String autoYaw;
     private boolean finished = false;
 
-    public ExitAction(Location to) {
+    public ExitAction(Location to, String autoYaw) {
         this.to = to;
+        this.autoYaw = autoYaw;
         this.finalLocation = to;
     }
 
@@ -27,10 +29,18 @@ public class ExitAction extends MoveAction {
         double power = cart.getPower();
         Vector change = resultant.multiply(new Vector(power, power, power));
         Location next = cart.getLocation().add(change);
-        if (getCart().getRide().isAutoYaw()) {
-            next.setYaw(yaw);
+        if (!autoYaw.isEmpty()) {
+            if (autoYaw.equalsIgnoreCase("true")) {
+                next.setYaw(yaw);
+            } else if (autoYaw.equalsIgnoreCase("false")) {
+                next.setYaw(original.getYaw());
+            }
         } else {
-            next.setYaw(original.getYaw());
+            if (getCart().getRide().isAutoYaw()) {
+                next.setYaw(yaw);
+            } else {
+                next.setYaw(original.getYaw());
+            }
         }
         if (next.distance(original) >= distance) {
             if (getCart().getRide().isAutoYaw()) {
@@ -58,11 +68,11 @@ public class ExitAction extends MoveAction {
 
     @Override
     public RideAction duplicate() {
-        return new ExitAction(to.clone());
+        return new ExitAction(to.clone(), autoYaw);
     }
 
     @Override
     public String toString() {
-        return "Exit " + to.getX() + "," + to.getY() + "," + to.getZ();
+        return "Exit " + to.getX() + "," + to.getY() + "," + to.getZ() + (autoYaw.isEmpty() ? "" : " " + autoYaw);
     }
 }

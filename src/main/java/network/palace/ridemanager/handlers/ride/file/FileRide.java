@@ -9,6 +9,7 @@ import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.handlers.actions.RideAction;
+import network.palace.ridemanager.handlers.actions.sensors.RideSensor;
 import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.threads.FileRideLoader;
@@ -32,16 +33,18 @@ public class FileRide extends Ride {
     private Optional<Cart> atStation = Optional.empty();
     private List<Cart> inRide = new ArrayList<>();
     private LinkedList<RideAction> actions = new LinkedList<>();
+    private LinkedList<RideSensor> sensors = new LinkedList<>();
     @Getter @Setter private Location spawn = null;
     @Getter @Setter private double speed = 0;
     @Getter @Setter private boolean autoYaw = true;
     private boolean loading = false;
     private int taskID = 0;
-    @Getter private final ModelMap modelMap;
+    @Getter private ModelMap modelMap;
+    private final String modelMapFileName;
 
     public FileRide(String name, String displayName, int riders, double delay, Location exit, String fileName) {
         super(name, displayName, riders, delay, exit, CurrencyType.BALANCE, 0);
-        modelMap = RideManager.getMappingUtil().getMap(fileName);
+        this.modelMapFileName = fileName;
         this.rideFile = new File("plugins/RideManager/rides/" + fileName + ".ride");
     }
 
@@ -55,8 +58,9 @@ public class FileRide extends Ride {
             return;
         }
         loading = true;
-        Core.runTaskAsynchronously(new FileRideLoader(this, rideFile, (name, list, spawn, speed, setYaw) -> {
-            actions = list;
+        Core.runTaskAsynchronously(new FileRideLoader(this, rideFile, (name, actionList, sensorList, spawn, speed, setYaw) -> {
+            actions = actionList;
+            sensors = sensorList;
             setSpawn(spawn);
             setSpeed(speed);
             setAutoYaw(setYaw);
@@ -170,8 +174,15 @@ public class FileRide extends Ride {
         for (RideAction a : new ArrayList<>(actions)) {
             cartActions.put(i++, a.duplicate());
         }
+        LinkedList<RideSensor> cartSensors = new LinkedList<>();
+        for (RideSensor s : new ArrayList<>(sensors)) {
+            cartSensors.add(s.duplicate());
+        }
         ItemStack model = ItemUtil.create(Material.SHEARS, 1, (byte) 14);
-        Cart c = new Cart(this, cartActions, model, modelMap);
+        if (modelMap == null) {
+            modelMap = RideManager.getMappingUtil().getMap(modelMapFileName);
+        }
+        Cart c = new Cart(this, cartActions, cartSensors, model, modelMap);
         c.setPower(speed);
         c.spawn(spawn.clone());
         atStation = Optional.of(c);

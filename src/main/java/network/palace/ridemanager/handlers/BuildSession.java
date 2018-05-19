@@ -7,6 +7,7 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.actions.RideAction;
+import network.palace.ridemanager.handlers.actions.sensors.RideSensor;
 import network.palace.ridemanager.handlers.builder.actions.FakeSpawnAction;
 import network.palace.ridemanager.handlers.builder.actions.FakeStraightAction;
 import network.palace.ridemanager.threads.FileRideLoader;
@@ -33,6 +34,7 @@ public class BuildSession {
     @Getter @Setter private String name;
     @Getter @Setter private String fileName;
     private List<RideAction> actions = new ArrayList<>();
+    private List<RideSensor> sensors = new ArrayList<>();
     @Getter @Setter private Location spawn;
     @Getter @Setter private double speed;
     @Getter private boolean loading = false;
@@ -53,9 +55,10 @@ public class BuildSession {
     public void load(File file) {
         loading = true;
         fileName = file.getName();
-        Core.runTaskAsynchronously(new FileRideLoader(null, file, (name, list, spawn, speed, setYaw) -> {
+        Core.runTaskAsynchronously(new FileRideLoader(null, file, (name, actionList, sensorList, spawn, speed, setYaw) -> {
             setName(name);
-            actions = RideManager.getRideBuilderUtil().getFakeActions(list);
+            actions = RideManager.getRideBuilderUtil().getFakeActions(actionList);
+//            sensors = RideManager.getRideBuilderUtil().getFakeSensors(sensorList);
             setSpawn(spawn);
             setSpeed(speed);
             loading = false;

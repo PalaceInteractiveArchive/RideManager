@@ -11,26 +11,41 @@ import org.bukkit.util.Vector;
  */
 public class StraightAction extends MoveAction {
     @Getter private Location to;
+    @Getter private String autoYaw;
     private boolean finished = false;
 
-    public StraightAction(Location to) {
+    public StraightAction(Location to, String autoYaw) {
         this.to = to;
+        this.autoYaw = autoYaw;
         this.finalLocation = to;
     }
 
     @Override
     public void execute() {
         Location original = cart.getLocation();
-        float yaw = (float) Math.toDegrees(Math.atan2(original.getZ() - to.getZ(), original.getX() - to.getX())) + 90;
+        float yaw;
+        if (original.getX() == to.getX() && original.getZ() == to.getZ()) {
+            yaw = cart.getYaw();
+        } else {
+            yaw = (float) Math.toDegrees(Math.atan2(original.getZ() - to.getZ(), original.getX() - to.getX())) + 90;
+        }
         double distance = original.distance(to);
         Vector resultant = to.clone().subtract(original).toVector().normalize();
         double power = cart.getPower();
         Vector change = resultant.multiply(new Vector(power, power, power));
         Location next = cart.getLocation().add(change);
-        if (getCart().getRide().isAutoYaw()) {
-            next.setYaw(yaw);
+        if (!autoYaw.isEmpty()) {
+            if (autoYaw.equalsIgnoreCase("true")) {
+                next.setYaw(yaw);
+            } else if (autoYaw.equalsIgnoreCase("false")) {
+                next.setYaw(original.getYaw());
+            }
         } else {
-            next.setYaw(original.getYaw());
+            if (getCart().getRide().isAutoYaw()) {
+                next.setYaw(yaw);
+            } else {
+                next.setYaw(original.getYaw());
+            }
         }
         if (next.distance(original) >= distance) {
             if (getCart().getRide().isAutoYaw()) {
@@ -62,11 +77,11 @@ public class StraightAction extends MoveAction {
 
     @Override
     public RideAction duplicate() {
-        return new StraightAction(to.clone());
+        return new StraightAction(to.clone(), autoYaw);
     }
 
     @Override
     public String toString() {
-        return "Straight " + to.getX() + "," + to.getY() + "," + to.getZ();
+        return "Straight " + to.getX() + "," + to.getY() + "," + to.getZ() + (autoYaw.isEmpty() ? "" : " " + autoYaw);
     }
 }

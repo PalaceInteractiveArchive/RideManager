@@ -6,8 +6,9 @@ import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.core.plugin.Plugin;
 import network.palace.core.plugin.PluginInfo;
-import network.palace.ridemanager.commands.RideBuilderCommand;
 import network.palace.ridemanager.commands.Commandtest;
+import network.palace.ridemanager.commands.RideBuilderCommand;
+import network.palace.ridemanager.commands.RideMapResetCommand;
 import network.palace.ridemanager.events.RideManagerStatusEvent;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.listeners.*;
@@ -52,6 +53,7 @@ public class RideManager extends Plugin {
 
         registerCommand(new Commandtest());
         registerCommand(new RideBuilderCommand());
+        registerCommand(new RideMapResetCommand());
         registerListener(new BlockListener());
         registerListener(new ChunkListener());
         registerListener(new PacketListener());
