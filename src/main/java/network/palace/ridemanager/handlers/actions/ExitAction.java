@@ -33,12 +33,14 @@ public class ExitAction extends MoveAction {
             if (autoYaw.equalsIgnoreCase("true")) {
                 next.setYaw(yaw);
             } else if (autoYaw.equalsIgnoreCase("false")) {
+                yaw = original.getYaw();
                 next.setYaw(original.getYaw());
             }
         } else {
             if (getCart().getRide().isAutoYaw()) {
                 next.setYaw(yaw);
             } else {
+                yaw = original.getYaw();
                 next.setYaw(original.getYaw());
             }
         }

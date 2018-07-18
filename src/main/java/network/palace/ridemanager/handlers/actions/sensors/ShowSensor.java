@@ -1,9 +1,8 @@
 package network.palace.ridemanager.handlers.actions.sensors;
 
 import network.palace.ridemanager.RideManager;
-import network.palace.show.Show;
+import network.palace.ridemanager.handlers.RideShow;
 import network.palace.show.ShowPlugin;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.io.File;
@@ -20,8 +19,7 @@ public class ShowSensor extends RideSensor {
     public void activate() {
         super.activate();
         if (file == null) return;
-        Bukkit.broadcastMessage(file.getAbsolutePath());
-        ShowPlugin.startShow("name", new Show(RideManager.getInstance(), file));
+        ShowPlugin.startShow("name", new RideShow(RideManager.getInstance(), file, cart));
     }
 
     @Override

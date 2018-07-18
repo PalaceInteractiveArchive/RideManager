@@ -26,8 +26,8 @@ public class TeacupsRide extends FlatRide {
     private List<Table> tables = new ArrayList<>();
 
     public TeacupsRide(String name, String displayName, double delay, Location exit, Location center,
-                       CurrencyType currencyType, int currencyAmount) {
-        super(name, displayName, 54, delay, exit, currencyType, currencyAmount);
+                       CurrencyType currencyType, int currencyAmount, int honorAmount) {
+        super(name, displayName, 54, delay, exit, currencyType, currencyAmount, honorAmount);
         this.center = center;
         spawn();
     }

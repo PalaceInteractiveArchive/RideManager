@@ -25,7 +25,7 @@ import org.bukkit.configuration.ConfigurationSection;
 /**
  * Created by Marc on 1/15/17.
  */
-@PluginInfo(name = "RideManager", version = "1.0-mongo", depend = {"Core", "ProtocolLib"}, canReload = false)
+@PluginInfo(name = "RideManager", version = "1.1.1", depend = {"Core", "ProtocolLib"}, canReload = false)
 public class RideManager extends Plugin {
     @Getter private static RideManager instance;
     @Getter private static MovementUtil movementUtil;

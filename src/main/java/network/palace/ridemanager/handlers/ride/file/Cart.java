@@ -3,17 +3,18 @@ package network.palace.ridemanager.handlers.ride.file;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.player.CPlayer;
+import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.handlers.actions.RideAction;
 import network.palace.ridemanager.handlers.actions.sensors.RideSensor;
 import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
@@ -39,6 +40,8 @@ public class Cart {
     @Getter private boolean spawned = false;
     @Getter private boolean finished = false;
     @Getter private Vector velocity = new Vector();
+
+    private Location lastLocation;
 
     // Position variables.
     @Getter private World world;
@@ -81,7 +84,12 @@ public class Cart {
         return new Location(world, x, y, z, yaw, pitch).add(0, MovementUtil.armorStandHeight, 0);
     }
 
+    public Location getLastLocation() {
+        return lastLocation.clone().add(0, MovementUtil.armorStandHeight, 0);
+    }
+
     private void updateLocation(World world, double x, double y, double z, float yaw, float pitch) {
+        lastLocation = new Location(this.world, this.x, this.y, this.z, this.yaw, this.pitch);
         this.world = world;
         this.x = x;
         this.y = y;
@@ -140,6 +148,10 @@ public class Cart {
         if (a == null || a.getCart() == null || !a.getCart().equals(this)) {
             despawn();
             finished = true;
+            List<UUID> passengers = new ArrayList<>();
+            getSeats().forEach(s -> s.getPassengers().forEach(p -> passengers.add(p.getUniqueId())));
+            ride.rewardCurrency((UUID[]) passengers.toArray());
+            new RideEndEvent(ride, (UUID[]) passengers.toArray()).call();
             return;
         }
         a.execute();
@@ -155,7 +167,7 @@ public class Cart {
     }
 
     public void setPower(double p) {
-        this.power = p > 1 ? 1 : (p < -1 ? -1 : p);
+        this.power = p > 1 ? 1 : (p < 0 ? 0 : p);
     }
 
     public void spawn(Location loc) {
@@ -182,7 +194,10 @@ public class Cart {
 
     public void despawn(Location exit) {
         spawned = false;
-        getSeats().forEach(s -> s.despawn(exit));
+        getSeats().forEach(s -> {
+            s.getPassengers().forEach(p -> getRide().getOnRide().remove(p.getUniqueId()));
+            s.despawn(exit);
+        });
         chunkUnloaded(null);
     }
 
@@ -192,6 +207,7 @@ public class Cart {
         Location loc = getLocation();
 
         ArmorStand stand = Ride.lock(loc.getWorld().spawn(loc.add(0, -MovementUtil.armorStandHeight, 0), ArmorStand.class));
+        stand.setVisible(false);
         stand.teleport(loc);
         stand.setGravity(true);
         stand.setBasePlate(false);
@@ -205,10 +221,7 @@ public class Cart {
 
     public void chunkUnloaded(Chunk c) {
         if (c != null && !c.equals(getChunk())) return;
-        base.ifPresent(b -> {
-            b.remove();
-            Bukkit.broadcastMessage("Despawned!");
-        });
+        base.ifPresent(Entity::remove);
         base = Optional.empty();
         getSeats().forEach(Seat::chunkUnloaded);
     }
@@ -232,6 +245,7 @@ public class Cart {
     }
 
     public void removePassenger(CPlayer tp) {
+        getRide().getOnRide().remove(tp.getUniqueId());
         getSeats().forEach(s -> s.removePassenger(tp));
         tp.teleport(getRide().getExit());
     }

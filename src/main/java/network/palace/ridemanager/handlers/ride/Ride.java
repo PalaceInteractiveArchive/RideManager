@@ -8,6 +8,7 @@ import network.palace.core.economy.CurrencyType;
 import network.palace.core.mongo.MongoHandler;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
+import network.palace.ridemanager.events.RideMoveEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -35,8 +36,9 @@ public abstract class Ride {
     @Getter private List<UUID> onRide = new ArrayList<>();
     @Getter private final CurrencyType currencyType;
     @Getter private final int currencyAmount;
+    @Getter private final int honorAmount;
 
-    public Ride(String name, String displayName, int riders, double delay, Location exit, CurrencyType currencyType, int currencyAmount) {
+    public Ride(String name, String displayName, int riders, double delay, Location exit, CurrencyType currencyType, int currencyAmount, int honorAmount) {
         this.world = Bukkit.getWorlds().get(0);
         this.name = name;
         this.displayName = displayName;
@@ -45,6 +47,7 @@ public abstract class Ride {
         this.exit = exit;
         this.currencyType = currencyType;
         this.currencyAmount = currencyAmount;
+        this.honorAmount = honorAmount;
     }
 
     public abstract void start(List<CPlayer> riders);
@@ -58,6 +61,17 @@ public abstract class Ride {
     }
 
     public static void teleport(org.bukkit.entity.Entity entity, Location loc) {
+        if (!entity.getPassengers().isEmpty()) {
+            new RideMoveEvent(entity, entity.getLocation(), loc).call();
+//            new VehicleMoveEvent((Vehicle) entity, entity.getLocation(), loc);
+//        for (org.bukkit.entity.Entity ent : entity.getPassengers()) {
+//            if (ent instanceof Player) {
+//                Bukkit.getPluginManager().callEvent(new PlayerMoveEvent((Player) ent, ent.getLocation(), loc));
+
+//            } else if (ent instanceof Vehi/cle) {
+//                Bukkit.getPluginManager().callEvent(new VehicleMoveEvent((Vehicle) ent, ent.getLocation(), loc));
+//            }
+        }
         Entity e = ((CraftEntity) entity).getHandle();
         e.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
         e.h(loc.getYaw());
@@ -94,6 +108,7 @@ public abstract class Ride {
             if (Core.getPlayerManager().getPlayer(uuid) == null) continue;
             mongo.changeAmount(uuid, currencyAmount, "Ride " + name + " " + Core.getInstanceName(),
                     currencyType, false);
+            mongo.addHonor(uuid, honorAmount);
         }
     }
 

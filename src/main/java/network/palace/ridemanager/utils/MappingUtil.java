@@ -1,11 +1,14 @@
 package network.palace.ridemanager.utils;
 
+import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.file.Seat;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.util.HashMap;
@@ -37,8 +40,19 @@ public class MappingUtil {
             return null;
         }
         YamlConfiguration file = YamlConfiguration.loadConfiguration(f);
-        ConfigurationSection sec = file.getConfigurationSection("seats");
         ModelMap map = new ModelMap();
+        if (file.contains("item")) {
+            String[] list = file.getString("item").split(":");
+            int id = Integer.parseInt(list[0]);
+            byte data = 0;
+            if (list.length > 1) {
+                data = Byte.parseByte(list[1]);
+            }
+            ItemStack item = ItemUtil.create(Material.getMaterial(id), data);
+            if (item != null)
+                map.setItem(item);
+        }
+        ConfigurationSection sec = file.getConfigurationSection("seats");
         World w = Bukkit.getWorlds().get(0);
         for (String s : sec.getKeys(false)) {
             ConfigurationSection seat = sec.getConfigurationSection(s);

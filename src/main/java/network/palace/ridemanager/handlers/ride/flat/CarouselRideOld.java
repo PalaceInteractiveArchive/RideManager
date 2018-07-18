@@ -35,8 +35,8 @@ public class CarouselRideOld extends Ride {
     private long startTime = 0;
     private long ticks = 0;
 
-    public CarouselRideOld(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount) {
-        super(name, displayName, 12, delay, exit, currencyType, currencyAmount);
+    public CarouselRideOld(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount) {
+        super(name, displayName, 12, delay, exit, currencyType, currencyAmount, honorAmount);
         this.center = center;
         this.poleY = center.getY() + 2.5;
         loadSurroundingChunks(this.center);

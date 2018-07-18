@@ -42,8 +42,8 @@ public class FileRide extends Ride {
     @Getter private ModelMap modelMap;
     private final String modelMapFileName;
 
-    public FileRide(String name, String displayName, int riders, double delay, Location exit, String fileName) {
-        super(name, displayName, riders, delay, exit, CurrencyType.BALANCE, 0);
+    public FileRide(String name, String displayName, int riders, double delay, Location exit, String fileName, CurrencyType currencyType, int currencyAmount, int honorAmount) {
+        super(name, displayName, riders, delay, exit, currencyType, currencyAmount, honorAmount);
         this.modelMapFileName = fileName;
         this.rideFile = new File("plugins/RideManager/rides/" + fileName + ".ride");
     }
@@ -134,7 +134,7 @@ public class FileRide extends Ride {
         }
         atStation.setSpawnTime(System.currentTimeMillis());
         inRide.add(atStation);
-        atStation = null;
+        this.atStation = Optional.empty();
     }
 
     /**
@@ -178,10 +178,10 @@ public class FileRide extends Ride {
         for (RideSensor s : new ArrayList<>(sensors)) {
             cartSensors.add(s.duplicate());
         }
-        ItemStack model = ItemUtil.create(Material.SHEARS, 1, (byte) 14);
         if (modelMap == null) {
             modelMap = RideManager.getMappingUtil().getMap(modelMapFileName);
         }
+        ItemStack model = ItemUtil.create(Material.SHEARS, 1, (byte) 14);
         Cart c = new Cart(this, cartActions, cartSensors, model, modelMap);
         c.setPower(speed);
         c.spawn(spawn.clone());

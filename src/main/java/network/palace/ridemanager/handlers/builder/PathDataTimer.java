@@ -125,9 +125,9 @@ public class PathDataTimer implements Runnable {
     private void pathParticle(CPlayer player, Location loc, boolean action) {
         if (player.getLocation().distance(loc) > 15) return;
         if (action) {
-            player.getParticles().send(loc, Particle.DRIP_LAVA, 1);
+            player.getParticles().send(loc, Particle.REDSTONE, 0, 0, 0.8f, 0, 1);
         } else {
-            player.getParticles().send(loc, Particle.DRIP_WATER, 1);
+            player.getParticles().send(loc, Particle.REDSTONE, 0, 1, 0, 0, 1);
         }
     }
 }

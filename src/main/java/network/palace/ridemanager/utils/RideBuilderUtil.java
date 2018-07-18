@@ -53,8 +53,6 @@ public class RideBuilderUtil {
                     if (current != null) {
                         actions.add(current);
                     }
-                    System.out.println(actions.size());
-
                     if (session.isShowArmorStands()) {
                         HashMap<Location, ArmorStand> stands = session.getStands();
                         Optional<RideAction> optional = actions.stream().filter(a -> a instanceof MoveAction).findFirst();
@@ -135,7 +133,6 @@ public class RideBuilderUtil {
             }
 
             private void particle(CPlayerParticlesManager part, Location loc, boolean action) {
-                System.out.println(action);
                 if (action) {
                     part.send(loc, Particle.VILLAGER_HAPPY, 2);
                 } else {

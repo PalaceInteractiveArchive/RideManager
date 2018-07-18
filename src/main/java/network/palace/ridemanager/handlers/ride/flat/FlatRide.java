@@ -8,6 +8,7 @@ import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 
 public abstract class FlatRide extends Ride {
     @Getter protected FlatState state = FlatState.LOADING;
@@ -17,21 +18,24 @@ public abstract class FlatRide extends Ride {
     protected long startTime = 0;
     protected long ticks = 0;
 
-    public FlatRide(String name, String displayName, int riders, double delay, Location exit, CurrencyType currencyType, int currencyAmount) {
-        super(name, displayName, riders, delay, exit, currencyType, currencyAmount);
+    public FlatRide(String name, String displayName, int riders, double delay, Location exit, CurrencyType currencyType, int currencyAmount, int honorAmount) {
+        super(name, displayName, riders, delay, exit, currencyType, currencyAmount, honorAmount);
     }
 
     protected void emptyStand(ArmorStand stand) {
         if (stand.getPassengers().isEmpty()) return;
-        CPlayer p = Core.getPlayerManager().getPlayer(stand.getPassengers().get(0).getUniqueId());
-        final Location pLoc = p.getLocation();
-        stand.removePassenger(p.getBukkitPlayer());
-        Location loc = getExit();
-        if (state.equals(FlatState.LOADING)) {
-            loc = stand.getLocation().add(0, 2, 0);
-            loc.setYaw(pLoc.getYaw());
-            loc.setPitch(pLoc.getPitch());
+        for (Entity e : stand.getPassengers()) {
+            CPlayer p = Core.getPlayerManager().getPlayer(e.getUniqueId());
+            if (p == null) continue;
+            final Location pLoc = p.getLocation();
+            stand.removePassenger(p.getBukkitPlayer());
+            Location loc = getExit();
+            if (state.equals(FlatState.LOADING)) {
+                loc = stand.getLocation().add(0, 2, 0);
+                loc.setYaw(pLoc.getYaw());
+                loc.setPitch(pLoc.getPitch());
+            }
+            p.teleport(loc);
         }
-        p.teleport(loc);
     }
 }

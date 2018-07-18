@@ -29,21 +29,27 @@ public class StraightAction extends MoveAction {
         } else {
             yaw = (float) Math.toDegrees(Math.atan2(original.getZ() - to.getZ(), original.getX() - to.getX())) + 90;
         }
+
         double distance = original.distance(to);
         Vector resultant = to.clone().subtract(original).toVector().normalize();
+
         double power = cart.getPower();
         Vector change = resultant.multiply(new Vector(power, power, power));
+
         Location next = cart.getLocation().add(change);
+
         if (!autoYaw.isEmpty()) {
             if (autoYaw.equalsIgnoreCase("true")) {
                 next.setYaw(yaw);
             } else if (autoYaw.equalsIgnoreCase("false")) {
+                yaw = original.getYaw();
                 next.setYaw(original.getYaw());
             }
         } else {
             if (getCart().getRide().isAutoYaw()) {
                 next.setYaw(yaw);
             } else {
+                yaw = original.getYaw();
                 next.setYaw(original.getYaw());
             }
         }
@@ -53,7 +59,7 @@ public class StraightAction extends MoveAction {
             } else {
                 to.setYaw(original.getYaw());
             }
-            Vector v = to.toVector().subtract(original.toVector());
+            Vector v = to.clone().toVector().subtract(original.toVector());
             if (v.getY() == 0) {
                 v.setY(MovementUtil.getYMin());
             }

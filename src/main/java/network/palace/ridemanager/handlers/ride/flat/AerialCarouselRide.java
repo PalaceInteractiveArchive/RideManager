@@ -44,20 +44,20 @@ public class AerialCarouselRide extends Ride {
     private long ticks = 0;
     private int taskID;
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount) {
-        this(name, displayName, delay, exit, center, currencyType, currencyAmount, 6.5, 4.5);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, 6.5, 4.5);
     }
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, double aerialRadius, double supportRadius) {
-        this(name, displayName, delay, exit, center, currencyType, currencyAmount, aerialRadius, supportRadius, true);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, double aerialRadius, double supportRadius) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, aerialRadius, supportRadius, true);
     }
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, double aerialRadius, double supportRadius, boolean small) {
-        this(name, displayName, delay, exit, center, currencyType, currencyAmount, aerialRadius, supportRadius, small, 45, 3, 0.9);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, double aerialRadius, double supportRadius, boolean small) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, aerialRadius, supportRadius, small, 45, 3, 0.9);
     }
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, double aerialRadius, double supportRadius, boolean small, double angle, double height, double movein) {
-        super(name, displayName, 16, delay, exit, currencyType, currencyAmount);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, double aerialRadius, double supportRadius, boolean small, double angle, double height, double movein) {
+        super(name, displayName, 16, delay, exit, currencyType, currencyAmount, honorAmount);
         this.center = center;
         this.aerialRadius = aerialRadius;
         this.supportRadius = supportRadius;
@@ -612,7 +612,7 @@ public class AerialCarouselRide extends Ride {
             support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
             support.setHelmet(pole);
             this.support = Optional.of(support);
-            Bukkit.broadcastMessage("Spawned!");
+//            Bukkit.broadcastMessage("Spawned!");
         }
 
         public Vehicle(ArmorStand stand, double angle) {
@@ -628,10 +628,12 @@ public class AerialCarouselRide extends Ride {
         }
 
         public Optional<ArmorStand> getStand() {
+            if (standID == null) return Optional.empty();
             return getWorld().getEntitiesByClass(ArmorStand.class).stream().filter(s -> s.getUniqueId().equals(standID)).findFirst();
         }
 
         public Optional<ArmorStand> getSupport() {
+            if (supportID == null) return Optional.empty();
             return getWorld().getEntitiesByClass(ArmorStand.class).stream().filter(s -> s.getUniqueId().equals(supportID)).findFirst();
         }
 

@@ -1,6 +1,9 @@
 package network.palace.ridemanager.handlers.ride;
 
+import lombok.Getter;
+import lombok.Setter;
 import network.palace.ridemanager.handlers.ride.file.Seat;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +14,7 @@ import java.util.List;
  */
 public class ModelMap {
     private HashMap<Integer, Seat> seats = new HashMap<>();
+    @Getter @Setter private ItemStack item = null;
 
     public HashMap<Integer, Seat> getMap() {
         return new HashMap<>(seats);

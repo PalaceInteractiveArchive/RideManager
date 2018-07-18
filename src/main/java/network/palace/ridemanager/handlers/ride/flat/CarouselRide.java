@@ -29,8 +29,8 @@ public class CarouselRide extends FlatRide {
     @Getter private Location center;
     @Getter private List<Horse> horses = new ArrayList<>();
 
-    public CarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount) {
-        super(name, displayName, 12, delay, exit, currencyType, currencyAmount);
+    public CarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount) {
+        super(name, displayName, 12, delay, exit, currencyType, currencyAmount, honorAmount);
         this.center = center;
         this.poleY = center.getY() + 2.5;
         spawn();

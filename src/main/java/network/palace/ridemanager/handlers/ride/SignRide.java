@@ -1,10 +1,10 @@
 package network.palace.ridemanager.handlers.ride;
 
 import lombok.Getter;
+import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
-import network.palace.core.economy.CurrencyType;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -24,7 +24,7 @@ public class SignRide extends Ride {
     private List<OldCart> carts = new ArrayList<>();
 
     public SignRide(String name, String displayName, int riders, double delay, Location exit, Location spawnSign, String modelName) {
-        super(name, displayName, riders, delay, exit, CurrencyType.BALANCE, 0);
+        super(name, displayName, riders, delay, exit, CurrencyType.BALANCE, 0, 0);
         this.spawnSign = spawnSign;
         this.yAxis = spawnSign.getBlockY();
         this.modelName = modelName;

@@ -6,7 +6,7 @@
 
     <groupId>network.palace</groupId>
     <artifactId>RideManager</artifactId>
-    <version>1.0-mongo</version>
+    <version>1.1.1</version>
     <repositories>
         <repository>
             <id>palace</id>

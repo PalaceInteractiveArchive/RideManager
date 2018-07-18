@@ -1,7 +1,6 @@
 package network.palace.ridemanager.handlers.actions.sensors;
 
 import network.palace.core.Core;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 public class SpeedSensor extends RideSensor {
@@ -24,10 +23,7 @@ public class SpeedSensor extends RideSensor {
         double current = cart.getPower();
         double change = (speed - current) / time;
 
-        int taskID = Core.runTaskTimer(() -> {
-            cart.setPower(cart.getPower() + change);
-            Bukkit.broadcastMessage(cart.getPower() + "");
-        }, 0L, 1L);
+        int taskID = Core.runTaskTimer(() -> cart.setPower(cart.getPower() + change), 0L, 1L);
 
         Core.runTaskLater(() -> Core.cancelTask(taskID), time);
     }

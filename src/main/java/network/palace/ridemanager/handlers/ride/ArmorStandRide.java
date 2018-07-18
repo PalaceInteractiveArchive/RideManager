@@ -2,9 +2,9 @@ package network.palace.ridemanager.handlers.ride;
 
 import lombok.Getter;
 import network.palace.core.Core;
+import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideStartEvent;
-import network.palace.core.economy.CurrencyType;
 import network.palace.ridemanager.threads.FileRideLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -32,7 +32,7 @@ public class ArmorStandRide extends Ride {
     private final List<Action> actions;
 
     public ArmorStandRide(String name, String displayName, int riders, double delay, Location exit, String fileName, CurrencyType currencyType, int currencyAmount) {
-        super(name, displayName, riders, delay, exit, currencyType, currencyAmount);
+        super(name, displayName, riders, delay, exit, currencyType, currencyAmount, 0);
         this.file = new File("plugins/RideManager/armorstand/" + fileName + ".ride");
         List<Action> actions = new ArrayList<>();
         try {

@@ -105,6 +105,20 @@ public class FileRideLoader implements Runnable {
                         actions.add(a);
                         break;
                     }
+                    case "Stop": {
+                        long time = getLong(tokens[1]);
+                        StopAction a = new StopAction(time);
+                        actions.add(a);
+                        break;
+                    }
+                    case "Launch": {
+                        long time = getLong(tokens[1]);
+                        double targetSpeed = getDouble(tokens[2]);
+                        Location target = strToLoc(tokens[3]);
+                        LaunchAction a = new LaunchAction(time, targetSpeed, target);
+                        actions.add(a);
+                        break;
+                    }
                     case "Turn": {
                         Location origin = strToLoc(tokens[1]);
                         int angle = getInt(tokens[2]);

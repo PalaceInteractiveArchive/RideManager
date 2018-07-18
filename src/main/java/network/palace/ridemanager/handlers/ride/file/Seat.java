@@ -3,13 +3,11 @@ package network.palace.ridemanager.handlers.ride.file;
 import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
-import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -154,11 +152,12 @@ public class Seat {
         Location loc = getLocation();
 
         ArmorStand stand = Ride.lock(loc.getWorld().spawn(loc, ArmorStand.class));
+        stand.setVisible(false);
         stand.teleport(loc);
         stand.setGravity(true);
         stand.setBasePlate(false);
         stand.setArms(false);
-        stand.setHelmet(ItemUtil.create(Material.GOLD_BLOCK));
+//        stand.setHelmet(ItemUtil.create(Material.GOLD_BLOCK));
         stand.setVelocity(new Vector(0, MovementUtil.getYMin(), 0));
         this.stand = Optional.of(stand);
     }
