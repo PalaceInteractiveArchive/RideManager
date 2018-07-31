@@ -350,6 +350,11 @@ public class CarouselRide extends FlatRide {
         return false;
     }
 
+    @Override
+    public void handleEject(CPlayer player, boolean force) {
+        handleEject(player);
+    }
+
     private void ejectPlayers() {
         for (Horse c : getHorses()) {
             c.eject();

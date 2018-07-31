@@ -146,12 +146,12 @@ public class Cart {
         }
         RideAction a = actions.get(currentActionIndex);
         if (a == null || a.getCart() == null || !a.getCart().equals(this)) {
-            despawn();
             finished = true;
             List<UUID> passengers = new ArrayList<>();
             getSeats().forEach(s -> s.getPassengers().forEach(p -> passengers.add(p.getUniqueId())));
-            ride.rewardCurrency((UUID[]) passengers.toArray());
-            new RideEndEvent(ride, (UUID[]) passengers.toArray()).call();
+            ride.rewardCurrency(passengers.toArray(new UUID[]{}));
+            new RideEndEvent(ride, passengers.toArray(new UUID[]{})).call();
+            despawn();
             return;
         }
         a.execute();
@@ -189,7 +189,7 @@ public class Cart {
     }
 
     public void despawn() {
-        despawn(null);
+        despawn(getRide().getExit());
     }
 
     public void despawn(Location exit) {
@@ -245,9 +245,15 @@ public class Cart {
     }
 
     public void removePassenger(CPlayer tp) {
+        removePassenger(tp, true);
+    }
+
+    public void removePassenger(CPlayer tp, boolean teleport) {
         getRide().getOnRide().remove(tp.getUniqueId());
         getSeats().forEach(s -> s.removePassenger(tp));
-        tp.teleport(getRide().getExit());
+        if (teleport) {
+            tp.teleport(getRide().getExit());
+        }
     }
 
     public List<CPlayer> getPassengers() {
@@ -260,7 +266,9 @@ public class Cart {
     }
 
     public void empty() {
-        getPassengers().forEach(this::removePassenger);
+        for (Seat s : getSeats()) {
+            s.despawn(getRide().getExit());
+        }
     }
 
     public RideAction getPreviousAction() {

@@ -10,6 +10,7 @@ import network.palace.core.player.Rank;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.handlers.ride.Ride;
+import network.palace.ridemanager.handlers.ride.file.Cart;
 import network.palace.ridemanager.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.*;
@@ -329,6 +330,11 @@ public class AerialCarouselRide extends Ride {
             }
         }
         return false;
+    }
+
+    @Override
+    public void handleEject(CPlayer player, boolean force) {
+        handleEject(player);
     }
 
     @Override

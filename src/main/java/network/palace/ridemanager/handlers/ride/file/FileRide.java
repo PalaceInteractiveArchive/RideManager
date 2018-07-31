@@ -104,6 +104,20 @@ public class FileRide extends Ride {
         }
     }
 
+    @Override
+    public void handleEject(CPlayer player, boolean force) {
+        if (!force) return;
+        Cart cart = null;
+        for (Cart c : getCarts()) {
+            if (c.getPassengers().contains(player)) {
+                cart = c;
+                break;
+            }
+        }
+        if (cart == null) return;
+        cart.removePassenger(player, false);
+    }
+
     /**
      * Start a new cart for the list of players
      *
@@ -146,7 +160,7 @@ public class FileRide extends Ride {
      */
     @Override
     public boolean sitDown(CPlayer player, ArmorStand stand) {
-        if (!atStation.isPresent()) return false;
+        if (!atStation.isPresent() || getOnRide().contains(player.getUniqueId())) return false;
         UUID uuid = stand.getUniqueId();
         for (Seat seat : atStation.get().getSeats()) {
             if (!seat.getUniqueId().equals(uuid)) continue;

@@ -45,6 +45,11 @@ public class SignRide extends Ride {
     }
 
     @Override
+    public void handleEject(CPlayer player, boolean force) {
+        handleEject(player);
+    }
+
+    @Override
     public void start(List<CPlayer> riders) {
         new RideStartEvent(this).call();
         for (CPlayer player : riders) {

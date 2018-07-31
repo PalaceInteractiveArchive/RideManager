@@ -334,6 +334,11 @@ public class CarouselRideOld extends Ride {
     }
 
     @Override
+    public void handleEject(CPlayer player, boolean force) {
+        handleEject(player);
+    }
+
+    @Override
     public boolean sitDown(CPlayer player, ArmorStand stand) {
         if (!state.equals(FlatState.LOADING) || getOnRide().size() >= 24 || getOnRide().contains(player.getUniqueId())) {
             return false;

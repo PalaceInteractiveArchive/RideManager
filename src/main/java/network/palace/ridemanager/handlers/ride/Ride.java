@@ -60,6 +60,8 @@ public abstract class Ride {
         return false;
     }
 
+    public abstract void handleEject(CPlayer player, boolean force);
+
     public static void teleport(org.bukkit.entity.Entity entity, Location loc) {
         if (!entity.getPassengers().isEmpty()) {
             new RideMoveEvent(entity, entity.getLocation(), loc).call();

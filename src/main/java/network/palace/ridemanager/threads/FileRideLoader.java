@@ -65,7 +65,8 @@ public class FileRideLoader implements Runnable {
                                 sensor = new BlockSensor(loc, radius, blockLoc, btype);
                                 break;
                             case SHOW:
-                                sensor = new ShowSensor(loc, radius, tokens[4]);
+                                int delay = tokens.length > 5 ? getInt(tokens[5]) : 0;
+                                sensor = new ShowSensor(loc, radius, tokens[4], delay);
                                 break;
                             case SPEED:
                                 sensor = new SpeedSensor(loc, radius, getDouble(tokens[4]), getLong(tokens[5]));

@@ -310,6 +310,11 @@ public class TeacupsRide extends FlatRide {
         return false;
     }
 
+    @Override
+    public void handleEject(CPlayer player, boolean force) {
+        handleEject(player);
+    }
+
     public void ejectPlayers() {
         for (int i = 1; i <= 3; i++) {
             Table t = getTable(i);

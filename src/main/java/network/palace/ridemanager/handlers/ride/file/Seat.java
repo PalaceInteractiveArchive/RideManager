@@ -26,15 +26,21 @@ public class Seat {
     private final double relative_y;
     private final double relative_z;
 
-    @Getter private World world;
-    @Getter private double x, y, z;
-    @Getter private float yaw;
-    @Getter private float pitch;
+    @Getter
+    private World world;
+    @Getter
+    private double x, y, z;
+    @Getter
+    private float yaw;
+    @Getter
+    private float pitch;
     private int chunkX;
     private int chunkZ;
 
-    @Getter private boolean spawned = false;
-    @Getter private Vector velocity = new Vector();
+    @Getter
+    private boolean spawned = false;
+    @Getter
+    private Vector velocity = new Vector();
 
     public Seat(double relative_x, double relative_y, double relative_z, World world) {
         this.relative_x = relative_x;
@@ -111,6 +117,7 @@ public class Seat {
     }
 
     public boolean addPassenger(CPlayer tp) {
+        tp.isInsideVehicle();
         return stand.map(armorStand -> armorStand.addPassenger(tp.getBukkitPlayer())).orElse(false);
     }
 
@@ -126,7 +133,10 @@ public class Seat {
     }
 
     public void removePassenger(CPlayer tp) {
-        stand.ifPresent(s -> s.removePassenger(tp.getBukkitPlayer()));
+        stand.ifPresent(s -> {
+            if (!s.getPassengers().contains(tp.getBukkitPlayer())) return;
+            s.removePassenger(tp.getBukkitPlayer());
+        });
     }
 
     public boolean hasPassenger() {

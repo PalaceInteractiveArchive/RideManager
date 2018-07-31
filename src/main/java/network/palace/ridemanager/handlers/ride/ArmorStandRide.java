@@ -83,6 +83,10 @@ public class ArmorStandRide extends Ride {
     }
 
     @Override
+    public void handleEject(CPlayer player, boolean force) {
+    }
+
+    @Override
     public boolean sitDown(CPlayer player, ArmorStand stand) {
         return true;
     }
