@@ -37,8 +37,23 @@ public abstract class Ride {
     @Getter private final CurrencyType currencyType;
     @Getter private final int currencyAmount;
     @Getter private final int honorAmount;
+    @Getter private final int achievementId;
 
-    public Ride(String name, String displayName, int riders, double delay, Location exit, CurrencyType currencyType, int currencyAmount, int honorAmount) {
+    /**
+     * Main constructor
+     *
+     * @param name           The reference name of the ride, like "iasw"
+     * @param displayName    The display name of the ride, like "it's a small world"
+     * @param riders         The number of players allowed in each group
+     * @param delay          The delay between groups
+     * @param exit           The location of the exit of the ride
+     * @param currencyType   The type of currency to reward
+     * @param currencyAmount The amount of the currency to reward
+     * @param honorAmount    The amount of honor to reward
+     * @param achievementId  The achievement ID to reward players
+     * @implNote If no achievement is desired, use -1
+     */
+    public Ride(String name, String displayName, int riders, double delay, Location exit, CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId) {
         this.world = Bukkit.getWorlds().get(0);
         this.name = name;
         this.displayName = displayName;
@@ -48,6 +63,7 @@ public abstract class Ride {
         this.currencyType = currencyType;
         this.currencyAmount = currencyAmount;
         this.honorAmount = honorAmount;
+        this.achievementId = achievementId;
     }
 
     public abstract void start(List<CPlayer> riders);

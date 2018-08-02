@@ -2,6 +2,7 @@ package network.palace.ridemanager.handlers.ride.flat;
 
 import lombok.Getter;
 import lombok.Setter;
+import network.palace.core.Core;
 import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideEndEvent;
@@ -29,8 +30,8 @@ public class CarouselRide extends FlatRide {
     @Getter private Location center;
     @Getter private List<Horse> horses = new ArrayList<>();
 
-    public CarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount) {
-        super(name, displayName, 12, delay, exit, currencyType, currencyAmount, honorAmount);
+    public CarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId) {
+        super(name, displayName, 12, delay, exit, currencyType, currencyAmount, honorAmount, achievementId);
         this.center = center;
         this.poleY = center.getY() + 2.5;
         spawn();
@@ -397,6 +398,7 @@ public class CarouselRide extends FlatRide {
         }
 
         public boolean addPassenger(CPlayer player) {
+            player.getScoreboard().toggleTags(true);
             return horse.addPassenger(player);
         }
 
@@ -412,13 +414,19 @@ public class CarouselRide extends FlatRide {
 
         public void eject() {
             if (getPassenger() != null) {
-                getOnRide().remove(horse.getPassenger());
-                emptyStand(horse.getStand().get());
+                CPlayer p = Core.getPlayerManager().getPlayer(getPassenger());
+                if (p != null) {
+                    eject(p);
+                } else {
+                    getOnRide().remove(horse.getPassenger());
+                    emptyStand(horse.getStand().get());
+                }
             }
         }
 
         public void eject(CPlayer player) {
-            if (getPassenger() != null && getPassenger().equals(player.getUniqueId())) {
+            if (player != null && getPassenger() != null && getPassenger().equals(player.getUniqueId())) {
+                player.getScoreboard().toggleTags(false);
                 getOnRide().remove(player.getUniqueId());
                 emptyStand(horse.getStand().get());
             }

@@ -18,8 +18,8 @@ public abstract class FlatRide extends Ride {
     protected long startTime = 0;
     protected long ticks = 0;
 
-    public FlatRide(String name, String displayName, int riders, double delay, Location exit, CurrencyType currencyType, int currencyAmount, int honorAmount) {
-        super(name, displayName, riders, delay, exit, currencyType, currencyAmount, honorAmount);
+    public FlatRide(String name, String displayName, int riders, double delay, Location exit, CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId) {
+        super(name, displayName, riders, delay, exit, currencyType, currencyAmount, honorAmount, achievementId);
     }
 
     protected void emptyStand(ArmorStand stand) {

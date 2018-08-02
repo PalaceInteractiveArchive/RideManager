@@ -117,7 +117,7 @@ public class Seat {
     }
 
     public boolean addPassenger(CPlayer tp) {
-        tp.isInsideVehicle();
+        tp.getScoreboard().toggleTags(true);
         return stand.map(armorStand -> armorStand.addPassenger(tp.getBukkitPlayer())).orElse(false);
     }
 
@@ -135,6 +135,7 @@ public class Seat {
     public void removePassenger(CPlayer tp) {
         stand.ifPresent(s -> {
             if (!s.getPassengers().contains(tp.getBukkitPlayer())) return;
+            tp.getScoreboard().toggleTags(false);
             s.removePassenger(tp.getBukkitPlayer());
         });
     }

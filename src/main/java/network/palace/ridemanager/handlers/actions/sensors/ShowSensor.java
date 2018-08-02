@@ -4,7 +4,6 @@ import network.palace.core.Core;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.RideShow;
 import network.palace.show.ShowPlugin;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.io.File;

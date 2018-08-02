@@ -2,6 +2,7 @@ package network.palace.ridemanager.handlers.ride.flat;
 
 import lombok.Getter;
 import lombok.Setter;
+import network.palace.core.Core;
 import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideEndEvent;
@@ -26,8 +27,8 @@ public class TeacupsRide extends FlatRide {
     private List<Table> tables = new ArrayList<>();
 
     public TeacupsRide(String name, String displayName, double delay, Location exit, Location center,
-                       CurrencyType currencyType, int currencyAmount, int honorAmount) {
-        super(name, displayName, 54, delay, exit, currencyType, currencyAmount, honorAmount);
+                       CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId) {
+        super(name, displayName, 54, delay, exit, currencyType, currencyAmount, honorAmount, achievementId);
         this.center = center;
         spawn();
     }
@@ -490,16 +491,22 @@ public class TeacupsRide extends FlatRide {
         }
 
         public boolean addPassenger(CPlayer player, UUID stand) {
+            boolean added = false;
             if (seat1.getStand().isPresent() && seat1.getStand().get().getUniqueId().equals(stand) &&
                     seat1.addPassenger(player)) {
-                return true;
+                added = true;
             } else if (seat2.getStand().isPresent() && seat2.getStand().get().getUniqueId().equals(stand) &&
                     seat2.addPassenger(player)) {
-                return true;
-            } else {
-                return seat3.getStand().isPresent() && seat3.getStand().get().getUniqueId().equals(stand) &&
-                        seat3.addPassenger(player);
+                added = true;
+            } else if (seat3.getStand().isPresent() && seat3.getStand().get().getUniqueId().equals(stand) &&
+                    seat3.addPassenger(player)) {
+                added = true;
             }
+            if (added) {
+                player.getScoreboard().toggleTags(true);
+                return true;
+            }
+            return false;
         }
 
         public List<UUID> getPassengers() {
@@ -514,29 +521,48 @@ public class TeacupsRide extends FlatRide {
             if (seat1.getPassenger() != null) {
                 getOnRide().remove(seat1.getPassenger());
                 emptyStand(seat1.getStand().get());
+                CPlayer p = Core.getPlayerManager().getPlayer(seat1.getPassenger());
+                if (p != null) {
+                    p.getScoreboard().toggleTags(false);
+                }
             }
             if (seat2.getPassenger() != null) {
                 getOnRide().remove(seat2.getPassenger());
                 emptyStand(seat2.getStand().get());
+                CPlayer p = Core.getPlayerManager().getPlayer(seat2.getPassenger());
+                if (p != null) {
+                    p.getScoreboard().toggleTags(false);
+                }
             }
             if (seat3.getPassenger() != null) {
                 getOnRide().remove(seat3.getPassenger());
                 emptyStand(seat3.getStand().get());
+                CPlayer p = Core.getPlayerManager().getPlayer(seat3.getPassenger());
+                if (p != null) {
+                    p.getScoreboard().toggleTags(false);
+                }
             }
         }
 
         public void eject(CPlayer player) {
+            boolean ejected = false;
             if (seat1.getPassenger() != null && player.getUniqueId().equals(seat1.getPassenger())) {
                 emptyStand(seat1.getStand().get());
                 getOnRide().remove(player.getUniqueId());
+                ejected = true;
             }
             if (seat2.getPassenger() != null && player.getUniqueId().equals(seat2.getPassenger())) {
                 emptyStand(seat2.getStand().get());
                 getOnRide().remove(player.getUniqueId());
+                ejected = true;
             }
             if (seat3.getPassenger() != null && player.getUniqueId().equals(seat3.getPassenger())) {
                 emptyStand(seat3.getStand().get());
                 getOnRide().remove(player.getUniqueId());
+                ejected = true;
+            }
+            if (ejected) {
+                player.getScoreboard().toggleTags(false);
             }
         }
 

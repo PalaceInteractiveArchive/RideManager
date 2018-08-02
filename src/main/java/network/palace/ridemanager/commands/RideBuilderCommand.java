@@ -1,7 +1,6 @@
 package network.palace.ridemanager.commands;
 
 import network.palace.core.command.CommandMeta;
-import network.palace.core.command.CommandPermission;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.Rank;
 import network.palace.ridemanager.commands.ridebuilder.*;
@@ -10,8 +9,7 @@ import network.palace.ridemanager.commands.ridebuilder.*;
  * @author Marc
  * @since 8/7/17
  */
-@CommandMeta(description = "Default Ride Builder command")
-@CommandPermission(rank = Rank.DEVELOPER)
+@CommandMeta(description = "Default Ride Builder command", rank = Rank.DEVELOPER)
 public class RideBuilderCommand extends CoreCommand {
 
     public RideBuilderCommand() {

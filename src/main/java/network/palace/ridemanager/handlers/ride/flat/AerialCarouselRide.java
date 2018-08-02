@@ -10,7 +10,6 @@ import network.palace.core.player.Rank;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.handlers.ride.Ride;
-import network.palace.ridemanager.handlers.ride.file.Cart;
 import network.palace.ridemanager.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.*;
@@ -45,20 +44,20 @@ public class AerialCarouselRide extends Ride {
     private long ticks = 0;
     private int taskID;
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount) {
-        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, 6.5, 4.5);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, achievementId, 6.5, 4.5);
     }
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, double aerialRadius, double supportRadius) {
-        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, aerialRadius, supportRadius, true);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId, double aerialRadius, double supportRadius) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, achievementId, aerialRadius, supportRadius, true);
     }
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, double aerialRadius, double supportRadius, boolean small) {
-        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, aerialRadius, supportRadius, small, 45, 3, 0.9);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId, double aerialRadius, double supportRadius, boolean small) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, achievementId, aerialRadius, supportRadius, small, 45, 3, 0.9);
     }
 
-    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, double aerialRadius, double supportRadius, boolean small, double angle, double height, double movein) {
-        super(name, displayName, 16, delay, exit, currencyType, currencyAmount, honorAmount);
+    public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId, double aerialRadius, double supportRadius, boolean small, double angle, double height, double movein) {
+        super(name, displayName, 16, delay, exit, currencyType, currencyAmount, honorAmount, achievementId);
         this.center = center;
         this.aerialRadius = aerialRadius;
         this.supportRadius = supportRadius;
@@ -304,7 +303,7 @@ public class AerialCarouselRide extends Ride {
                 if (h == null) break;
             }
             if (h == null) break;
-            h.addPassenger(tp.getBukkitPlayer());
+            h.addPassenger(tp);
             getOnRide().add(tp.getUniqueId());
             h = getVehicle(hc++);
         }
@@ -347,7 +346,7 @@ public class AerialCarouselRide extends Ride {
             Optional<ArmorStand> s = v.getStand();
             if (!s.isPresent()) continue;
             if (s.get().getUniqueId().equals(uuid)) {
-                v.addPassenger(player.getBukkitPlayer());
+                v.addPassenger(player);
                 getOnRide().add(player.getUniqueId());
                 return true;
             }
@@ -643,12 +642,13 @@ public class AerialCarouselRide extends Ride {
             return getWorld().getEntitiesByClass(ArmorStand.class).stream().filter(s -> s.getUniqueId().equals(supportID)).findFirst();
         }
 
-        public void addPassenger(Player player) {
+        public void addPassenger(CPlayer player) {
             Optional<ArmorStand> s = getStand();
             if (!s.isPresent() || !s.get().getPassengers().isEmpty()) {
                 return;
             }
-            s.get().addPassenger(player);
+            player.getScoreboard().toggleTags(true);
+            s.get().addPassenger(player.getBukkitPlayer());
         }
 
         public CPlayer getPassenger() {
@@ -672,6 +672,7 @@ public class AerialCarouselRide extends Ride {
             Optional<ArmorStand> stand = getStand();
             CPlayer passenger = getPassenger();
             if (passenger == null) return;
+            passenger.getScoreboard().toggleTags(false);
             stand.ifPresent(s -> s.removePassenger(passenger.getBukkitPlayer()));
             passenger.teleport(getExit());
             passenger.getInventory().setItem(4, ItemUtil.create(Material.THIN_GLASS, 1, ChatColor.GRAY +

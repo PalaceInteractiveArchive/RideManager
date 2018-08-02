@@ -46,7 +46,7 @@ public class MovementUtil {
             @Override
             public void onPacketReceiving(PacketEvent event) {
                 CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
-                if (player == null) return;
+                if (player == null || player.getBukkitPlayer().isSneaking()) return;
                 int id = event.getPacket().getIntegers().read(0);
                 World world = player.getWorld();
                 List<Entity> entities = new ArrayList<>(world.getEntities());

@@ -42,8 +42,8 @@ public class FileRide extends Ride {
     @Getter private ModelMap modelMap;
     private final String modelMapFileName;
 
-    public FileRide(String name, String displayName, int riders, double delay, Location exit, String fileName, CurrencyType currencyType, int currencyAmount, int honorAmount) {
-        super(name, displayName, riders, delay, exit, currencyType, currencyAmount, honorAmount);
+    public FileRide(String name, String displayName, int riders, double delay, Location exit, String fileName, CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId) {
+        super(name, displayName, riders, delay, exit, currencyType, currencyAmount, honorAmount, achievementId);
         this.modelMapFileName = fileName;
         this.rideFile = new File("plugins/RideManager/rides/" + fileName + ".ride");
     }

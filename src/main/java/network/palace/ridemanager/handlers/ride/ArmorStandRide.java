@@ -32,7 +32,7 @@ public class ArmorStandRide extends Ride {
     private final List<Action> actions;
 
     public ArmorStandRide(String name, String displayName, int riders, double delay, Location exit, String fileName, CurrencyType currencyType, int currencyAmount) {
-        super(name, displayName, riders, delay, exit, currencyType, currencyAmount, 0);
+        super(name, displayName, riders, delay, exit, currencyType, currencyAmount, 0, -1);
         this.file = new File("plugins/RideManager/armorstand/" + fileName + ".ride");
         List<Action> actions = new ArrayList<>();
         try {

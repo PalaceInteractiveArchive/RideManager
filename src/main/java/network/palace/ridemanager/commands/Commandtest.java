@@ -2,7 +2,6 @@ package network.palace.ridemanager.commands;
 
 import network.palace.core.command.CommandException;
 import network.palace.core.command.CommandMeta;
-import network.palace.core.command.CommandPermission;
 import network.palace.core.command.CoreCommand;
 import network.palace.core.player.CPlayer;
 import network.palace.core.player.Rank;
@@ -16,8 +15,7 @@ import java.util.Arrays;
 /**
  * Created by Marc on 1/15/17.
  */
-@CommandMeta(description = "Test ride system")
-@CommandPermission(rank = Rank.DEVELOPER)
+@CommandMeta(description = "Test ride system", rank = Rank.DEVELOPER)
 public class Commandtest extends CoreCommand {
 
     public Commandtest() {
