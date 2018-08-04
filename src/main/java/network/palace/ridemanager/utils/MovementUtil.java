@@ -1,23 +1,16 @@
 package network.palace.ridemanager.utils;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketEvent;
 import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
-import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Created by Marc on 1/15/17.
@@ -42,24 +35,6 @@ public class MovementUtil {
             }*/
             tick++;
         }, 0L, 1L);
-        ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(RideManager.getInstance(), PacketType.Play.Client.USE_ENTITY) {
-            @Override
-            public void onPacketReceiving(PacketEvent event) {
-                CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
-                if (player == null || player.getBukkitPlayer().isSneaking()) return;
-                int id = event.getPacket().getIntegers().read(0);
-                World world = player.getWorld();
-                List<Entity> entities = new ArrayList<>(world.getEntities());
-                Optional<Entity> opt = entities.stream().filter(en -> en.getEntityId() == id).findFirst();
-                if (!opt.isPresent()) return;
-                Entity e = opt.get();
-                if (!e.getType().equals(EntityType.ARMOR_STAND)) return;
-                ArmorStand stand = (ArmorStand) e;
-                if (RideManager.getMovementUtil().sitDown(player, stand)) {
-                    event.setCancelled(true);
-                }
-            }
-        });
     }
 
     /*public void loadRides() {
@@ -181,12 +156,22 @@ public class MovementUtil {
     }
 
     public boolean sitDown(CPlayer player, ArmorStand stand) {
+        if (player.getBukkitPlayer().isSneaking()) {
+            player.sendMessage(ChatColor.RED + "You cannot board a ride while sneaking!");
+            return false;
+        }
         for (Ride ride : getRides()) {
             if (ride.sitDown(player, stand)) {
                 return true;
             }
         }
         return false;
+    }
+
+    public void ejectUUID(UUID uuid) {
+        for (Ride ride : getRides()) {
+            ride.getOnRide().remove(uuid);
+        }
     }
 
     public static double getYMin() {

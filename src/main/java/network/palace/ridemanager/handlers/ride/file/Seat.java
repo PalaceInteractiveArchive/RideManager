@@ -26,21 +26,15 @@ public class Seat {
     private final double relative_y;
     private final double relative_z;
 
-    @Getter
-    private World world;
-    @Getter
-    private double x, y, z;
-    @Getter
-    private float yaw;
-    @Getter
-    private float pitch;
+    @Getter private World world;
+    @Getter private double x, y, z;
+    @Getter private float yaw;
+    @Getter private float pitch;
     private int chunkX;
     private int chunkZ;
 
-    @Getter
-    private boolean spawned = false;
-    @Getter
-    private Vector velocity = new Vector();
+    @Getter private boolean spawned = false;
+    @Getter private Vector velocity = new Vector();
 
     public Seat(double relative_x, double relative_y, double relative_z, World world) {
         this.relative_x = relative_x;

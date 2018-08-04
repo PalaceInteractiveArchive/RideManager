@@ -190,4 +190,6 @@ public abstract class Ride {
     public abstract void onChunkLoad(Chunk chunk);
 
     public abstract void onChunkUnload(Chunk chunk);
+
+    public abstract boolean isRideStand(ArmorStand stand);
 }

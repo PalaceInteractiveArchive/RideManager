@@ -117,6 +117,16 @@ public class TeacupsRide extends FlatRide {
                     cup = 1;
                 }
                 Cup c = t.getCups().get(cup - 1);
+                if (c == null) {
+                    tp.sendMessage(ChatColor.RED + "We ran out of seats, sorry!");
+                    tp.teleport(getExit());
+                    continue;
+                }
+                if (tp.getBukkitPlayer().isSneaking()) {
+                    tp.sendMessage(ChatColor.RED + "You cannot board a ride while sneaking!");
+                    tp.teleport(getExit());
+                    continue;
+                }
                 if (c.addPassenger(tp)) {
                     getOnRide().add(tp.getUniqueId());
                     break;
@@ -343,6 +353,20 @@ public class TeacupsRide extends FlatRide {
         }
     }
 
+    @Override
+    public boolean isRideStand(ArmorStand stand) {
+        UUID uuid = stand.getUniqueId();
+        for (int i = 1; i <= 3; i++) {
+            Table t = getTable(i);
+            for (Cup c : t.getCups()) {
+                if (c.isRideStand(uuid)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Get one of the three tables
      *
@@ -566,5 +590,10 @@ public class TeacupsRide extends FlatRide {
             }
         }
 
+        public boolean isRideStand(UUID uuid) {
+            return (seat1.isSpawned() && seat1.getUniqueId().equals(uuid)) ||
+                    (seat2.isSpawned() && seat2.getUniqueId().equals(uuid)) ||
+                    (seat3.isSpawned() && seat3.getUniqueId().equals(uuid));
+        }
     }
 }

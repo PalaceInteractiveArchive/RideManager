@@ -14,6 +14,7 @@ import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.threads.FileRideLoader;
 import network.palace.ridemanager.utils.MovementUtil;
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -105,8 +106,14 @@ public class FileRide extends Ride {
     }
 
     @Override
+    public boolean handleEject(CPlayer player) {
+        return true;
+    }
+
+    @Override
     public void handleEject(CPlayer player, boolean force) {
         if (!force) return;
+        getOnRide().remove(player.getUniqueId());
         Cart cart = null;
         for (Cart c : getCarts()) {
             if (c.getPassengers().contains(player)) {
@@ -141,7 +148,16 @@ public class FileRide extends Ride {
                 s = seats.get(sc++);
                 if (s == null) break;
             }
-            if (s == null) break;
+            if (s == null) {
+                tp.sendMessage(ChatColor.RED + "We ran out of seats, sorry!");
+                tp.teleport(getExit());
+                continue;
+            }
+            if (tp.getBukkitPlayer().isSneaking()) {
+                tp.sendMessage(ChatColor.RED + "You cannot board a ride while sneaking!");
+                tp.teleport(getExit());
+                continue;
+            }
             s.addPassenger(tp);
             getOnRide().add(tp.getUniqueId());
             s = seats.get(sc++);
@@ -163,7 +179,7 @@ public class FileRide extends Ride {
         if (!atStation.isPresent() || getOnRide().contains(player.getUniqueId())) return false;
         UUID uuid = stand.getUniqueId();
         for (Seat seat : atStation.get().getSeats()) {
-            if (!seat.getUniqueId().equals(uuid)) continue;
+            if (!seat.getUniqueId().equals(uuid) || seat.hasPassenger()) continue;
             if (seat.addPassenger(player)) {
                 getOnRide().add(player.getUniqueId());
                 return true;
@@ -227,5 +243,20 @@ public class FileRide extends Ride {
     @Override
     public void onChunkUnload(Chunk chunk) {
         getCarts().forEach(c -> c.chunkUnloaded(chunk));
+    }
+
+    @Override
+    public boolean isRideStand(ArmorStand stand) {
+        UUID uuid = stand.getUniqueId();
+        for (Cart c : getCarts()) {
+            if (!c.isSpawned()) continue;
+            for (Seat s : c.getSeats()) {
+                if (!s.isSpawned()) continue;
+                if (uuid.equals(s.getUniqueId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

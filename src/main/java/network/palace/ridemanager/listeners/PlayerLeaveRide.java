@@ -12,6 +12,8 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
+import java.util.UUID;
+
 /**
  * Created by Marc on 1/29/17.
  */
@@ -29,14 +31,20 @@ public class PlayerLeaveRide implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
-        if (player == null) return;
+        if (player == null) {
+            ejectUUID(event.getPlayer().getUniqueId());
+            return;
+        }
         ejectPlayer(player);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerKick(PlayerKickEvent event) {
         CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
-        if (player == null) return;
+        if (player == null) {
+            ejectUUID(event.getPlayer().getUniqueId());
+            return;
+        }
         ejectPlayer(player);
 
     }
@@ -44,8 +52,15 @@ public class PlayerLeaveRide implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
-        if (player == null) return;
+        if (player == null) {
+            ejectUUID(event.getPlayer().getUniqueId());
+            return;
+        }
         ejectPlayer(player);
+    }
+
+    private void ejectUUID(UUID uuid) {
+        RideManager.getMovementUtil().ejectUUID(uuid);
     }
 
     private void ejectPlayer(CPlayer player) {

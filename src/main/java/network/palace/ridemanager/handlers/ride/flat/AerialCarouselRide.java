@@ -302,7 +302,16 @@ public class AerialCarouselRide extends Ride {
                 h = getVehicle(hc++);
                 if (h == null) break;
             }
-            if (h == null) break;
+            if (h == null) {
+                tp.sendMessage(ChatColor.RED + "We ran out of seats, sorry!");
+                tp.teleport(getExit());
+                continue;
+            }
+            if (tp.getBukkitPlayer().isSneaking()) {
+                tp.sendMessage(ChatColor.RED + "You cannot board a ride while sneaking!");
+                tp.teleport(getExit());
+                continue;
+            }
             h.addPassenger(tp);
             getOnRide().add(tp.getUniqueId());
             h = getVehicle(hc++);
@@ -702,5 +711,10 @@ public class AerialCarouselRide extends Ride {
 
     @Override
     public void onChunkUnload(Chunk chunk) {
+    }
+
+    @Override
+    public boolean isRideStand(ArmorStand stand) {
+        return false;
     }
 }

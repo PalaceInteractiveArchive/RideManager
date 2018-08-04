@@ -309,4 +309,9 @@ public class ArmorStandRide extends Ride {
     @Override
     public void onChunkUnload(Chunk chunk) {
     }
+
+    @Override
+    public boolean isRideStand(ArmorStand stand) {
+        return false;
+    }
 }

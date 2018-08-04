@@ -146,6 +146,16 @@ public class CarouselRide extends FlatRide {
         for (CPlayer tp : new ArrayList<>(riders)) {
             while (h != null) {
                 h = getHorse(horseNumber++);
+                if (h == null) {
+                    tp.sendMessage(ChatColor.RED + "We ran out of horses, sorry!");
+                    tp.teleport(getExit());
+                    continue;
+                }
+                if (tp.getBukkitPlayer().isSneaking()) {
+                    tp.sendMessage(ChatColor.RED + "You cannot board a ride while sneaking!");
+                    tp.teleport(getExit());
+                    continue;
+                }
                 if (h.addPassenger(tp)) {
                     getOnRide().add(tp.getUniqueId());
                     break;
@@ -320,6 +330,18 @@ public class CarouselRide extends FlatRide {
         for (Horse h : horses) {
             h.chunkUnloaded(chunk);
         }
+    }
+
+    @Override
+    public boolean isRideStand(ArmorStand stand) {
+        UUID uuid = stand.getUniqueId();
+        for (Horse h : getHorses()) {
+            if (!h.getHorse().isSpawned()) continue;
+            if (h.getHorse().getUniqueId().equals(uuid)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public double getHeight(double ticks, boolean positive) {

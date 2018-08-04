@@ -170,4 +170,12 @@ public class ChunkStand {
         return stand.filter(armorStand -> !armorStand.getPassengers().isEmpty())
                 .map(armorStand -> armorStand.getPassengers().get(0).getUniqueId()).orElse(null);
     }
+
+    public UUID getUniqueId() {
+        if (stand.isPresent()) {
+            return stand.get().getUniqueId();
+        } else {
+            return UUID.randomUUID();
+        }
+    }
 }
