@@ -1,6 +1,7 @@
 package network.palace.ridemanager.handlers.actions;
 
 import lombok.Getter;
+import network.palace.ridemanager.handlers.builder.ActionType;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -89,5 +90,10 @@ public class StraightAction extends MoveAction {
     @Override
     public String toString() {
         return "Straight " + to.getX() + "," + to.getY() + "," + to.getZ() + (autoYaw.isEmpty() ? "" : " " + autoYaw);
+    }
+
+    @Override
+    public ActionType getActionType() {
+        return ActionType.STRAIGHT;
     }
 }

@@ -3,6 +3,7 @@ package network.palace.ridemanager.handlers.builder.actions;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.ridemanager.handlers.actions.RideAction;
+import network.palace.ridemanager.handlers.builder.ActionType;
 import org.bukkit.Location;
 
 @Getter
@@ -12,7 +13,7 @@ public class FakeExitAction extends FakeAction {
     private String autoYaw;
 
     public FakeExitAction() {
-        this(null, "");
+        this(null, null);
     }
 
     public FakeExitAction(Location to, String autoYaw) {
@@ -29,5 +30,15 @@ public class FakeExitAction extends FakeAction {
     @Override
     public String toString() {
         return "";
+    }
+
+    @Override
+    public ActionType getActionType() {
+        return ActionType.EXIT;
+    }
+
+    @Override
+    public boolean areFieldsIncomplete() {
+        return to == null || autoYaw == null;
     }
 }

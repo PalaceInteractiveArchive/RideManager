@@ -1,6 +1,7 @@
 package network.palace.ridemanager.handlers.actions;
 
 import lombok.Getter;
+import network.palace.ridemanager.handlers.builder.ActionType;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.util.Vector;
 
@@ -36,5 +37,10 @@ public class WaitAction extends MoveAction {
     @Override
     public String toString() {
         return "Wait " + ticks;
+    }
+
+    @Override
+    public ActionType getActionType() {
+        return ActionType.WAIT;
     }
 }

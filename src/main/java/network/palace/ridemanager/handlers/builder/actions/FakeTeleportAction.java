@@ -3,6 +3,7 @@ package network.palace.ridemanager.handlers.builder.actions;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.ridemanager.handlers.actions.RideAction;
+import network.palace.ridemanager.handlers.builder.ActionType;
 import org.bukkit.Location;
 
 @Getter
@@ -27,5 +28,15 @@ public class FakeTeleportAction extends FakeAction {
     @Override
     public String toString() {
         return "";
+    }
+
+    @Override
+    public ActionType getActionType() {
+        return ActionType.TELEPORT;
+    }
+
+    @Override
+    public boolean areFieldsIncomplete() {
+        return to == null;
     }
 }

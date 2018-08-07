@@ -1,6 +1,7 @@
 package network.palace.ridemanager.handlers.actions;
 
 import lombok.Getter;
+import network.palace.ridemanager.handlers.builder.ActionType;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -37,5 +38,10 @@ public class TeleportAction extends MoveAction {
     @Override
     public String toString() {
         return "Teleport " + to.getX() + "," + to.getY() + "," + to.getZ();
+    }
+
+    @Override
+    public ActionType getActionType() {
+        return ActionType.TELEPORT;
     }
 }

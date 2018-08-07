@@ -3,6 +3,7 @@ package network.palace.ridemanager.handlers.actions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import network.palace.ridemanager.handlers.builder.ActionType;
 import network.palace.ridemanager.handlers.ride.file.Cart;
 
 import java.util.UUID;
@@ -25,6 +26,8 @@ public abstract class RideAction {
 
     @Override
     public abstract String toString();
+
+    public abstract ActionType getActionType();
 
     public RideAction load(Cart cart) {
         setCart(cart);

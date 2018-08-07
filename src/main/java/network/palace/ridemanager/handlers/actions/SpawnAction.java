@@ -1,6 +1,7 @@
 package network.palace.ridemanager.handlers.actions;
 
 import lombok.Getter;
+import network.palace.ridemanager.handlers.builder.ActionType;
 import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.file.Seat;
 import network.palace.ridemanager.utils.MovementUtil;
@@ -69,5 +70,10 @@ public class SpawnAction extends MoveAction {
     @Override
     public String toString() {
         return "Spawn " + loc.getX() + "," + loc.getY() + "," + loc.getZ() + " " + speed + " " + yaw;
+    }
+
+    @Override
+    public ActionType getActionType() {
+        return ActionType.SPAWN;
     }
 }

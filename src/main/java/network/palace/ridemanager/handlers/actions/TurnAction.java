@@ -1,6 +1,7 @@
 package network.palace.ridemanager.handlers.actions;
 
 import lombok.Getter;
+import network.palace.ridemanager.handlers.builder.ActionType;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -46,7 +47,7 @@ public class TurnAction extends MoveAction {
             yChange = MovementUtil.pythag((Math.abs(angle) * radius * Math.PI) / 180, yDifference);
             targetAngle = originAngle + angle;
         }
-        double angleChange = angle / ((Math.abs((2 * Math.PI * radius) / (360 / angle))) / cart.getPower());
+        double angleChange = angle / ((Math.abs((2 * Math.PI * radius) / (360.0 / angle))) / cart.getPower());
         float dynamicAngle;
         if ((clockwise && originAngle + angleChange > targetAngle) || (!clockwise && originAngle + angleChange < targetAngle)) {
             dynamicAngle = targetAngle;
@@ -111,5 +112,10 @@ public class TurnAction extends MoveAction {
     @Override
     public String toString() {
         return "";
+    }
+
+    @Override
+    public ActionType getActionType() {
+        return ActionType.TURN;
     }
 }

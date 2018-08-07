@@ -18,6 +18,8 @@ public abstract class FakeAction extends RideAction {
         return true;
     }
 
+    public abstract boolean areFieldsIncomplete();
+
     @Override
     public RideAction load(Cart cart) {
         this.cart = cart;

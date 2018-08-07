@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import network.palace.ridemanager.handlers.actions.RideAction;
 import network.palace.ridemanager.handlers.actions.SpawnAction;
+import network.palace.ridemanager.handlers.builder.ActionType;
 import org.bukkit.Location;
 
 @Getter
@@ -14,7 +15,7 @@ public class FakeSpawnAction extends FakeAction {
     private float yaw;
 
     public FakeSpawnAction() {
-        this(null, 0, 0);
+        this(null, Double.MAX_VALUE, Float.MAX_VALUE);
     }
 
     public FakeSpawnAction(Location loc, double speed, float yaw) {
@@ -32,5 +33,15 @@ public class FakeSpawnAction extends FakeAction {
     @Override
     public String toString() {
         return "";
+    }
+
+    @Override
+    public ActionType getActionType() {
+        return ActionType.SPAWN;
+    }
+
+    @Override
+    public boolean areFieldsIncomplete() {
+        return location == null || !(speed != Double.MAX_VALUE) || !(yaw != Float.MAX_VALUE);
     }
 }

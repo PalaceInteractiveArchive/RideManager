@@ -1,10 +1,7 @@
 package network.palace.ridemanager.utils;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
-import network.palace.core.player.CPlayerParticlesManager;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.handlers.actions.*;
@@ -13,15 +10,11 @@ import network.palace.ridemanager.handlers.builder.actions.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.Vector;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -33,7 +26,7 @@ public class RideBuilderUtil {
     private List<UUID> inventory = new ArrayList<>();
 
     public RideBuilderUtil() {
-        Core.runTaskTimer(new Runnable() {
+        /*Core.runTaskTimer(new Runnable() {
             @Override
             public void run() {
                 for (BuildSession session : new ArrayList<>(sessions.values())) {
@@ -155,7 +148,7 @@ public class RideBuilderUtil {
                 }
                 return stand;
             }
-        }, 0L, 20L);
+        }, 0L, 20L);*/
         Core.runTaskTimer(new PathDataTimer(), 0L, 20L);
     }
 
@@ -217,21 +210,27 @@ public class RideBuilderUtil {
     }
 
     public MoveAction changeLocation(MoveAction a, Vector v) {
-        if (a instanceof ExitAction) {
-            ExitAction act = (ExitAction) a;
-            return new ExitAction(act.getTo().add(v), act.getAutoYaw());
-        } else if (a instanceof SpawnAction) {
-            SpawnAction act = (SpawnAction) a;
-            return new SpawnAction(act.getLoc().add(v), act.getSpeed(), act.getYaw());
-        } else if (a instanceof StraightAction) {
-            StraightAction act = (StraightAction) a;
-            return new StraightAction(act.getTo().add(v), act.getAutoYaw());
-        } else if (a instanceof TeleportAction) {
-            TeleportAction act = (TeleportAction) a;
-            return new TeleportAction(act.getTo().add(v));
-        } else if (a instanceof TurnAction) {
-            TurnAction act = (TurnAction) a;
-            return new TurnAction(act.getOrigin().add(v), act.getAngle());
+        switch (a.getActionType()) {
+            case EXIT: {
+                ExitAction act = (ExitAction) a;
+                return new ExitAction(act.getTo().add(v), act.getAutoYaw());
+            }
+            case SPAWN: {
+                SpawnAction act = (SpawnAction) a;
+                return new SpawnAction(act.getLoc().add(v), act.getSpeed(), act.getYaw());
+            }
+            case STRAIGHT: {
+                StraightAction act = (StraightAction) a;
+                return new StraightAction(act.getTo().add(v), act.getAutoYaw());
+            }
+            case TELEPORT: {
+                TeleportAction act = (TeleportAction) a;
+                return new TeleportAction(act.getTo().add(v));
+            }
+            case TURN: {
+                TurnAction act = (TurnAction) a;
+                return new TurnAction(act.getOrigin().add(v), act.getAngle());
+            }
         }
         return null;
     }
@@ -239,18 +238,27 @@ public class RideBuilderUtil {
     public List<RideAction> getFakeActions(LinkedList<RideAction> list) {
         List<RideAction> finalList = new ArrayList<>();
         for (RideAction a : list) {
-            if (a instanceof ExitAction) {
-                finalList.add(new FakeExitAction(((ExitAction) a).getTo(), ((ExitAction) a).getAutoYaw()));
-            } else if (a instanceof SpawnAction) {
-                finalList.add(new FakeSpawnAction(((SpawnAction) a).getLoc(), ((SpawnAction) a).getSpeed(), ((SpawnAction) a).getYaw()));
-            } else if (a instanceof StraightAction) {
-                finalList.add(new FakeStraightAction(((StraightAction) a).getTo(), ((StraightAction) a).getAutoYaw()));
-            } else if (a instanceof TeleportAction) {
-                finalList.add(new FakeTeleportAction(((TeleportAction) a).getTo()));
-            } else if (a instanceof TurnAction) {
-                finalList.add(new FakeTurnAction(((TurnAction) a).getOrigin(), ((TurnAction) a).getAngle()));
-            } else if (a instanceof SpeedAction) {
-                finalList.add(new FakeSpeedAction(((SpeedAction) a).getSpeed(), ((SpeedAction) a).getTicks()));
+            switch (a.getActionType()) {
+                case EXIT: {
+                    finalList.add(new FakeExitAction(((ExitAction) a).getTo(), ((ExitAction) a).getAutoYaw()));
+                    break;
+                }
+                case SPAWN: {
+                    finalList.add(new FakeSpawnAction(((SpawnAction) a).getLoc(), ((SpawnAction) a).getSpeed(), ((SpawnAction) a).getYaw()));
+                    break;
+                }
+                case STRAIGHT: {
+                    finalList.add(new FakeStraightAction(((StraightAction) a).getTo(), ((StraightAction) a).getAutoYaw()));
+                    break;
+                }
+                case TELEPORT: {
+                    finalList.add(new FakeTeleportAction(((TeleportAction) a).getTo()));
+                    break;
+                }
+                case TURN: {
+                    finalList.add(new FakeTurnAction(((TurnAction) a).getOrigin(), ((TurnAction) a).getAngle()));
+                    break;
+                }
             }
         }
         return finalList;
@@ -268,10 +276,11 @@ public class RideBuilderUtil {
             if (player == null) return;
             int i = 0;
             PlayerInventory inv = player.getInventory();
-            for (BlockAction b : BlockAction.values()) {
-                ItemStack item = b.getItem();
-                inv.setItem(i++, item);
-            }
+            inv.setItem(0, ItemUtil.create(Material.COMPASS));
+            inv.setItem(1, ItemUtil.create(Material.WOOD_AXE));
+            inv.setItem(2, ItemUtil.create(Material.STAINED_CLAY, ChatColor.GREEN + "Create an Action", (byte) 5));
+            inv.setItem(3, ItemUtil.create(Material.STAINED_CLAY, ChatColor.AQUA + "Create a Sensor", (byte) 3));
+            inv.setItem(4, ItemUtil.create(Material.STONE_SPADE, ChatColor.GRAY + "Edit Action/Sensor"));
         } else {
             if (!inventory.contains(uuid)) return;
             inventory.remove(uuid);
@@ -293,63 +302,5 @@ public class RideBuilderUtil {
          * @param uuid the uuid
          */
         void done(UUID uuid);
-    }
-
-    @AllArgsConstructor
-    @Getter
-    public enum BlockAction {
-        SPAWN(Material.STAINED_CLAY, (byte) 5, ChatColor.GREEN, FakeSpawnAction.class),
-        STRAIGHT(Material.STAINED_CLAY, (byte) 4, ChatColor.YELLOW, FakeStraightAction.class),
-        TURN(Material.STAINED_CLAY, (byte) 14, ChatColor.RED, FakeTurnAction.class),
-        ROTATE(Material.STAINED_CLAY, (byte) 1, ChatColor.GOLD, FakeRotateAction.class),
-        WAIT(Material.STAINED_CLAY, (byte) 13, ChatColor.DARK_GREEN, FakeWaitAction.class),
-        INCLINE(Material.STAINED_CLAY, (byte) 3, ChatColor.AQUA, null),
-        DECLINE(Material.STAINED_CLAY, (byte) 11, ChatColor.BLUE, null),
-        TELEPORT(Material.STAINED_CLAY, (byte) 9, ChatColor.GRAY, FakeTeleportAction.class),
-        EXIT(Material.STAINED_CLAY, (byte) 15, ChatColor.DARK_GRAY, FakeExitAction.class);
-        private final Material type;
-        private final byte data;
-        private final ChatColor color;
-        private final Class clazz;
-
-        public ItemStack getItem() {
-            return ItemUtil.create(type, getName(), data);
-        }
-
-        @SuppressWarnings("deprecation")
-        public static BlockAction fromBlock(Block b) {
-            for (BlockAction a : BlockAction.values()) {
-                if (a.type.equals(b.getType()) && a.data == b.getData()) {
-                    return a;
-                }
-            }
-            return null;
-        }
-
-        public static ItemStack[] getItems() {
-            ItemStack[] array = new ItemStack[]{};
-            int i = 0;
-            for (BlockAction a : BlockAction.values()) {
-                if (a.equals(SPAWN)) continue;
-                array[i] = a.getItem();
-                i++;
-            }
-            return array;
-        }
-
-        public String getName() {
-            String s = name().toLowerCase();
-            return getColor() + s.substring(0, 1).toUpperCase() + s.substring(1);
-        }
-
-        public RideAction newAction() {
-            if (clazz == null) return null;
-            try {
-                return (RideAction) clazz.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
     }
 }

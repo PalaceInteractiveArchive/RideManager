@@ -3,11 +3,12 @@ package network.palace.ridemanager.handlers.builder.actions;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.ridemanager.handlers.actions.RideAction;
+import network.palace.ridemanager.handlers.builder.ActionType;
 
 @Getter
 @Setter
 public class FakeWaitAction extends FakeAction {
-    private long ticks;
+    private long ticks = -1;
 
     public FakeWaitAction() {
         super(true);
@@ -21,5 +22,15 @@ public class FakeWaitAction extends FakeAction {
     @Override
     public String toString() {
         return "";
+    }
+
+    @Override
+    public ActionType getActionType() {
+        return ActionType.WAIT;
+    }
+
+    @Override
+    public boolean areFieldsIncomplete() {
+        return ticks == -1;
     }
 }

@@ -3,6 +3,7 @@ package network.palace.ridemanager.listeners;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
+import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.handlers.ride.flat.AerialCarouselRide;
 import org.bukkit.Sound;
@@ -19,8 +20,12 @@ public class PlayerInteract implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         CPlayer cp = Core.getPlayerManager().getPlayer(event.getPlayer());
-        if (cp == null) return;
-        if (event.getAction().equals(Action.PHYSICAL)) {
+        if (cp == null || event.getAction().equals(Action.PHYSICAL)) {
+            return;
+        }
+        BuildSession session = RideManager.getRideBuilderUtil().getSession(cp);
+        if (session != null) {
+            session.handleInteract(event, cp);
             return;
         }
         Ride ride = RideManager.getMovementUtil().getRide(cp);

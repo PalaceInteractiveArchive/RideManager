@@ -56,6 +56,7 @@ public class RideManager extends Plugin {
         registerCommand(new RideMapResetCommand());
         registerListener(new BlockListener());
         registerListener(new ChunkListener());
+        registerListener(new InventoryClick());
         registerListener(new PacketListener());
         registerListener(new PlayerInteract());
         registerListener(new PlayerLeaveRide());

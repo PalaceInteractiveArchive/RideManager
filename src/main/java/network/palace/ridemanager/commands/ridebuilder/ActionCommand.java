@@ -13,7 +13,7 @@ import org.bukkit.ChatColor;
  * @author Marc
  * @since 8/10/17
  */
-@CommandMeta(description = "Provide action-specific v")
+@CommandMeta(description = "Provide action-specific value")
 public class ActionCommand extends CoreCommand {
 
     public ActionCommand() {
@@ -28,5 +28,6 @@ public class ActionCommand extends CoreCommand {
             player.sendMessage(ChatColor.RED + "You aren't in a build session!");
             return;
         }
+        session.editAction(player, args);
     }
 }
