@@ -305,20 +305,19 @@ public class TeacupsRide extends FlatRide {
 
     @Override
     public boolean handleEject(CPlayer player) {
+        boolean removed = false;
         for (Table t : tables) {
             for (Cup c : t.getCups()) {
-                if (!c.getPassengers().contains(player.getUniqueId())) continue;
-
-                getOnRide().remove(player.getUniqueId());
-                c.eject(player);
-
-                if (!state.equals(FlatState.LOADING)) {
-                    player.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
+                if (c.eject(player)) {
+                    removed = true;
+                    if (!state.equals(FlatState.LOADING)) {
+                        player.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
+                    }
+                    break;
                 }
-                return true;
             }
         }
-        return false;
+        return removed;
     }
 
     @Override
@@ -568,7 +567,8 @@ public class TeacupsRide extends FlatRide {
             }
         }
 
-        public void eject(CPlayer player) {
+        public boolean eject(CPlayer player) {
+            if (player == null) return false;
             boolean ejected = false;
             if (seat1.getPassenger() != null && player.getUniqueId().equals(seat1.getPassenger())) {
                 emptyStand(seat1.getStand().get());
@@ -588,6 +588,7 @@ public class TeacupsRide extends FlatRide {
             if (ejected) {
                 player.getScoreboard().toggleTags(false);
             }
+            return ejected;
         }
 
         public boolean isRideStand(UUID uuid) {

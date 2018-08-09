@@ -25,7 +25,7 @@ import org.bukkit.configuration.ConfigurationSection;
 /**
  * Created by Marc on 1/15/17.
  */
-@PluginInfo(name = "RideManager", version = "1.1.2", depend = {"Core", "ProtocolLib"}, canReload = false)
+@PluginInfo(name = "RideManager", version = "1.1.3", depend = {"Core", "ProtocolLib"}, canReload = false)
 public class RideManager extends Plugin {
     @Getter private static RideManager instance;
     @Getter private static MovementUtil movementUtil;
@@ -61,6 +61,14 @@ public class RideManager extends Plugin {
         registerListener(new PlayerInteract());
         registerListener(new PlayerLeaveRide());
         registerListener(new PlayerMove());
+
+        runTaskTimer(() -> {
+            for (CPlayer player : Core.getPlayerManager().getOnlinePlayers()) {
+                if (!player.getScoreboard().getTagsVisible()) {
+                    player.sendMessage("Not Visible");
+                }
+            }
+        }, 0L, 20L);
 
         new RideManagerStatusEvent(RideManagerStatusEvent.Status.STARTING).call();
     }

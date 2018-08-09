@@ -360,15 +360,12 @@ public class CarouselRide extends FlatRide {
     @Override
     public boolean handleEject(CPlayer player) {
         for (Horse h : horses) {
-            if (h.getPassenger() == null || !h.getPassenger().equals(player.getUniqueId())) continue;
-
-            getOnRide().remove(player.getUniqueId());
-            h.eject(player);
-
-            if (!state.equals(FlatState.LOADING)) {
-                player.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
+            if (h.eject(player)) {
+                if (!state.equals(FlatState.LOADING)) {
+                    player.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
+                }
+                return true;
             }
-            return true;
         }
         return false;
     }
@@ -446,12 +443,16 @@ public class CarouselRide extends FlatRide {
             }
         }
 
-        public void eject(CPlayer player) {
-            if (player != null && getPassenger() != null && getPassenger().equals(player.getUniqueId())) {
-                player.getScoreboard().toggleTags(false);
-                getOnRide().remove(player.getUniqueId());
+        public boolean eject(CPlayer player) {
+            if (player == null) return false;
+            boolean ejected = false;
+            if (getPassenger() != null && getPassenger().equals(player.getUniqueId())) {
                 emptyStand(horse.getStand().get());
+                getOnRide().remove(player.getUniqueId());
+                player.getScoreboard().toggleTags(false);
+                ejected = true;
             }
+            return ejected;
         }
 
         public void despawn() {
