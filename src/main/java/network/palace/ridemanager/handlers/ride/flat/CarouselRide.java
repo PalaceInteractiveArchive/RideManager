@@ -142,22 +142,22 @@ public class CarouselRide extends FlatRide {
             }
         }
         int horseNumber = 1;
-        Horse h = getHorse(horseNumber);
+        Horse h = null;
         for (CPlayer tp : new ArrayList<>(riders)) {
-            while (h != null) {
+            while (horseNumber < 24) {
                 h = getHorse(horseNumber++);
                 if (h == null) {
                     tp.sendMessage(ChatColor.RED + "We ran out of horses, sorry!");
                     tp.teleport(getExit());
-                    continue;
+                    break;
                 }
                 if (tp.getBukkitPlayer().isSneaking()) {
                     tp.sendMessage(ChatColor.RED + "You cannot board a ride while sneaking!");
                     tp.teleport(getExit());
-                    continue;
+                    break;
                 }
                 if (h.addPassenger(tp)) {
-                    getOnRide().add(tp.getUniqueId());
+                    addToOnRide(tp.getUniqueId());
                     break;
                 }
             }
@@ -309,7 +309,24 @@ public class CarouselRide extends FlatRide {
             ChunkStand horse = h.getHorse();
             if (!horse.getStand().isPresent()) continue;
             if (horse.getStand().get().getUniqueId().equals(uuid) && h.addPassenger(player)) {
-                getOnRide().add(player.getUniqueId());
+                addToOnRide(player.getUniqueId());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean sitDown(CPlayer player, int entityId) {
+        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= getRiders() || getOnRide().contains(player.getUniqueId())) {
+            return false;
+        }
+        for (Horse h : getHorses()) {
+            ChunkStand horse = h.getHorse();
+            if (!horse.getStand().isPresent()) continue;
+            if (horse.getStand().get().getEntityId() == entityId) {
+                addToOnRide(player.getUniqueId());
+                Core.runTask(() -> h.addPassenger(player));
                 return true;
             }
         }
@@ -344,6 +361,17 @@ public class CarouselRide extends FlatRide {
         return false;
     }
 
+    @Override
+    public boolean isRideStand(int id) {
+        for (Horse h : getHorses()) {
+            if (!h.getHorse().isSpawned()) continue;
+            if (h.getHorse().getEntityId() == id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public double getHeight(double ticks, boolean positive) {
         double time = ticks / 20;
         double h = 0.5 * Math.sin(0.5 * Math.PI * time * heightSpeed);
@@ -358,9 +386,11 @@ public class CarouselRide extends FlatRide {
     }
 
     @Override
-    public boolean handleEject(CPlayer player) {
+    public boolean handleEject(CPlayer player, boolean async) {
+        UUID uuid = player.getUniqueId();
         for (Horse h : horses) {
-            if (h.eject(player)) {
+            if (h.getPassenger() != null && !h.getPassenger().equals(uuid)) continue;
+            if (h.eject(player, async)) {
                 if (!state.equals(FlatState.LOADING)) {
                     player.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
                 }
@@ -371,15 +401,15 @@ public class CarouselRide extends FlatRide {
     }
 
     @Override
-    public void handleEject(CPlayer player, boolean force) {
-        handleEject(player);
+    public void handleEject(CPlayer player, boolean async, boolean force) {
+        handleEject(player, async);
     }
 
     private void ejectPlayers() {
         for (Horse c : getHorses()) {
-            c.eject();
+            c.eject(false);
         }
-        getOnRide().clear();
+        clearOnRide();
     }
 
     private class Horse {
@@ -431,24 +461,24 @@ public class CarouselRide extends FlatRide {
             pole.setVelocity(v);
         }
 
-        public void eject() {
+        public void eject(boolean async) {
             if (getPassenger() != null) {
                 CPlayer p = Core.getPlayerManager().getPlayer(getPassenger());
                 if (p != null) {
-                    eject(p);
+                    eject(p, async);
                 } else {
-                    getOnRide().remove(horse.getPassenger());
-                    emptyStand(horse.getStand().get());
+                    emptyStand(horse.getStand().get(), false);
+                    removeFromOnRide(horse.getPassenger());
                 }
             }
         }
 
-        public boolean eject(CPlayer player) {
+        public boolean eject(CPlayer player, boolean async) {
             if (player == null) return false;
             boolean ejected = false;
             if (getPassenger() != null && getPassenger().equals(player.getUniqueId())) {
-                emptyStand(horse.getStand().get());
-                getOnRide().remove(player.getUniqueId());
+                emptyStand(horse.getStand().get(), async);
+                removeFromOnRide(player.getUniqueId());
                 player.getScoreboard().toggleTags(false);
                 ejected = true;
             }
@@ -456,7 +486,7 @@ public class CarouselRide extends FlatRide {
         }
 
         public void despawn() {
-            eject();
+            eject(false);
             horse.despawn();
             pole.despawn();
         }

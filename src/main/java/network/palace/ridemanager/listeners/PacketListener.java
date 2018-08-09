@@ -12,16 +12,9 @@ import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.PlayerLeaveRideEvent;
 import network.palace.ridemanager.handlers.ride.Ride;
-import org.bukkit.World;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.event.Listener;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by Marc on 1/29/17.
@@ -61,14 +54,7 @@ public class PacketListener implements Listener {
                 CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
                 if (player == null) return;
                 int id = event.getPacket().getIntegers().read(0);
-                World world = player.getWorld();
-                List<Entity> entities = new ArrayList<>(world.getEntities());
-                Optional<Entity> opt = entities.stream().filter(en -> en.getEntityId() == id).findFirst();
-                if (!opt.isPresent()) return;
-                Entity e = opt.get();
-                if (!e.getType().equals(EntityType.ARMOR_STAND)) return;
-                ArmorStand stand = (ArmorStand) e;
-                if (RideManager.getMovementUtil().sitDown(player, stand)) {
+                if (RideManager.getMovementUtil().sitDown(player, id)) {
                     event.setCancelled(true);
                 }
             }

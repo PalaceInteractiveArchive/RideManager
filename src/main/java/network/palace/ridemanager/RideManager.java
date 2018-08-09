@@ -62,14 +62,6 @@ public class RideManager extends Plugin {
         registerListener(new PlayerLeaveRide());
         registerListener(new PlayerMove());
 
-        runTaskTimer(() -> {
-            for (CPlayer player : Core.getPlayerManager().getOnlinePlayers()) {
-                if (!player.getScoreboard().getTagsVisible()) {
-                    player.sendMessage("Not Visible");
-                }
-            }
-        }, 0L, 20L);
-
         new RideManagerStatusEvent(RideManagerStatusEvent.Status.STARTING).call();
     }
 

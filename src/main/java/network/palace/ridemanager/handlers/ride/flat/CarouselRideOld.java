@@ -312,7 +312,7 @@ public class CarouselRideOld extends Ride {
             }
             if (h == null) break;
             h.addPassenger(tp.getBukkitPlayer());
-            getOnRide().add(tp.getUniqueId());
+            addToOnRide(tp.getUniqueId());
             h = getHorse(hc++);
         }
         started = true;
@@ -320,11 +320,11 @@ public class CarouselRideOld extends Ride {
     }
 
     @Override
-    public boolean handleEject(CPlayer player) {
+    public boolean handleEject(CPlayer player, boolean async) {
         for (Horse c : getHorses()) {
             CPlayer p = c.getPassenger();
             if (p != null && p.getUniqueId().equals(player.getUniqueId())) {
-                getOnRide().remove(player.getUniqueId());
+                removeFromOnRide(player.getUniqueId());
                 c.eject();
                 p.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
                 return true;
@@ -334,8 +334,8 @@ public class CarouselRideOld extends Ride {
     }
 
     @Override
-    public void handleEject(CPlayer player, boolean force) {
-        handleEject(player);
+    public void handleEject(CPlayer player, boolean async, boolean force) {
+        handleEject(player, async);
     }
 
     @Override
@@ -349,11 +349,16 @@ public class CarouselRideOld extends Ride {
             if (!s.isPresent()) continue;
             if (s.get().getUniqueId().equals(uuid)) {
                 c.addPassenger(player.getBukkitPlayer());
-                getOnRide().add(player.getUniqueId());
+                addToOnRide(player.getUniqueId());
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean sitDown(CPlayer player, int entityId) {
+        return true;
     }
 
     @Override
@@ -501,7 +506,7 @@ public class CarouselRideOld extends Ride {
         for (Horse c : getHorses()) {
             c.eject();
         }
-        getOnRide().clear();
+        clearOnRide();
     }
 
     private class Horse {
@@ -585,7 +590,7 @@ public class CarouselRideOld extends Ride {
                 loc.setPitch(playerLoc.getPitch());
             }
             passenger.teleport(loc);
-            getOnRide().remove(passenger.getUniqueId());
+            removeFromOnRide(passenger.getUniqueId());
         }
 
         public void despawn() {
@@ -606,6 +611,11 @@ public class CarouselRideOld extends Ride {
 
     @Override
     public boolean isRideStand(ArmorStand stand) {
+        return false;
+    }
+
+    @Override
+    public boolean isRideStand(int id) {
         return false;
     }
 }

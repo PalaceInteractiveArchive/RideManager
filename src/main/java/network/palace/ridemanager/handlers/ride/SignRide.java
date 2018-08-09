@@ -45,8 +45,8 @@ public class SignRide extends Ride {
     }
 
     @Override
-    public void handleEject(CPlayer player, boolean force) {
-        handleEject(player);
+    public void handleEject(CPlayer player, boolean async, boolean force) {
+        handleEject(player, async);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class SignRide extends Ride {
         for (CPlayer tp : riders) {
 //            c.addPassenger(tp);
             tp.sendMessage(ChatColor.GREEN + "Ride starting in 1 second!");
-            getOnRide().add(tp.getUniqueId());
+            addToOnRide(tp.getUniqueId());
         }
         Bukkit.getScheduler().runTaskLater(RideManager.getInstance(), () -> c.setPower(0.1), 20L);
         carts.add(c);
@@ -77,6 +77,11 @@ public class SignRide extends Ride {
 
     @Override
     public boolean sitDown(CPlayer player, ArmorStand stand) {
+        return true;
+    }
+
+    @Override
+    public boolean sitDown(CPlayer player, int entityId) {
         return true;
     }
 
@@ -94,6 +99,11 @@ public class SignRide extends Ride {
 
     @Override
     public boolean isRideStand(ArmorStand stand) {
+        return false;
+    }
+
+    @Override
+    public boolean isRideStand(int id) {
         return false;
     }
 }

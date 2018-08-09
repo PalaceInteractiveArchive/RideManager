@@ -178,4 +178,8 @@ public class ChunkStand {
             return UUID.randomUUID();
         }
     }
+
+    public int getEntityId() {
+        return stand.map(Entity::getEntityId).orElse(-1);
+    }
 }

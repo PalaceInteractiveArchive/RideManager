@@ -22,20 +22,30 @@ public abstract class FlatRide extends Ride {
         super(name, displayName, riders, delay, exit, currencyType, currencyAmount, honorAmount, achievementId);
     }
 
-    protected void emptyStand(ArmorStand stand) {
+    protected void emptyStand(ArmorStand stand, boolean async) {
         if (stand.getPassengers().isEmpty()) return;
-        for (Entity e : stand.getPassengers()) {
-            CPlayer p = Core.getPlayerManager().getPlayer(e.getUniqueId());
-            if (p == null) continue;
-            final Location pLoc = p.getLocation();
-            stand.removePassenger(p.getBukkitPlayer());
-            Location loc = getExit();
-            if (state.equals(FlatState.LOADING)) {
-                loc = stand.getLocation().add(0, 2, 0);
-                loc.setYaw(pLoc.getYaw());
-                loc.setPitch(pLoc.getPitch());
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                for (Entity e : stand.getPassengers()) {
+                    CPlayer p = Core.getPlayerManager().getPlayer(e.getUniqueId());
+                    if (p == null) continue;
+                    final Location pLoc = p.getLocation();
+                    stand.removePassenger(p.getBukkitPlayer());
+                    Location loc = getExit();
+                    if (state.equals(FlatState.LOADING)) {
+                        loc = stand.getLocation().add(0, 2, 0);
+                        loc.setYaw(pLoc.getYaw());
+                        loc.setPitch(pLoc.getPitch());
+                    }
+                    p.teleport(loc);
+                }
             }
-            p.teleport(loc);
+        };
+        if (async) {
+            Core.runTask(task);
+        } else {
+            task.run();
         }
     }
 }

@@ -1,5 +1,6 @@
 package network.palace.ridemanager.handlers.ride;
 
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_11_R1.Entity;
@@ -19,7 +20,7 @@ import org.bukkit.entity.ArmorStand;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ public abstract class Ride {
     @Getter private int riders;
     @Getter private double delay;
     @Getter @Setter private Location exit;
-    @Getter private List<UUID> onRide = new ArrayList<>();
+    private HashMap<UUID, Long> onRide = new HashMap<>();
     @Getter private final CurrencyType currencyType;
     @Getter private final int currencyAmount;
     @Getter private final int honorAmount;
@@ -66,17 +67,41 @@ public abstract class Ride {
         this.achievementId = achievementId;
     }
 
+    public List<UUID> getOnRide() {
+        return ImmutableList.copyOf(onRide.keySet());
+    }
+
+    public void addToOnRide(UUID uuid) {
+        onRide.put(uuid, System.currentTimeMillis());
+    }
+
+    public long getTimeOnRide(UUID uuid) {
+        return onRide.containsKey(uuid) ? onRide.get(uuid) : -1;
+    }
+
+    public long removeFromOnRide(UUID uuid) {
+        if (!onRide.containsKey(uuid)) {
+            return -1;
+        } else {
+            return onRide.remove(uuid);
+        }
+    }
+
+    public void clearOnRide() {
+        onRide.clear();
+    }
+
     public abstract void start(List<CPlayer> riders);
 
     public abstract void move();
 
     public abstract void despawn();
 
-    public boolean handleEject(CPlayer player) {
+    public boolean handleEject(CPlayer player, boolean async) {
         return false;
     }
 
-    public abstract void handleEject(CPlayer player, boolean force);
+    public abstract void handleEject(CPlayer player, boolean async, boolean force);
 
     public static void teleport(org.bukkit.entity.Entity entity, Location loc) {
         if (!entity.getPassengers().isEmpty()) {
@@ -187,9 +212,13 @@ public abstract class Ride {
 
     public abstract boolean sitDown(CPlayer player, ArmorStand stand);
 
+    public abstract boolean sitDown(CPlayer player, int entityId);
+
     public abstract void onChunkLoad(Chunk chunk);
 
     public abstract void onChunkUnload(Chunk chunk);
 
     public abstract boolean isRideStand(ArmorStand stand);
+
+    public abstract boolean isRideStand(int id);
 }

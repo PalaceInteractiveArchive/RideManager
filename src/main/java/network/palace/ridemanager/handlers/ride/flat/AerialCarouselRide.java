@@ -277,7 +277,7 @@ public class AerialCarouselRide extends Ride {
             }
             if (h == null) break;
             h.addPassenger(tp.getBukkitPlayer());
-            getOnRide().add(tp.getUniqueId());
+            addToOnRide(tp.getUniqueId());
             h = getHorse(hc++);
         }
         started = true;
@@ -313,7 +313,7 @@ public class AerialCarouselRide extends Ride {
                 continue;
             }
             h.addPassenger(tp);
-            getOnRide().add(tp.getUniqueId());
+            addToOnRide(tp.getUniqueId());
             h = getVehicle(hc++);
         }
         started = true;
@@ -327,12 +327,12 @@ public class AerialCarouselRide extends Ride {
     }
 
     @Override
-    public boolean handleEject(CPlayer player) {
+    public boolean handleEject(CPlayer player, boolean async) {
         for (Vehicle c : getVehicles()) {
             CPlayer p = c.getPassenger();
             if (p != null && p.getUniqueId().equals(player.getUniqueId())) {
-                getOnRide().remove(player.getUniqueId());
-                c.eject();
+                removeFromOnRide(player.getUniqueId());
+                c.eject(async);
                 p.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
                 return true;
             }
@@ -341,8 +341,8 @@ public class AerialCarouselRide extends Ride {
     }
 
     @Override
-    public void handleEject(CPlayer player, boolean force) {
-        handleEject(player);
+    public void handleEject(CPlayer player, boolean async, boolean force) {
+        handleEject(player, async);
     }
 
     @Override
@@ -356,7 +356,24 @@ public class AerialCarouselRide extends Ride {
             if (!s.isPresent()) continue;
             if (s.get().getUniqueId().equals(uuid)) {
                 v.addPassenger(player);
-                getOnRide().add(player.getUniqueId());
+                addToOnRide(player.getUniqueId());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean sitDown(CPlayer player, int entityId) {
+        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= 18 || getOnRide().contains(player.getUniqueId())) {
+            return false;
+        }
+        for (Vehicle v : getVehicles()) {
+            Optional<ArmorStand> s = v.getStand();
+            if (!s.isPresent()) continue;
+            if (s.get().getEntityId() == entityId) {
+                Core.runTask(() -> v.addPassenger(player));
+                addToOnRide(player.getUniqueId());
                 return true;
             }
         }
@@ -537,9 +554,9 @@ public class AerialCarouselRide extends Ride {
 
     private void ejectPlayers() {
         for (Vehicle c : getVehicles()) {
-            c.eject();
+            c.eject(false);
         }
-        getOnRide().clear();
+        clearOnRide();
     }
 
     public Vehicle getVehicle(UUID uuid) {
@@ -676,7 +693,7 @@ public class AerialCarouselRide extends Ride {
             return Core.getPlayerManager().getPlayer(pass.getUniqueId());
         }
 
-        public void eject() {
+        public void eject(boolean async) {
             flyingState = FlyingState.DESCENDING;
             Optional<ArmorStand> stand = getStand();
             CPlayer passenger = getPassenger();
@@ -689,11 +706,11 @@ public class AerialCarouselRide extends Ride {
                     "This is for games such as " + ChatColor.GREEN + "Buzz", ChatColor.GREEN +
                     "Lightyear's Space Ranger Spin ", ChatColor.GRAY + "and " + ChatColor.YELLOW +
                     "Toy Story Midway Mania.")));
-            getOnRide().remove(passenger.getUniqueId());
+            removeFromOnRide(passenger.getUniqueId());
         }
 
         public void despawn() {
-            eject();
+            eject(false);
             Optional<ArmorStand> s = getStand();
             Optional<ArmorStand> su = getSupport();
             s.ifPresent(Entity::remove);
@@ -715,6 +732,11 @@ public class AerialCarouselRide extends Ride {
 
     @Override
     public boolean isRideStand(ArmorStand stand) {
+        return false;
+    }
+
+    @Override
+    public boolean isRideStand(int id) {
         return false;
     }
 }

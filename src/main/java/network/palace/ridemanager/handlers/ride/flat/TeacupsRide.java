@@ -128,7 +128,7 @@ public class TeacupsRide extends FlatRide {
                     continue;
                 }
                 if (c.addPassenger(tp)) {
-                    getOnRide().add(tp.getUniqueId());
+                    addToOnRide(tp.getUniqueId());
                     break;
                 }
                 cup++;
@@ -215,7 +215,7 @@ public class TeacupsRide extends FlatRide {
                         new RideEndEvent(this, arr).call();
                         break;
                     case 66:
-                        ejectPlayers();
+                        ejectPlayers(false);
                         ticks = -1;
                         started = false;
                         state = FlatState.LOADING;
@@ -295,7 +295,7 @@ public class TeacupsRide extends FlatRide {
                         (seat2.isPresent() && seat2.get().getUniqueId().equals(uuid)) ||
                         (seat3.isPresent() && seat3.get().getUniqueId().equals(uuid)))
                         && c.addPassenger(player, uuid)) {
-                    getOnRide().add(player.getUniqueId());
+                    addToOnRide(player.getUniqueId());
                     return true;
                 }
             }
@@ -304,11 +304,47 @@ public class TeacupsRide extends FlatRide {
     }
 
     @Override
-    public boolean handleEject(CPlayer player) {
+    public boolean sitDown(CPlayer player, int entityId) {
+        if (!state.equals(FlatState.LOADING) || getOnRide().size() >= getRiders() || getOnRide().contains(player.getUniqueId())) {
+            return false;
+        }
+        for (int i = 1; i <= 3; i++) {
+            Table t = getTable(i);
+            for (Cup c : t.getCups()) {
+                Optional<ArmorStand> seat1 = c.getSeat1().getStand();
+                if (seat1.isPresent() && seat1.get().getEntityId() == entityId) {
+                    if (c.addPassenger(player, seat1.get().getUniqueId())) {
+                        addToOnRide(player.getUniqueId());
+                        return true;
+                    }
+                }
+
+                Optional<ArmorStand> seat2 = c.getSeat2().getStand();
+                if (seat2.isPresent() && seat2.get().getEntityId() == entityId) {
+                    if (c.addPassenger(player, seat2.get().getUniqueId())) {
+                        addToOnRide(player.getUniqueId());
+                        return true;
+                    }
+                }
+
+                Optional<ArmorStand> seat3 = c.getSeat3().getStand();
+                if (seat3.isPresent() && seat3.get().getEntityId() == entityId) {
+                    if (c.addPassenger(player, seat3.get().getUniqueId())) {
+                        addToOnRide(player.getUniqueId());
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean handleEject(CPlayer player, boolean async) {
         boolean removed = false;
         for (Table t : tables) {
             for (Cup c : t.getCups()) {
-                if (c.eject(player)) {
+                if (c.eject(player, async)) {
                     removed = true;
                     if (!state.equals(FlatState.LOADING)) {
                         player.sendMessage(ChatColor.GREEN + "You were ejected from the ride!");
@@ -321,15 +357,15 @@ public class TeacupsRide extends FlatRide {
     }
 
     @Override
-    public void handleEject(CPlayer player, boolean force) {
-        handleEject(player);
+    public void handleEject(CPlayer player, boolean async, boolean force) {
+        handleEject(player, async);
     }
 
-    public void ejectPlayers() {
+    public void ejectPlayers(boolean async) {
         for (int i = 1; i <= 3; i++) {
             Table t = getTable(i);
             for (Cup c : t.getCups()) {
-                c.eject();
+                c.eject(async);
             }
         }
     }
@@ -366,6 +402,19 @@ public class TeacupsRide extends FlatRide {
         return false;
     }
 
+    @Override
+    public boolean isRideStand(int id) {
+        for (int i = 1; i <= 3; i++) {
+            Table t = getTable(i);
+            for (Cup c : t.getCups()) {
+                if (c.isRideStand(id)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Get one of the three tables
      *
@@ -389,7 +438,7 @@ public class TeacupsRide extends FlatRide {
 
         public void despawn() {
             for (Cup c : cups) {
-                c.eject();
+                c.eject(false);
                 c.despawn();
             }
             cups.clear();
@@ -515,15 +564,15 @@ public class TeacupsRide extends FlatRide {
 
         public boolean addPassenger(CPlayer player, UUID stand) {
             boolean added = false;
-            if (seat1.getStand().isPresent() && seat1.getStand().get().getUniqueId().equals(stand) &&
-                    seat1.addPassenger(player)) {
+            if (seat1.getStand().isPresent() && seat1.getStand().get().getUniqueId().equals(stand)) {
                 added = true;
-            } else if (seat2.getStand().isPresent() && seat2.getStand().get().getUniqueId().equals(stand) &&
-                    seat2.addPassenger(player)) {
+                Core.runTask(() -> seat1.addPassenger(player));
+            } else if (seat2.getStand().isPresent() && seat2.getStand().get().getUniqueId().equals(stand)) {
                 added = true;
-            } else if (seat3.getStand().isPresent() && seat3.getStand().get().getUniqueId().equals(stand) &&
-                    seat3.addPassenger(player)) {
+                Core.runTask(() -> seat2.addPassenger(player));
+            } else if (seat3.getStand().isPresent() && seat3.getStand().get().getUniqueId().equals(stand)) {
                 added = true;
+                Core.runTask(() -> seat3.addPassenger(player));
             }
             if (added) {
                 player.getScoreboard().toggleTags(true);
@@ -540,26 +589,26 @@ public class TeacupsRide extends FlatRide {
             return list;
         }
 
-        public void eject() {
+        public void eject(boolean async) {
             if (seat1.getPassenger() != null) {
-                getOnRide().remove(seat1.getPassenger());
-                emptyStand(seat1.getStand().get());
+                emptyStand(seat1.getStand().get(), async);
+                removeFromOnRide(seat1.getPassenger());
                 CPlayer p = Core.getPlayerManager().getPlayer(seat1.getPassenger());
                 if (p != null) {
                     p.getScoreboard().toggleTags(false);
                 }
             }
             if (seat2.getPassenger() != null) {
-                getOnRide().remove(seat2.getPassenger());
-                emptyStand(seat2.getStand().get());
+                emptyStand(seat2.getStand().get(), async);
+                removeFromOnRide(seat2.getPassenger());
                 CPlayer p = Core.getPlayerManager().getPlayer(seat2.getPassenger());
                 if (p != null) {
                     p.getScoreboard().toggleTags(false);
                 }
             }
             if (seat3.getPassenger() != null) {
-                getOnRide().remove(seat3.getPassenger());
-                emptyStand(seat3.getStand().get());
+                emptyStand(seat3.getStand().get(), async);
+                removeFromOnRide(seat3.getPassenger());
                 CPlayer p = Core.getPlayerManager().getPlayer(seat3.getPassenger());
                 if (p != null) {
                     p.getScoreboard().toggleTags(false);
@@ -567,22 +616,22 @@ public class TeacupsRide extends FlatRide {
             }
         }
 
-        public boolean eject(CPlayer player) {
+        public boolean eject(CPlayer player, boolean async) {
             if (player == null) return false;
             boolean ejected = false;
             if (seat1.getPassenger() != null && player.getUniqueId().equals(seat1.getPassenger())) {
-                emptyStand(seat1.getStand().get());
-                getOnRide().remove(player.getUniqueId());
+                emptyStand(seat1.getStand().get(), async);
+                removeFromOnRide(player.getUniqueId());
                 ejected = true;
             }
             if (seat2.getPassenger() != null && player.getUniqueId().equals(seat2.getPassenger())) {
-                emptyStand(seat2.getStand().get());
-                getOnRide().remove(player.getUniqueId());
+                emptyStand(seat2.getStand().get(), async);
+                removeFromOnRide(player.getUniqueId());
                 ejected = true;
             }
             if (seat3.getPassenger() != null && player.getUniqueId().equals(seat3.getPassenger())) {
-                emptyStand(seat3.getStand().get());
-                getOnRide().remove(player.getUniqueId());
+                emptyStand(seat3.getStand().get(), async);
+                removeFromOnRide(player.getUniqueId());
                 ejected = true;
             }
             if (ejected) {
@@ -595,6 +644,12 @@ public class TeacupsRide extends FlatRide {
             return (seat1.isSpawned() && seat1.getUniqueId().equals(uuid)) ||
                     (seat2.isSpawned() && seat2.getUniqueId().equals(uuid)) ||
                     (seat3.isSpawned() && seat3.getUniqueId().equals(uuid));
+        }
+
+        public boolean isRideStand(int id) {
+            return (seat1.isSpawned() && seat1.getEntityId() == id) ||
+                    (seat2.isSpawned() && seat2.getEntityId() == id) ||
+                    (seat3.isSpawned() && seat3.getEntityId() == id);
         }
     }
 }

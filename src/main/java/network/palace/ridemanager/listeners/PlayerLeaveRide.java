@@ -23,7 +23,12 @@ public class PlayerLeaveRide implements Listener {
     public void onPlayerLeaveRide(PlayerLeaveRideEvent event) {
         CPlayer player = event.getPlayer();
         Ride ride = event.getRide();
-        if (ride.handleEject(player)) {
+        long timeOnRide = ride.getTimeOnRide(player.getUniqueId());
+        if (timeOnRide == -1 || System.currentTimeMillis() - timeOnRide < 500) {
+            event.setCancelled(true);
+            return;
+        }
+        if (ride.handleEject(player, true)) {
             event.setCancelled(true);
         }
     }
@@ -56,6 +61,12 @@ public class PlayerLeaveRide implements Listener {
             ejectUUID(event.getPlayer().getUniqueId());
             return;
         }
+        Ride ride = RideManager.getMovementUtil().getRide(player);
+        if (ride == null) return;
+        long timeOnRide = ride.getTimeOnRide(player.getUniqueId());
+        if (timeOnRide == -1 || System.currentTimeMillis() - timeOnRide < 500) {
+            return;
+        }
         ejectPlayer(player);
     }
 
@@ -64,8 +75,11 @@ public class PlayerLeaveRide implements Listener {
     }
 
     private void ejectPlayer(CPlayer player) {
-        Ride ride = RideManager.getMovementUtil().getRide(player);
+        ejectPlayer(player, RideManager.getMovementUtil().getRide(player));
+    }
+
+    private void ejectPlayer(CPlayer player, Ride ride) {
         if (ride == null) return;
-        ride.handleEject(player, true);
+        ride.handleEject(player, true, true);
     }
 }

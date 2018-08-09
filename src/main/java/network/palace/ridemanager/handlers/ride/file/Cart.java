@@ -195,7 +195,7 @@ public class Cart {
     public void despawn(Location exit) {
         spawned = false;
         getSeats().forEach(s -> {
-            s.getPassengers().forEach(p -> getRide().getOnRide().remove(p.getUniqueId()));
+            s.getPassengers().forEach(p -> getRide().removeFromOnRide(p.getUniqueId()));
             s.despawn(exit);
         });
         chunkUnloaded(null);
@@ -238,7 +238,7 @@ public class Cart {
         if (seats.size() > 0) {
             getSeats().forEach(s -> {
                 if (s.hasPassenger()) return;
-                getRide().getOnRide().add(tp.getUniqueId());
+                getRide().addToOnRide(tp.getUniqueId());
                 s.addPassenger(tp);
             });
         }
@@ -249,7 +249,7 @@ public class Cart {
     }
 
     public void removePassenger(CPlayer tp, boolean teleport) {
-        getRide().getOnRide().remove(tp.getUniqueId());
+        getRide().removeFromOnRide(tp.getUniqueId());
         getSeats().forEach(s -> s.removePassenger(tp));
         if (teleport) {
             tp.teleport(getRide().getExit());

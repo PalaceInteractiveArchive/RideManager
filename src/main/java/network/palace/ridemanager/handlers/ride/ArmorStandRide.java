@@ -74,20 +74,25 @@ public class ArmorStandRide extends Ride {
     }
 
     @Override
-    public boolean handleEject(CPlayer player) {
+    public boolean handleEject(CPlayer player, boolean async) {
         for (Vehicle v : new ArrayList<>(vehicles)) {
             if (!v.getPassengers().contains(player.getUniqueId())) continue;
             v.removePassenger(player);
         }
-        return getOnRide().remove(player.getUniqueId());
+        return removeFromOnRide(player.getUniqueId()) != -1;
     }
 
     @Override
-    public void handleEject(CPlayer player, boolean force) {
+    public void handleEject(CPlayer player, boolean async, boolean force) {
     }
 
     @Override
     public boolean sitDown(CPlayer player, ArmorStand stand) {
+        return true;
+    }
+
+    @Override
+    public boolean sitDown(CPlayer player, int entityId) {
         return true;
     }
 
@@ -125,7 +130,7 @@ public class ArmorStandRide extends Ride {
         riders.stream().forEach(p -> {
             v.addPassenger(p);
             p.sendMessage(ChatColor.GREEN + "Ride starting!");
-            getOnRide().add(p.getUniqueId());
+            addToOnRide(p.getUniqueId());
         });
         vehicles.add(v);
     }
@@ -312,6 +317,11 @@ public class ArmorStandRide extends Ride {
 
     @Override
     public boolean isRideStand(ArmorStand stand) {
+        return false;
+    }
+
+    @Override
+    public boolean isRideStand(int id) {
         return false;
     }
 }

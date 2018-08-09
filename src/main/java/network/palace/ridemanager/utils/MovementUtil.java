@@ -168,9 +168,39 @@ public class MovementUtil {
         return false;
     }
 
+    /**
+     * Called when a player clickes on an entity
+     *
+     * @param player the player
+     * @param id     the id of the entity they click
+     * @return whether or not they sit on a ride vehicle
+     */
+    public boolean sitDown(CPlayer player, int id) {
+        boolean rideStand = false;
+        for (Ride ride : getRides()) {
+            if (ride.isRideStand(id)) {
+                rideStand = true;
+                break;
+            }
+        }
+        if (!rideStand) {
+            return false;
+        }
+        if (player.getBukkitPlayer().isSneaking()) {
+            player.sendMessage(ChatColor.RED + "You cannot board a ride while sneaking!");
+            return false;
+        }
+        for (Ride ride : getRides()) {
+            if (ride.sitDown(player, id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void ejectUUID(UUID uuid) {
         for (Ride ride : getRides()) {
-            ride.getOnRide().remove(uuid);
+            ride.removeFromOnRide(uuid);
         }
     }
 

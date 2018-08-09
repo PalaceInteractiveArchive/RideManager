@@ -106,14 +106,14 @@ public class FileRide extends Ride {
     }
 
     @Override
-    public boolean handleEject(CPlayer player) {
+    public boolean handleEject(CPlayer player, boolean async) {
         return true;
     }
 
     @Override
-    public void handleEject(CPlayer player, boolean force) {
+    public void handleEject(CPlayer player, boolean async, boolean force) {
         if (!force) return;
-        getOnRide().remove(player.getUniqueId());
+        removeFromOnRide(player.getUniqueId());
         Cart cart = null;
         for (Cart c : getCarts()) {
             if (c.getPassengers().contains(player)) {
@@ -122,7 +122,18 @@ public class FileRide extends Ride {
             }
         }
         if (cart == null) return;
-        cart.removePassenger(player, false);
+        Cart finalCart = cart;
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                finalCart.removePassenger(player, false);
+            }
+        };
+        if (async) {
+            Core.runTask(task);
+        } else {
+            task.run();
+        }
     }
 
     /**
@@ -159,7 +170,7 @@ public class FileRide extends Ride {
                 continue;
             }
             s.addPassenger(tp);
-            getOnRide().add(tp.getUniqueId());
+            addToOnRide(tp.getUniqueId());
             s = seats.get(sc++);
         }
         atStation.setSpawnTime(System.currentTimeMillis());
@@ -181,11 +192,23 @@ public class FileRide extends Ride {
         for (Seat seat : atStation.get().getSeats()) {
             if (!seat.getUniqueId().equals(uuid) || seat.hasPassenger()) continue;
             if (seat.addPassenger(player)) {
-                getOnRide().add(player.getUniqueId());
+                addToOnRide(player.getUniqueId());
                 return true;
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean sitDown(CPlayer player, int entityId) {
+        if (!atStation.isPresent() || getOnRide().contains(player.getUniqueId())) return false;
+        for (Seat seat : atStation.get().getSeats()) {
+            if (seat.getEntityId() != entityId || seat.hasPassenger()) continue;
+            addToOnRide(player.getUniqueId());
+            Core.runTask(() -> seat.addPassenger(player));
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -253,6 +276,20 @@ public class FileRide extends Ride {
             for (Seat s : c.getSeats()) {
                 if (!s.isSpawned()) continue;
                 if (uuid.equals(s.getUniqueId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isRideStand(int id) {
+        for (Cart c : getCarts()) {
+            if (!c.isSpawned()) continue;
+            for (Seat s : c.getSeats()) {
+                if (!s.isSpawned()) continue;
+                if (s.getEntityId() == id) {
                     return true;
                 }
             }
