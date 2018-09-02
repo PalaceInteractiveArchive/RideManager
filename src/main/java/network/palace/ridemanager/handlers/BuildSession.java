@@ -1,7 +1,6 @@
 package network.palace.ridemanager.handlers;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
@@ -9,10 +8,7 @@ import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.actions.RideAction;
 import network.palace.ridemanager.handlers.actions.sensors.RideSensor;
 import network.palace.ridemanager.handlers.builder.ActionType;
-import network.palace.ridemanager.handlers.builder.actions.FakeAction;
-import network.palace.ridemanager.handlers.builder.actions.FakeExitAction;
-import network.palace.ridemanager.handlers.builder.actions.FakeStraightAction;
-import network.palace.ridemanager.handlers.builder.actions.FakeTurnAction;
+import network.palace.ridemanager.handlers.builder.actions.*;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.threads.FileRideLoader;
 import network.palace.ridemanager.utils.MovementUtil;
@@ -38,7 +34,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class BuildSession {
     @Getter private final UUID uuid;
     @Getter @Setter private String name;
@@ -51,7 +47,7 @@ public class BuildSession {
     @Getter @Setter private double lockY = 0;
     @Getter @Setter private RideAction currentAction = null;
     @Getter @Setter private boolean showArmorStands = false;
-    @Getter @Setter private boolean path;
+    @Getter @Setter private boolean path = true;
     @Getter @Setter private boolean changeY;
     @Getter @Setter private boolean sneaking;
     @Getter HashMap<Location, ArmorStand> stands = new HashMap<>();
@@ -59,6 +55,17 @@ public class BuildSession {
     @Getter @Setter private Location currentLocation = null;
     @Getter @Setter private List<RideAction> possibleActions = null;
     @Getter @Setter private RideAction editAction = null;
+    @Getter @Setter private boolean editingLocation = false;
+
+    public BuildSession(UUID uuid) {
+        this.uuid = uuid;
+        /*Core.runTaskTimer(() -> {
+            Bukkit.broadcastMessage(actions.size() + " completed actions.");
+            actions.forEach(a -> Bukkit.broadcastMessage("- " + a.getActionType().name()));
+            Bukkit.broadcastMessage(currentAction == null ? "currentAction == null" : ("currentAction = " + currentAction.getActionType().name()));
+            Bukkit.broadcastMessage(editAction == null ? "editAction == null" : ("editAction = " + editAction.getActionType().name()));
+        }, 0L, 20L);*/
+    }
 
     /**
      * Load actions from a file save
@@ -78,7 +85,7 @@ public class BuildSession {
             Core.getPlayerManager().getPlayer(uuid).sendMessage(ChatColor.GREEN + "Your Build Session has loaded!");
             RideManager.getRideBuilderUtil().setInventory(uuid, true);
             updateBossBar();
-        }));
+        }, true));
     }
 
     /**
@@ -248,15 +255,41 @@ public class BuildSession {
                     player.sendMessage(ChatColor.RED + "Saved location was lost, place again!");
                     return;
                 }
-                if (currentAction instanceof FakeAction) {
-                    if (((FakeAction) currentAction).areFieldsIncomplete()) {
-                        player.closeInventory();
-                        player.sendMessage(ChatColor.RED + "There are some unfinished values in the previous action!");
-                        return;
+                if (editAction != null) {
+                    if (editAction instanceof FakeAction) {
+                        if (((FakeAction) editAction).areFieldsIncomplete()) {
+                            player.closeInventory();
+                            player.sendMessage(ChatColor.RED + "There are some unfinished values in the previous action!");
+                            return;
+                        }
+                        actions.add(editAction);
+                        if (editAction instanceof FakeSpawnAction) {
+                            spawn = ((FakeSpawnAction) editAction).getLoc();
+                        }
+                        editAction = null;
+                        currentAction = null;
                     }
-                    actions.add(currentAction);
                 }
+                if (currentAction != null) {
+                    if (currentAction instanceof FakeAction) {
+                        if (((FakeAction) currentAction).areFieldsIncomplete()) {
+                            player.closeInventory();
+                            player.sendMessage(ChatColor.RED + "There are some unfinished values in the previous action!");
+                            return;
+                        }
+                        actions.add(currentAction);
+                        if (currentAction instanceof FakeSpawnAction) {
+                            spawn = ((FakeSpawnAction) currentAction).getLoc();
+                        }
+                        editAction = null;
+                        currentAction = null;
+                    }
+                }
+                currentLocation.add(0.5, 0, 0.5);
                 currentAction = action.newAction(currentLocation);
+                editAction = currentAction;
+                player.sendMessage(ChatColor.GREEN + "Created a new " + currentAction.getActionType().getColoredName() + " action.");
+                player.closeInventory();
                 break;
             }
         }
@@ -421,8 +454,149 @@ public class BuildSession {
             return;
         }
         if (args[0].equalsIgnoreCase("complete")) {
-            player.sendMessage(ChatColor.RED + "You are no longer editing this " + editAction.getActionType() + " action.");
-
+            if (((FakeAction) editAction).areFieldsIncomplete()) {
+                player.sendMessage(ChatColor.RED + "There are some incomplete fields in the current " + editAction.getActionType() + " action.");
+            } else {
+                player.sendMessage(ChatColor.RED + "You are no longer editing this " + editAction.getActionType() + " action.");
+                currentAction = editAction;
+                editAction = null;
+                return;
+            }
+        }
+        switch (editAction.getActionType()) {
+            case TURN: {
+                if (args.length < 1) {
+                    editHelp(player, editAction);
+                    break;
+                }
+                switch (args[0].toLowerCase()) {
+                    case "origin": {
+                        editingLocation = !editingLocation;
+                        if (editingLocation) {
+                            player.sendMessage(ChatColor.GREEN + "Toggled on location editing. Hold shift and move to edit.");
+                        } else {
+                            player.sendMessage(ChatColor.RED + "Toggled off location editing.");
+                        }
+                        break;
+                    }
+                    case "angle": {
+                        if (args.length < 2) {
+                            editHelp(player, editAction);
+                            break;
+                        }
+                        int a = Integer.parseInt(args[1]);
+                        player.sendMessage(ChatColor.GREEN + "Set angle value to " + a + ".");
+                        ((FakeTurnAction) editAction).setAngle(a);
+                        break;
+                    }
+                }
+                break;
+            }
+            case WAIT: {
+                if (args.length < 1) {
+                    editHelp(player, editAction);
+                    break;
+                }
+                long time;
+                try {
+                    time = Long.parseLong(args[0]);
+                } catch (NumberFormatException e) {
+                    player.sendMessage(ChatColor.RED + args[0] + " is not a number!");
+                    break;
+                }
+                ((FakeWaitAction) editAction).setTicks(time);
+                player.sendMessage(ChatColor.GREEN + "Set delay to " + time + " ticks.");
+                break;
+            }
+            case SPAWN: {
+                if (args.length < 2) {
+                    editHelp(player, editAction);
+                    break;
+                }
+                switch (args[0].toLowerCase()) {
+                    case "speed": {
+                        double speed;
+                        try {
+                            speed = Double.parseDouble(args[1]);
+                        } catch (NumberFormatException e) {
+                            player.sendMessage(ChatColor.RED + args[1] + " is not a number!");
+                            break;
+                        }
+                        ((FakeSpawnAction) editAction).setSpeed(speed);
+                        player.sendMessage(ChatColor.GREEN + "Set spawn speed to " + speed + ".");
+                        break;
+                    }
+                    case "yaw": {
+                        float yaw;
+                        try {
+                            yaw = Float.parseFloat(args[1]);
+                        } catch (NumberFormatException e) {
+                            player.sendMessage(args[1] + " is not a number!");
+                            break;
+                        }
+                        ((FakeSpawnAction) editAction).setYaw(yaw);
+                        player.sendMessage(ChatColor.GREEN + "Set spawn yaw to " + yaw + "!");
+                        break;
+                    }
+                }
+                break;
+            }
+            case STRAIGHT: {
+                if (args.length < 1) {
+                    editHelp(player, editAction);
+                    break;
+                }
+                switch (args[0].toLowerCase()) {
+                    case "to": {
+                        editingLocation = !editingLocation;
+                        if (editingLocation) {
+                            player.sendMessage(ChatColor.GREEN + "Toggled on location editing. Hold shift and move to edit.");
+                        } else {
+                            player.sendMessage(ChatColor.RED + "Toggled off location editing.");
+                        }
+                        break;
+                    }
+                    case "autoyaw": {
+                        if (args.length < 2) {
+                            editHelp(player, editAction);
+                            break;
+                        }
+                        boolean b = Boolean.parseBoolean(args[1]);
+                        player.sendMessage(ChatColor.GREEN + "Set auto yaw value to " + (b ? "true" : ChatColor.RED + "false") + ".");
+                        ((FakeStraightAction) editAction).setAutoYaw(Boolean.toString(b));
+                        break;
+                    }
+                }
+                break;
+            }
+            case EXIT: {
+                if (args.length < 1) {
+                    editHelp(player, editAction);
+                    break;
+                }
+                switch (args[0].toLowerCase()) {
+                    case "to": {
+                        editingLocation = !editingLocation;
+                        if (editingLocation) {
+                            player.sendMessage(ChatColor.GREEN + "Toggled on location editing. Hold shift and move to edit.");
+                        } else {
+                            player.sendMessage(ChatColor.RED + "Toggled off location editing.");
+                        }
+                        break;
+                    }
+                    case "autoyaw": {
+                        if (args.length < 2) {
+                            editHelp(player, editAction);
+                            break;
+                        }
+                        boolean b = Boolean.parseBoolean(args[1]);
+                        player.sendMessage(ChatColor.GREEN + "Set auto yaw value to " + (b ? "true" : ChatColor.RED + "false") + ".");
+                        ((FakeExitAction) editAction).setAutoYaw(Boolean.toString(b));
+                        break;
+                    }
+                }
+                break;
+            }
         }
     }
 
@@ -436,6 +610,8 @@ public class BuildSession {
             }
             case SPAWN: {
                 player.sendMessage(ChatColor.GREEN + "To edit a Spawn action, hold shift and move the action.");
+                player.sendMessage(ChatColor.YELLOW + "/rb a speed [speed]" + ChatColor.GREEN + " to edit the speed the vehicle starts moving at");
+                player.sendMessage(ChatColor.YELLOW + "/rb a yaw [yaw]" + ChatColor.GREEN + " to edit the yaw the vehicle spawns at");
                 break;
             }
             case STRAIGHT: {
@@ -466,7 +642,7 @@ public class BuildSession {
     }
 
     public void save() throws IOException {
-        File file = new File("plugins/RideManager/rides/" + fileName + ".ride");
+        File file = new File("plugins/RideManager/rides/" + fileName);
         if (!file.exists()) {
             file.createNewFile();
         }

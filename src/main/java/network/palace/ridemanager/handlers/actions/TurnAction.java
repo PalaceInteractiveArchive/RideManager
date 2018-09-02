@@ -111,7 +111,7 @@ public class TurnAction extends MoveAction {
 
     @Override
     public String toString() {
-        return "";
+        return "Turn " + origin.getX() + "," + origin.getY() + "," + origin.getZ() + " " + angle;
     }
 
     @Override

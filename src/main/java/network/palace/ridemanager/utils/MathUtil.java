@@ -1,5 +1,10 @@
 package network.palace.ridemanager.utils;
 
+import org.bukkit.Location;
+
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 public class MathUtil {
 
     /**
@@ -27,5 +32,18 @@ public class MathUtil {
 
     public static double square(double num) {
         return num * num;
+    }
+
+    public static Location round(Location loc, int places) {
+        StringBuilder pattern = new StringBuilder("#.");
+        for (int i = 0; i < places; i++) {
+            pattern.append("#");
+        }
+        DecimalFormat df = new DecimalFormat(pattern.toString());
+        df.setRoundingMode(RoundingMode.CEILING);
+        loc.setX(Double.parseDouble(df.format(loc.getX())));
+        loc.setY(Double.parseDouble(df.format(loc.getY())));
+        loc.setZ(Double.parseDouble(df.format(loc.getZ())));
+        return loc;
     }
 }

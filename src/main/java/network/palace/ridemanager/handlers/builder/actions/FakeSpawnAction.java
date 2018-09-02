@@ -10,7 +10,7 @@ import org.bukkit.Location;
 @Getter
 @Setter
 public class FakeSpawnAction extends FakeAction {
-    private Location location;
+    private Location loc;
     private double speed;
     private float yaw;
 
@@ -20,19 +20,22 @@ public class FakeSpawnAction extends FakeAction {
 
     public FakeSpawnAction(Location loc, double speed, float yaw) {
         super(true);
-        location = loc;
+        this.loc = loc;
         this.speed = speed;
         this.yaw = yaw;
     }
 
     @Override
     public RideAction duplicate() {
-        return new SpawnAction(location, speed, yaw);
+        return new SpawnAction(loc, speed, yaw);
     }
 
     @Override
     public String toString() {
-        return "";
+        if (loc == null) {
+            return "Spawn 0,0,0 " + speed + " " + yaw;
+        }
+        return "Spawn " + loc.getX() + "," + loc.getY() + "," + loc.getZ() + " " + speed + " " + yaw;
     }
 
     @Override
@@ -42,6 +45,6 @@ public class FakeSpawnAction extends FakeAction {
 
     @Override
     public boolean areFieldsIncomplete() {
-        return location == null || !(speed != Double.MAX_VALUE) || !(yaw != Float.MAX_VALUE);
+        return loc == null || !(speed != Double.MAX_VALUE) || !(yaw != Float.MAX_VALUE);
     }
 }

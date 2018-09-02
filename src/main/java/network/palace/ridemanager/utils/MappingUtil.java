@@ -48,7 +48,7 @@ public class MappingUtil {
             if (list.length > 1) {
                 data = Byte.parseByte(list[1]);
             }
-            ItemStack item = ItemUtil.create(Material.getMaterial(id), data);
+            ItemStack item = ItemUtil.create(Material.getMaterial(id), 1, data);
             if (item != null)
                 map.setItem(item);
         }

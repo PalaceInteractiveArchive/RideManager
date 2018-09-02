@@ -32,21 +32,29 @@ public class PathDataTimer implements Runnable {
             if (currentAction != null) {
                 actions.add(currentAction);
             }
+            RideAction editAction = session.getEditAction();
+            if (editAction != null) {
+                actions.add(editAction);
+            }
             for (RideAction action : actions) {
                 boolean finished = false;
                 switch (action.getActionType()) {
                     case WAIT: {
-                        pathParticle(player, ((FakeSpawnAction) action).getLocation(), 0, 0, 1);
+                        pathParticle(player, ((FakeSpawnAction) action).getLoc(), 0, 0, 1);
                         break;
                     }
                     case SPAWN: {
-                        pathParticle(player, ((FakeSpawnAction) action).getLocation(), 1, 1, 0);
+                        pathParticle(player, ((FakeSpawnAction) action).getLoc(), 1, 1, 0);
                         break;
                     }
                     case STRAIGHT:
                     case EXIT: {
                         Location original = start.clone();
                         Location to = action.getActionType().equals(ActionType.STRAIGHT) ? ((FakeStraightAction) action).getTo() : ((FakeExitAction) action).getTo();
+
+                        if (to.equals(original)) {
+                            finished = true;
+                        }
 
                         pathParticle(player, start, true);
 

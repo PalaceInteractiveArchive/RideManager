@@ -2,6 +2,7 @@ package network.palace.ridemanager.threads;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import network.palace.ridemanager.handlers.SensorType;
 import network.palace.ridemanager.handlers.actions.*;
 import network.palace.ridemanager.handlers.actions.sensors.*;
@@ -18,10 +19,12 @@ import java.util.LinkedList;
  * Created by Marc on 5/2/17.
  */
 @AllArgsConstructor
+@RequiredArgsConstructor
 public class FileRideLoader implements Runnable {
     @Getter private final FileRide ride;
     @Getter private final File file;
-    @Getter private RideCallback callback;
+    @Getter private final RideCallback callback;
+    @Getter private boolean fakeRide = false;
 
     @Override
     public void run() {
@@ -90,8 +93,13 @@ public class FileRideLoader implements Runnable {
                             throw new Exception("Invalid Spawn Location");
                         }
                         speed = getDouble(tokens[2]);
-                        spawn.setYaw(getFloat(tokens[3]));
+                        float yaw = getFloat(tokens[3]);
+                        spawn.setYaw(yaw);
                         if (tokens.length > 4) setYaw = getBoolean(tokens[4]);
+                        if (fakeRide) {
+                            SpawnAction a = new SpawnAction(spawn, speed, yaw);
+                            actions.add(a);
+                        }
                         break;
                     }
                     case "Straight": {

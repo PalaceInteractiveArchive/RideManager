@@ -48,7 +48,7 @@ public enum ActionType {
         if (action == null) return null;
         switch (this) {
             case SPAWN:
-                ((FakeSpawnAction) action).setLocation(loc);
+                ((FakeSpawnAction) action).setLoc(loc);
                 break;
             case STRAIGHT:
                 ((FakeStraightAction) action).setTo(loc);
@@ -56,8 +56,20 @@ public enum ActionType {
             case TURN:
                 ((FakeTurnAction) action).setOrigin(loc);
                 break;
+            case ROTATE:
+                break;
+            case WAIT:
+                break;
+            case INCLINE:
+                break;
+            case DECLINE:
+                break;
             case TELEPORT:
                 ((FakeTeleportAction) action).setTo(loc);
+                break;
+            case LAUNCH:
+                break;
+            case STOP:
                 break;
             case EXIT:
                 ((FakeExitAction) action).setTo(loc);

@@ -234,7 +234,10 @@ public class FileRide extends Ride {
         if (modelMap == null) {
             modelMap = RideManager.getMappingUtil().getMap(modelMapFileName);
         }
-        ItemStack model = ItemUtil.create(Material.SHEARS, 1, (byte) 14);
+        ItemStack model = modelMap.getItem();
+        if (model == null) {
+            model = ItemUtil.create(Material.SHEARS, 1, (byte) 11);
+        }
         Cart c = new Cart(this, cartActions, cartSensors, model, modelMap);
         c.setPower(speed);
         c.spawn(spawn.clone());

@@ -13,7 +13,7 @@ public class FakeStraightAction extends FakeAction {
     private String autoYaw;
 
     public FakeStraightAction() {
-        this(null, null);
+        this(null, "");
     }
 
     public FakeStraightAction(Location to, String autoYaw) {
@@ -29,7 +29,10 @@ public class FakeStraightAction extends FakeAction {
 
     @Override
     public String toString() {
-        return "";
+        if (to == null) {
+            return "Straight 0,0,0" + (autoYaw.isEmpty() ? "" : " " + autoYaw);
+        }
+        return "Straight " + to.getX() + "," + to.getY() + "," + to.getZ() + (autoYaw.isEmpty() ? "" : " " + autoYaw);
     }
 
     @Override

@@ -21,7 +21,7 @@ public class FakeWaitAction extends FakeAction {
 
     @Override
     public String toString() {
-        return "";
+        return "Wait " + ticks;
     }
 
     @Override

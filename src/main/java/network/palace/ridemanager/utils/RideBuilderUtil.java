@@ -10,6 +10,7 @@ import network.palace.ridemanager.handlers.builder.actions.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.Vector;
@@ -150,6 +151,16 @@ public class RideBuilderUtil {
             }
         }, 0L, 20L);*/
         Core.runTaskTimer(new PathDataTimer(), 0L, 20L);
+        Core.runTaskTimer(() -> {
+            for (BuildSession session : sessions.values()) {
+                CPlayer player = Core.getPlayerManager().getPlayer(session.getUuid());
+                if (player == null) continue;
+                RideAction editAction = session.getEditAction();
+                if (editAction == null) continue;
+                ChatColor finished = ((FakeAction) editAction).areFieldsIncomplete() ? ChatColor.RED : ChatColor.DARK_GREEN;
+                player.getActionBar().show(finished + "Editing: " + ChatColor.GREEN + editAction.toString());
+            }
+        }, 0L, 20L);
     }
 
     public BuildSession getSession(CPlayer player) {
@@ -185,11 +196,24 @@ public class RideBuilderUtil {
     }
 
     public void moveEvent(CPlayer player, Location from, Location to) {
+        if (to.getX() == from.getX() && to.getY() == from.getY() && to.getZ() == from.getZ()) return;
         BuildSession session = getSession(player);
-        if (session == null) return;
-        RideAction a = session.getCurrentAction();
-        if (!(a instanceof MoveAction) || a instanceof RotateAction) return;
-        MoveAction m = (MoveAction) a;
+        if (session == null || !session.isEditingLocation()) return;
+        RideAction a = session.getEditAction();
+        switch (a.getActionType()) {
+            case SPAWN:
+            case STRAIGHT:
+            case TURN:
+            case INCLINE:
+            case DECLINE:
+            case TELEPORT:
+            case LAUNCH:
+            case STOP:
+            case EXIT:
+                break;
+            default:
+                return;
+        }
         Vector diff;
         if (session.isChangeY()) {
             diff = new Vector(0, to.getY() - from.getY(), 0);
@@ -198,9 +222,10 @@ public class RideBuilderUtil {
         } else {
             return;
         }
-        MoveAction newAction = changeLocation(m, diff);
+        RideAction newAction = changeLocation(a, diff);
         if (newAction == null) return;
-        session.setCurrentAction(newAction);
+        player.playSound(to, Sound.BLOCK_COMPARATOR_CLICK, 1, 2);
+        session.setEditAction(newAction);
     }
 
     public void toggleShift(CPlayer player, boolean sneak) {
@@ -209,27 +234,27 @@ public class RideBuilderUtil {
         session.setSneaking(sneak);
     }
 
-    public MoveAction changeLocation(MoveAction a, Vector v) {
+    public RideAction changeLocation(RideAction a, Vector v) {
         switch (a.getActionType()) {
             case EXIT: {
-                ExitAction act = (ExitAction) a;
-                return new ExitAction(act.getTo().add(v), act.getAutoYaw());
+                FakeExitAction act = (FakeExitAction) a;
+                return new FakeExitAction(MathUtil.round(act.getTo().add(v), 4), act.getAutoYaw());
             }
             case SPAWN: {
-                SpawnAction act = (SpawnAction) a;
-                return new SpawnAction(act.getLoc().add(v), act.getSpeed(), act.getYaw());
+                FakeSpawnAction act = (FakeSpawnAction) a;
+                return new FakeSpawnAction(MathUtil.round(act.getLoc().add(v), 4), act.getSpeed(), act.getYaw());
             }
             case STRAIGHT: {
-                StraightAction act = (StraightAction) a;
-                return new StraightAction(act.getTo().add(v), act.getAutoYaw());
+                FakeStraightAction act = (FakeStraightAction) a;
+                return new FakeStraightAction(MathUtil.round(act.getTo().add(v), 4), act.getAutoYaw());
             }
             case TELEPORT: {
-                TeleportAction act = (TeleportAction) a;
-                return new TeleportAction(act.getTo().add(v));
+                FakeTeleportAction act = (FakeTeleportAction) a;
+                return new FakeTeleportAction(MathUtil.round(act.getTo().add(v), 4));
             }
             case TURN: {
-                TurnAction act = (TurnAction) a;
-                return new TurnAction(act.getOrigin().add(v), act.getAngle());
+                FakeTurnAction act = (FakeTurnAction) a;
+                return new FakeTurnAction(MathUtil.round(act.getOrigin().add(v), 4), act.getAngle());
             }
         }
         return null;

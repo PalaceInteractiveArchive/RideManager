@@ -29,7 +29,10 @@ public class FakeTurnAction extends FakeAction {
 
     @Override
     public String toString() {
-        return "";
+        if (origin == null) {
+            return "Turn 0,0,0 " + angle;
+        }
+        return "Turn " + origin.getX() + "," + origin.getY() + "," + origin.getZ() + " " + angle;
     }
 
     @Override
