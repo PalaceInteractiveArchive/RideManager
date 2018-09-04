@@ -3,100 +3,85 @@ package network.palace.ridemanager.handlers.actions;
 import lombok.Getter;
 import network.palace.ridemanager.handlers.builder.ActionType;
 import network.palace.ridemanager.utils.MovementUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
-/**
- * Created by Marc on 5/2/17.
- */
 public class TurnAction extends MoveAction {
-    @Getter private final Location origin;
-    @Getter private int angle;
-
-    private final boolean clockwise;
-    private double radius;
-    private float originAngle;
-    private float targetAngle;
-    private float yawDifference;
-    private double originalY;
+    @Getter private Location to;
+    @Getter private Location p0 = null;
+    private Location p1 = null;
+    private Location p2 = null;
+    private float angle = 0;
+    private Location original;
+    private double t = 0;
     private double yDifference;
-    private double yChange;
     private boolean finished = false;
 
-    public TurnAction(Location origin, int angle) {
-        this.origin = origin;
-        this.angle = angle;
-        this.clockwise = angle > 0;
+    public TurnAction(Location to, Location p0) {
+        this.to = to;
+        this.p0 = p0;
     }
 
     @Override
     public void execute() {
-        if (radius == 0) {
-            if (Math.abs(angle) > 180 || angle == 0) {
-                finished = true;
-                Bukkit.getLogger().severe("Cannot have a turn travel more than 180 degrees or equal 0!");
-                return;
+        if (p1 == null) {
+            original = cart.getLocation();
+
+            double p1_x = original.getX();
+            double p1_z = original.getZ();
+
+            double p2_x = to.getX();
+            double p2_z = to.getZ();
+
+            p1 = new Location(original.getWorld(), p1_x, original.getY(), p1_z);
+            p2 = new Location(original.getWorld(), p2_x, original.getY(), p2_z);
+
+            yDifference = to.getY() - original.getY();
+
+            double x = 2 * (p2.getX() - p0.getX());
+            double z = 2 * (p2.getZ() - p0.getZ());
+
+            angle = (float) Math.toDegrees(((float) Math.atan2(z, x)));
+        }
+
+        if (t >= 1) {
+            Vector v = to.toVector().subtract(cart.getLocation().toVector());
+            if (v.getY() == 0) {
+                v.setY(MovementUtil.getYMin());
             }
-            Location original = cart.getLocation();
-            radius = original.distance(origin);
-            originAngle = (float) Math.toDegrees(Math.atan2(origin.getX() - original.getX(), original.getZ() - origin.getZ()));
-            yawDifference = cart.getYaw() - originAngle;
-            originalY = original.getY();
-            yDifference = 2 * (origin.getY() - original.getY());
-            yChange = MovementUtil.pythag((Math.abs(angle) * radius * Math.PI) / 180, yDifference);
-            targetAngle = originAngle + angle;
-        }
-        double angleChange = angle / ((Math.abs((2 * Math.PI * radius) / (360.0 / angle))) / cart.getPower());
-        float dynamicAngle;
-        if ((clockwise && originAngle + angleChange > targetAngle) || (!clockwise && originAngle + angleChange < targetAngle)) {
-            dynamicAngle = targetAngle;
+            cart.setVelocity(v);
+            to.setYaw(original.getYaw() + angle);
+            cart.teleport(to);
             finished = true;
-        } else {
-            dynamicAngle = originAngle += angleChange;
+            return;
         }
-        Location rel = origin.clone();
-        Location current = cart.getLocation();
-        rel.setY(current.getY());
-        Location target = cart.getRide().getRelativeLocation(-dynamicAngle, radius, rel);
-        target.setYaw(dynamicAngle + yawDifference);
-//        Bukkit.broadcastMessage(yDifference + " " + yChange + " " + cart.getPower() + " " + target.getRelativeY());
+
+        double x = (Math.pow((1 - t), 2) * p1.getX())
+                + (2 * t * (1 - t) * p0.getX())
+                + Math.pow(t, 2) * p2.getX();
+
+        double y;
         if (yDifference != 0) {
-            target.setY(target.getY() + (yChange / (20 / cart.getPower())));
+            y = original.getY() + (yDifference * t);
+        } else {
+            y = original.getY();
         }
-        cart.setYaw(target.getYaw());
-        Vector v = target.toVector().subtract(cart.getLocation().toVector());
+
+        double z = (Math.pow((1 - t), 2) * p1.getZ())
+                + (2 * t * (1 - t) * p0.getZ())
+                + Math.pow(t, 2) * p2.getZ();
+
+        Location next = new Location(original.getWorld(), x, y, z, original.getYaw(), 0);
+
+        Vector v = next.toVector().subtract(cart.getLocation().toVector());
         if (v.getY() == 0) {
             v.setY(MovementUtil.getYMin());
         }
         cart.setVelocity(v);
-        cart.teleport(target);
-//        if (original == null) {
-//            this.original = cart.getLocation();
-//            this.originAngle = (float) Math.toDegrees(Math.atan2(origin.getRelativeX() - original.getRelativeX(), original.getRelativeZ() - origin.getRelativeZ()));
-//            this.yawDifference = cart.getYaw() - originAngle;
-//            this.yDifference = origin.getRelativeY() - original.getRelativeY();
-//            this.radius = Math.sqrt(Math.pow(original.getRelativeX() - origin.getRelativeX(), 2) + Math.pow(original.getRelativeZ() - origin.getRelativeZ(), 2));
-//            this.angle = (float) Math.toDegrees(Math.acos(((original.getRelativeX() - origin.getRelativeX()) * (to.getRelativeX() - origin.getRelativeX()) +
-//                    (original.getRelativeZ() - origin.getRelativeZ()) * (to.getRelativeZ() - origin.getRelativeZ())) / Math.pow(radius, 2))) * (clockwise ? 1 : -1);
-//            double distance = Math.abs((2 * Math.PI * radius) / (360 / angle));
-//            this.targetAngle = originAngle + angle;
-//            Bukkit.broadcastMessage(origin + "\n" + to);
-//        }
-//        double angleChange = angle / ((Math.abs((2 * Math.PI * radius) / (360 / angle))) / cart.getPower());
-//        float dynamicAngle;
-//        if ((clockwise && originAngle + angleChange > targetAngle) || (!clockwise && originAngle + angleChange < targetAngle)) {
-//            dynamicAngle = targetAngle;
-//        } else {
-//            dynamicAngle = originAngle += angleChange;
-//        }
-//        Location target = cart.getRide().getRelativeLocation(-dynamicAngle, radius, origin);
-//        target.setYaw(dynamicAngle + yawDifference);
-//        cart.setYaw(target.getYaw());
-//        cart.teleport(target);
-//        if ((clockwise && dynamicAngle + angleChange > targetAngle) || (!clockwise && dynamicAngle + angleChange < targetAngle)) {
-//            finished = true;
-//        }
+        next.setYaw(original.getYaw() + (float) (angle * t));
+        cart.teleport(next);
+
+        t += cart.getSpeed() * 0.1;
     }
 
     @Override
@@ -106,12 +91,12 @@ public class TurnAction extends MoveAction {
 
     @Override
     public RideAction duplicate() {
-        return new TurnAction(origin.clone(), angle);
+        return new TurnAction(to.clone(), p0.clone());
     }
 
     @Override
     public String toString() {
-        return "Turn " + origin.getX() + "," + origin.getY() + "," + origin.getZ() + " " + angle;
+        return "Turn " + to.getX() + "," + to.getY() + "," + to.getZ() + " " + angle;
     }
 
     @Override

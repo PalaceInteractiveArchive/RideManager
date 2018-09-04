@@ -9,9 +9,7 @@ import network.palace.ridemanager.handlers.builder.actions.FakeExitAction;
 import network.palace.ridemanager.handlers.builder.actions.FakeSpawnAction;
 import network.palace.ridemanager.handlers.builder.actions.FakeStraightAction;
 import network.palace.ridemanager.handlers.builder.actions.FakeTurnAction;
-import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.utils.MovementUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.util.Vector;
@@ -28,10 +26,6 @@ public class PathDataTimer implements Runnable {
             Location start = session.getSpawn();
             double speed = session.getSpeed();
             List<RideAction> actions = session.getActions();
-            RideAction currentAction = session.getCurrentAction();
-            if (currentAction != null) {
-                actions.add(currentAction);
-            }
             RideAction editAction = session.getEditAction();
             if (editAction != null) {
                 actions.add(editAction);
@@ -70,6 +64,7 @@ public class PathDataTimer implements Runnable {
                                     v.setY(MovementUtil.getYMin());
                                 }
                                 start = to;
+                                start.setYaw(yaw);
                                 finished = true;
                             } else {
                                 Vector v = next.toVector().subtract(start.toVector());
@@ -77,6 +72,7 @@ public class PathDataTimer implements Runnable {
                                     v.setY(MovementUtil.getYMin());
                                 }
                                 start = next;
+                                start.setYaw(yaw);
                             }
                             pathParticle(player, start, false);
                         }
@@ -85,10 +81,81 @@ public class PathDataTimer implements Runnable {
                     case TURN: {
                         Location original = start.clone();
                         FakeTurnAction ac = (FakeTurnAction) action;
-                        Location origin = ac.getOrigin();
-                        int angle = ac.getAngle();
 
-                        boolean clockwise = angle > 0;
+                        Location to = ac.getTo();
+
+                        Location p0 = ac.getP0();
+                        Location p1 = null;
+                        Location p2 = null;
+
+                        float angle = 0;
+                        double yDifference = 0;
+                        double t = 0;
+
+                        pathParticle(player, start, true);
+
+                        pathParticle(player, p0, true);
+
+                        while (!finished) {
+                            if (p1 == null) {
+                                double p1_x = original.getX();
+                                double p1_z = original.getZ();
+
+                                double p2_x = to.getX();
+                                double p2_z = to.getZ();
+
+                                p1 = new Location(original.getWorld(), p1_x, original.getY(), p1_z);
+                                p2 = new Location(original.getWorld(), p2_x, original.getY(), p2_z);
+
+                                yDifference = to.getY() - original.getY();
+
+                                double x = 2 * (p2.getX() - p0.getX());
+                                double z = 2 * (p2.getZ() - p0.getZ());
+
+                                angle = (float) Math.toDegrees(((float) Math.atan2(z, x)));
+                            }
+
+                            if (t >= 1) {
+                                Vector v = to.toVector().subtract(start.clone().toVector());
+                                if (v.getY() == 0) {
+                                    v.setY(MovementUtil.getYMin());
+                                }
+                                to.setYaw(original.getYaw() + angle);
+                                start = to;
+                                finished = true;
+                                pathParticle(player, start, false);
+                                break;
+                            }
+
+                            double x = (Math.pow((1 - t), 2) * p1.getX())
+                                    + (2 * t * (1 - t) * p0.getX())
+                                    + Math.pow(t, 2) * p2.getX();
+
+                            double y;
+                            if (yDifference != 0) {
+                                y = original.getY() + (yDifference * t);
+                            } else {
+                                y = original.getY();
+                            }
+
+                            double z = (Math.pow((1 - t), 2) * p1.getZ())
+                                    + (2 * t * (1 - t) * p0.getZ())
+                                    + Math.pow(t, 2) * p2.getZ();
+
+                            Location next = new Location(original.getWorld(), x, y, z, original.getYaw(), 0);
+
+                            Vector v = next.toVector().subtract(start.clone().toVector());
+                            if (v.getY() == 0) {
+                                v.setY(MovementUtil.getYMin());
+                            }
+                            next.setYaw(original.getYaw() + (float) (angle * t));
+                            start = next;
+                            pathParticle(player, start, false);
+
+                            t += speed * 0.1;
+                        }
+
+                        /*boolean clockwise = angle > 0;
                         double radius = 0;
                         float originAngle = 0;
                         float targetAngle = 0;
@@ -127,7 +194,7 @@ public class PathDataTimer implements Runnable {
                             rel.setY(current.getY());
                             Location target = Ride.getRelativeLocation(-dynamicAngle, radius, rel);
 //                            target.setYaw(dynamicAngle + yawDifference);
-//                            Bukkit.broadcastMessage(yDifference + " " + yChange + " " + cart.getPower() + " " + target.getRelativeY());
+//                            Bukkit.broadcastMessage(yDifference + " " + yChange + " " + cart.getSpeed() + " " + target.getRelativeY());
                             if (yDifference != 0) {
                                 target.setY(target.getY() + (yChange / (20 / speed)));
                             }
@@ -140,7 +207,7 @@ public class PathDataTimer implements Runnable {
 //                            cart.teleport(target);
                             start = target;
                             pathParticle(player, start, false);
-                        }
+                        }*/
                         break;
                     }
                 }

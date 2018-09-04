@@ -45,7 +45,6 @@ public class BuildSession {
     @Getter @Setter private double speed;
     @Getter private boolean loading = false;
     @Getter @Setter private double lockY = 0;
-    @Getter @Setter private RideAction currentAction = null;
     @Getter @Setter private boolean showArmorStands = false;
     @Getter @Setter private boolean path = true;
     @Getter @Setter private boolean changeY;
@@ -56,6 +55,7 @@ public class BuildSession {
     @Getter @Setter private List<RideAction> possibleActions = null;
     @Getter @Setter private RideAction editAction = null;
     @Getter @Setter private boolean editingLocation = false;
+    @Getter @Setter private int editLocation = 0;
 
     public BuildSession(UUID uuid) {
         this.uuid = uuid;
@@ -143,8 +143,8 @@ public class BuildSession {
         switch (block.getData()) {
             // Action
             case 5: {
-                if (currentAction instanceof FakeAction) {
-                    if (((FakeAction) currentAction).areFieldsIncomplete()) {
+                if (editAction instanceof FakeAction) {
+                    if (((FakeAction) editAction).areFieldsIncomplete()) {
                         player.sendMessage(ChatColor.RED + "There are some unfinished values in the previous action!");
                         return true;
                     }
@@ -265,30 +265,15 @@ public class BuildSession {
                         actions.add(editAction);
                         if (editAction instanceof FakeSpawnAction) {
                             spawn = ((FakeSpawnAction) editAction).getLoc();
+                            speed = ((FakeSpawnAction) editAction).getSpeed();
                         }
                         editAction = null;
-                        currentAction = null;
-                    }
-                }
-                if (currentAction != null) {
-                    if (currentAction instanceof FakeAction) {
-                        if (((FakeAction) currentAction).areFieldsIncomplete()) {
-                            player.closeInventory();
-                            player.sendMessage(ChatColor.RED + "There are some unfinished values in the previous action!");
-                            return;
-                        }
-                        actions.add(currentAction);
-                        if (currentAction instanceof FakeSpawnAction) {
-                            spawn = ((FakeSpawnAction) currentAction).getLoc();
-                        }
-                        editAction = null;
-                        currentAction = null;
                     }
                 }
                 currentLocation.add(0.5, 0, 0.5);
-                currentAction = action.newAction(currentLocation);
-                editAction = currentAction;
-                player.sendMessage(ChatColor.GREEN + "Created a new " + currentAction.getActionType().getColoredName() + " action.");
+                editAction = action.newAction(currentLocation);
+//                editAction = currentAction;
+                player.sendMessage(ChatColor.GREEN + "Created a new " + editAction.getActionType().getColoredName() + " action.");
                 player.closeInventory();
                 break;
             }
@@ -358,8 +343,8 @@ public class BuildSession {
 
                     Location original = start.clone();
                     FakeTurnAction ac = (FakeTurnAction) action;
-                    Location origin = ac.getOrigin();
-                    int angle = ac.getAngle();
+                    Location origin = ac.getTo();
+                    float angle = 0;
 
                     boolean clockwise = angle > 0;
                     double radius = 0;
@@ -456,9 +441,16 @@ public class BuildSession {
         if (args[0].equalsIgnoreCase("complete")) {
             if (((FakeAction) editAction).areFieldsIncomplete()) {
                 player.sendMessage(ChatColor.RED + "There are some incomplete fields in the current " + editAction.getActionType() + " action.");
+                return;
             } else {
                 player.sendMessage(ChatColor.RED + "You are no longer editing this " + editAction.getActionType() + " action.");
-                currentAction = editAction;
+                editingLocation = false;
+                editLocation = 0;
+                if (editAction instanceof FakeSpawnAction) {
+                    spawn = ((FakeSpawnAction) editAction).getLoc();
+                    speed = ((FakeSpawnAction) editAction).getSpeed();
+                }
+                actions.add(editAction);
                 editAction = null;
                 return;
             }
@@ -470,23 +462,36 @@ public class BuildSession {
                     break;
                 }
                 switch (args[0].toLowerCase()) {
-                    case "origin": {
+                    case "to": {
+                        if (editingLocation && editLocation != 0) {
+                            editLocation = 0;
+                            player.sendMessage(ChatColor.GREEN + "Now editing the 'to' location.");
+                            break;
+                        }
+
                         editingLocation = !editingLocation;
                         if (editingLocation) {
                             player.sendMessage(ChatColor.GREEN + "Toggled on location editing. Hold shift and move to edit.");
                         } else {
                             player.sendMessage(ChatColor.RED + "Toggled off location editing.");
                         }
+                        editLocation = 0;
                         break;
                     }
-                    case "angle": {
-                        if (args.length < 2) {
-                            editHelp(player, editAction);
+                    case "p0": {
+                        if (editingLocation && editLocation != 1) {
+                            editLocation = 1;
+                            player.sendMessage(ChatColor.GREEN + "Now editing the 'p0' location.");
                             break;
                         }
-                        int a = Integer.parseInt(args[1]);
-                        player.sendMessage(ChatColor.GREEN + "Set angle value to " + a + ".");
-                        ((FakeTurnAction) editAction).setAngle(a);
+
+                        editingLocation = !editingLocation;
+                        if (editingLocation) {
+                            player.sendMessage(ChatColor.GREEN + "Toggled on location editing. Hold shift and move to edit.");
+                        } else {
+                            player.sendMessage(ChatColor.RED + "Toggled off location editing.");
+                        }
+                        editLocation = 1;
                         break;
                     }
                 }
@@ -535,7 +540,7 @@ public class BuildSession {
                             break;
                         }
                         ((FakeSpawnAction) editAction).setYaw(yaw);
-                        player.sendMessage(ChatColor.GREEN + "Set spawn yaw to " + yaw + "!");
+                        player.sendMessage(ChatColor.GREEN + "Set spawn yaw to " + yaw + ".");
                         break;
                     }
                 }
@@ -554,6 +559,7 @@ public class BuildSession {
                         } else {
                             player.sendMessage(ChatColor.RED + "Toggled off location editing.");
                         }
+                        editLocation = 0;
                         break;
                     }
                     case "autoyaw": {
@@ -582,6 +588,7 @@ public class BuildSession {
                         } else {
                             player.sendMessage(ChatColor.RED + "Toggled off location editing.");
                         }
+                        editLocation = 0;
                         break;
                     }
                     case "autoyaw": {
@@ -628,13 +635,13 @@ public class BuildSession {
             }
             case TURN: {
                 player.sendMessage(ChatColor.GREEN + "To edit a Turn action, type:");
-                player.sendMessage(ChatColor.YELLOW + "/rb a origin" + ChatColor.GREEN + " to edit the 'origin' location (hold shift and move)");
-                player.sendMessage(ChatColor.YELLOW + "/rb a angle [angle]" + ChatColor.GREEN + " to edit the angle (max 180, min -180)");
+                player.sendMessage(ChatColor.YELLOW + "/rb a to" + ChatColor.GREEN + " to edit the 'to' location (hold shift and move)");
+                player.sendMessage(ChatColor.YELLOW + "/rb a p0" + ChatColor.GREEN + " to edit the 'p0' location (hold shift and move)");
                 break;
             }
         }
         player.sendMessage(ChatColor.GREEN + "Type " + ChatColor.YELLOW + "/rb a complete" + ChatColor.GREEN +
-                " when you've finished editing!");
+                " when you've finished editing.");
     }
 
     public List<RideAction> getActions() {
@@ -650,12 +657,22 @@ public class BuildSession {
         bw.write("Name " + name);
         bw.newLine();
         for (RideAction a : getActions()) {
-            bw.write(a.toString());
-            bw.newLine();
+            try {
+                bw.write(a.toString());
+                bw.newLine();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Bukkit.getLogger().severe("Error with " + a.getActionType() + " action: " + e.getMessage());
+            }
         }
-        if (currentAction != null) {
-            bw.write(currentAction.toString());
-            bw.newLine();
+        if (editAction != null) {
+            try {
+                bw.write(editAction.toString());
+                bw.newLine();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Bukkit.getLogger().severe("Error with " + editAction.getActionType() + " action: " + e.getMessage());
+            }
         }
         bw.close();
     }

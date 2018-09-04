@@ -26,28 +26,28 @@ public class LaunchAction extends MoveAction {
 
             change = target.clone().subtract(current).toVector().normalize();
 
-            powerChange = (speed - cart.getPower()) / time;
+            powerChange = (speed - cart.getSpeed()) / time;
         }
         if (!finished) {
-            double currentPower = cart.getPower();
+            double currentPower = cart.getSpeed();
             boolean up = speed > currentPower;
             if (up) {
                 if (currentPower + powerChange > speed) {
-                    cart.setPower(speed);
+                    cart.setSpeed(speed);
                 } else {
-                    cart.setPower(cart.getPower() + powerChange);
+                    cart.setSpeed(cart.getSpeed() + powerChange);
                 }
             } else {
                 if (currentPower + powerChange < speed) {
-                    cart.setPower(speed);
+                    cart.setSpeed(speed);
                 } else {
-                    cart.setPower(cart.getPower() + powerChange);
+                    cart.setSpeed(cart.getSpeed() + powerChange);
                 }
             }
         }
         Location original = cart.getLocation();
 
-        double power = cart.getPower();
+        double power = cart.getSpeed();
         Vector change = this.change.clone().multiply(new Vector(power, power, power));
         Location next = original.clone().add(change);
 
@@ -62,7 +62,7 @@ public class LaunchAction extends MoveAction {
         cart.teleport(next);
         cart.setYaw(yaw);
 
-        if (cart.getPower() == speed) {
+        if (cart.getSpeed() == speed) {
             finished = true;
         }
     }

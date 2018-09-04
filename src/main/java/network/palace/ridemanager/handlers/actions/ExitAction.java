@@ -27,7 +27,7 @@ public class ExitAction extends MoveAction {
         float yaw = (float) Math.toDegrees(Math.atan2(original.getZ() - to.getZ(), original.getX() - to.getX())) + 90;
         double distance = original.distance(to);
         Vector resultant = to.clone().subtract(original).toVector().normalize();
-        double power = cart.getPower();
+        double power = cart.getSpeed();
         Vector change = resultant.multiply(new Vector(power, power, power));
         Location next = cart.getLocation().add(change);
         if (!autoYaw.isEmpty()) {

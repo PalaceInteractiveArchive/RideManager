@@ -17,6 +17,7 @@ public enum ActionType {
     SPAWN(Material.STAINED_CLAY, (byte) 5, ChatColor.GREEN, FakeSpawnAction.class),
     STRAIGHT(Material.STAINED_CLAY, (byte) 4, ChatColor.YELLOW, FakeStraightAction.class),
     TURN(Material.STAINED_CLAY, (byte) 14, ChatColor.RED, FakeTurnAction.class),
+    //    NEWTURN(Material.STAINED_CLAY, (byte) 7, ChatColor.RED, FakeNewTurnAction.class),
     ROTATE(Material.STAINED_CLAY, (byte) 1, ChatColor.GOLD, FakeRotateAction.class),
     WAIT(Material.STAINED_CLAY, (byte) 13, ChatColor.DARK_GREEN, FakeWaitAction.class),
     INCLINE(Material.STAINED_CLAY, (byte) 3, ChatColor.AQUA, null),
@@ -54,7 +55,8 @@ public enum ActionType {
                 ((FakeStraightAction) action).setTo(loc);
                 break;
             case TURN:
-                ((FakeTurnAction) action).setOrigin(loc);
+                ((FakeTurnAction) action).setTo(loc);
+                ((FakeTurnAction) action).setP0(loc);
                 break;
             case ROTATE:
                 break;

@@ -30,7 +30,7 @@ public class Cart {
     private final LinkedList<RideSensor> sensors;
     @Getter private final ModelMap map;
     @Getter private final ItemStack model;
-    @Getter private double power = 0;
+    @Getter private double speed = 0;
     @Getter @Setter private float yaw = 0;
     @Getter @Setter private float pitch = 0;
     @Getter private int currentActionIndex = 0;
@@ -59,7 +59,7 @@ public class Cart {
         this(ride, actions, sensors, model, map, 0.1);
     }
 
-    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, LinkedList<RideSensor> sensors, ItemStack model, ModelMap map, double power) {
+    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, LinkedList<RideSensor> sensors, ItemStack model, ModelMap map, double speed) {
         this.ride = ride;
         this.actions = actions;
         this.sensors = sensors;
@@ -68,7 +68,7 @@ public class Cart {
         creationTimestamp = System.currentTimeMillis();
         this.actions.values().forEach(a -> a.setCart(this));
         this.sensors.forEach(s -> s.setCart(this));
-        setPower(power);
+        setSpeed(speed);
         this.model = model;
     }
 
@@ -166,8 +166,8 @@ public class Cart {
         }
     }
 
-    public void setPower(double p) {
-        this.power = p > 1 ? 1 : (p < 0 ? 0 : p);
+    public void setSpeed(double p) {
+        this.speed = p > 1 ? 1 : (p < 0 ? 0 : p);
     }
 
     public void spawn(Location loc) {

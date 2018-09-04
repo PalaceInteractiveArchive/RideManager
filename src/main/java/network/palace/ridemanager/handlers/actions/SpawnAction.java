@@ -38,7 +38,7 @@ public class SpawnAction extends MoveAction {
         stand.setVelocity(new Vector(0, MovementUtil.getYMin(), 0));
 //        cart.setStand(stand);
         cart.setYaw(yaw);
-        cart.setPower(speed);
+        cart.setSpeed(speed);
         ModelMap map = cart.getMap();
         for (Seat seat : map.getSeats()) {
             Seat copy = seat.copy();

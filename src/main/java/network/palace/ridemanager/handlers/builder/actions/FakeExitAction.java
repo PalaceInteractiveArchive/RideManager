@@ -13,7 +13,7 @@ public class FakeExitAction extends FakeAction {
     private String autoYaw;
 
     public FakeExitAction() {
-        this(null, null);
+        this(null, "");
     }
 
     public FakeExitAction(Location to, String autoYaw) {
@@ -29,7 +29,10 @@ public class FakeExitAction extends FakeAction {
 
     @Override
     public String toString() {
-        return "";
+        if (to == null) {
+            return "Exit 0,0,0" + (autoYaw.isEmpty() ? "" : " " + autoYaw);
+        }
+        return "Exit " + to.getX() + "," + to.getY() + "," + to.getZ() + (autoYaw.isEmpty() ? "" : " " + autoYaw);
     }
 
     @Override

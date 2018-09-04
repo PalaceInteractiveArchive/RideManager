@@ -239,7 +239,7 @@ public class FileRide extends Ride {
             model = ItemUtil.create(Material.SHEARS, 1, (byte) 11);
         }
         Cart c = new Cart(this, cartActions, cartSensors, model, modelMap);
-        c.setPower(speed);
+        c.setSpeed(speed);
         c.spawn(spawn.clone());
         atStation = Optional.of(c);
     }

@@ -21,12 +21,12 @@ public class StopAction extends MoveAction {
             Location lastLocation = cart.getLastLocation();
             Location currentLocation = cart.getLocation();
             change = currentLocation.toVector().subtract(lastLocation.toVector()).normalize();
-            powerChange = cart.getPower() / time;
+            powerChange = cart.getSpeed() / time;
         }
-        cart.setPower(cart.getPower() - powerChange);
+        cart.setSpeed(cart.getSpeed() - powerChange);
         Location original = cart.getLocation();
 
-        double power = cart.getPower();
+        double power = cart.getSpeed();
         Vector change = this.change.clone().multiply(new Vector(power, power, power));
         Location next = cart.getLocation().add(change);
 
@@ -41,8 +41,8 @@ public class StopAction extends MoveAction {
         cart.teleport(next);
         cart.setYaw(yaw);
 
-        if (cart.getPower() <= 0) {
-            cart.setPower(0);
+        if (cart.getSpeed() <= 0) {
+            cart.setSpeed(0);
             finished = true;
         }
     }

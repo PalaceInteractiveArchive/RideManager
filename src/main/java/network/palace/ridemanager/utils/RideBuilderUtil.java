@@ -7,10 +7,7 @@ import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.handlers.actions.*;
 import network.palace.ridemanager.handlers.builder.PathDataTimer;
 import network.palace.ridemanager.handlers.builder.actions.*;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.Vector;
@@ -219,10 +216,11 @@ public class RideBuilderUtil {
             diff = new Vector(0, to.getY() - from.getY(), 0);
         } else if (session.isSneaking()) {
             diff = to.toVector().subtract(from.toVector());
+            diff.setY(0);
         } else {
             return;
         }
-        RideAction newAction = changeLocation(a, diff);
+        RideAction newAction = changeLocation(player, session, a, diff);
         if (newAction == null) return;
         player.playSound(to, Sound.BLOCK_COMPARATOR_CLICK, 1, 2);
         session.setEditAction(newAction);
@@ -234,30 +232,55 @@ public class RideBuilderUtil {
         session.setSneaking(sneak);
     }
 
-    public RideAction changeLocation(RideAction a, Vector v) {
+    public RideAction changeLocation(CPlayer player, BuildSession session, RideAction a, Vector v) {
+        RideAction newAction = null;
+        Location to = null;
         switch (a.getActionType()) {
             case EXIT: {
                 FakeExitAction act = (FakeExitAction) a;
-                return new FakeExitAction(MathUtil.round(act.getTo().add(v), 4), act.getAutoYaw());
+                newAction = new FakeExitAction(MathUtil.round(act.getTo().add(v), 4), act.getAutoYaw());
+                to = ((FakeExitAction) newAction).getTo();
+                break;
             }
             case SPAWN: {
                 FakeSpawnAction act = (FakeSpawnAction) a;
-                return new FakeSpawnAction(MathUtil.round(act.getLoc().add(v), 4), act.getSpeed(), act.getYaw());
+                newAction = new FakeSpawnAction(MathUtil.round(act.getLoc().add(v), 4), act.getSpeed(), act.getYaw());
+                to = ((FakeSpawnAction) newAction).getLoc();
+                break;
             }
             case STRAIGHT: {
                 FakeStraightAction act = (FakeStraightAction) a;
-                return new FakeStraightAction(MathUtil.round(act.getTo().add(v), 4), act.getAutoYaw());
+                newAction = new FakeStraightAction(MathUtil.round(act.getTo().add(v), 4), act.getAutoYaw());
+                to = ((FakeStraightAction) newAction).getTo();
+                break;
             }
             case TELEPORT: {
                 FakeTeleportAction act = (FakeTeleportAction) a;
-                return new FakeTeleportAction(MathUtil.round(act.getTo().add(v), 4));
+                newAction = new FakeTeleportAction(MathUtil.round(act.getTo().add(v), 4));
+                to = ((FakeTeleportAction) newAction).getTo();
+                break;
             }
             case TURN: {
                 FakeTurnAction act = (FakeTurnAction) a;
-                return new FakeTurnAction(MathUtil.round(act.getOrigin().add(v), 4), act.getAngle());
+                switch (session.getEditLocation()) {
+                    case 0: {
+                        newAction = new FakeTurnAction(MathUtil.round(act.getTo().clone().add(v), 4), act.getP0());
+                        to = ((FakeTurnAction) newAction).getTo();
+                        break;
+                    }
+                    case 1: {
+                        newAction = new FakeTurnAction(act.getTo(), MathUtil.round(act.getP0().clone().add(v), 4));
+                        to = ((FakeTurnAction) newAction).getP0();
+                        break;
+                    }
+                }
+                break;
             }
         }
-        return null;
+        if (to != null) {
+            player.getParticles().send(to, Particle.REDSTONE, 0, 0, 0, 1, 1);
+        }
+        return newAction;
     }
 
     public List<RideAction> getFakeActions(LinkedList<RideAction> list) {
@@ -281,7 +304,7 @@ public class RideBuilderUtil {
                     break;
                 }
                 case TURN: {
-                    finalList.add(new FakeTurnAction(((TurnAction) a).getOrigin(), ((TurnAction) a).getAngle()));
+                    finalList.add(new FakeTurnAction(((TurnAction) a).getTo(), ((TurnAction) a).getP0()));
                     break;
                 }
             }

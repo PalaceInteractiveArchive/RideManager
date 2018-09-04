@@ -129,12 +129,26 @@ public class FileRideLoader implements Runnable {
                         break;
                     }
                     case "Turn": {
-                        Location origin = strToLoc(tokens[1]);
-                        int angle = getInt(tokens[2]);
-                        TurnAction a = new TurnAction(origin, angle);
+                        Location to = strToLoc(tokens[1]);
+                        Location p0 = strToLoc(tokens[2]);
+                        TurnAction a = new TurnAction(to, p0);
                         actions.add(a);
+                        /*if (Math.abs(angle) % 90 == 0) {
+                            Location origin = null;
+                            //TOD Calculate origin in action?
+                            CircleTurnAction a = new CircleTurnAction(to, angle);
+                            actions.add(a);
+                        } else {*/
+                        //}
                         break;
                     }
+                    /*case "NewTurn": {
+                        Location to = strToLoc(tokens[1]);
+                        int angle = getInt(tokens[2]);
+                        TurnAction a = new TurnAction(to, angle);
+                        actions.add(a);
+                        break;
+                    }*/
                     case "Rotate": {
                         long angle = getLong(tokens[1]);
                         boolean right = Boolean.parseBoolean(tokens[2]);

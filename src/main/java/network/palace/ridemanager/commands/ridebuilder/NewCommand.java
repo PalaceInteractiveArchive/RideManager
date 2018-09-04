@@ -40,7 +40,7 @@ public class NewCommand extends CoreCommand {
         }
         BuildSession session = util.newSession(player);
         session.setName(name.toString().trim());
-        session.setFileName(fileName);
+        session.setFileName(fileName + ".ride");
         session.updateBossBar();
         util.setInventory(player.getUniqueId(), true);
         try {

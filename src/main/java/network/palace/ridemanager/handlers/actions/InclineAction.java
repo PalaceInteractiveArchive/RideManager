@@ -51,12 +51,12 @@ public class InclineAction extends MoveAction {
             starting = Math.toDegrees(head.getX());
         }
 
-        double change = (angle - starting) / (20 / cart.getPower());
+        double change = (angle - starting) / (20 / cart.getSpeed());
         cart.setHeadPose(cart.getHeadPose().add(Math.toRadians(-change), 0, 0));
         Bukkit.broadcastMessage(Math.toDegrees(head.getX()) + " " + change + " " + angle + " " + starting);
 
         Vector v = new Vector(to.getX() - original.getX(), 0, to.getZ() - original.getZ()).normalize();
-        Location next = original.clone().add(v.multiply(cart.getPower()));
+        Location next = original.clone().add(v.multiply(cart.getSpeed()));
 
         double y = (10 * slope * Math.pow(original.getX() - start.getX(), 2)) / (Math.pow(to.getX() - start.getX(), 2)) + start.getY();
         next.setY(y);
