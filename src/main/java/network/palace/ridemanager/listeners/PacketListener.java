@@ -69,20 +69,5 @@ public class PacketListener implements Listener {
                 PacketContainer packet = event.getPacket();
             }
         });
-        /*
-        manager.addPacketListener(new PacketAdapter(RideManager.getInstance(), PacketType.Play.Client.POSITION, PacketType.Play.Client.POSITION_LOOK) {
-            @Override
-            public void onPacketReceiving(PacketEvent event) {
-                CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
-                if (player == null) return;
-                Ride ride = RideManager.getInstance().getCurrentRide(player);
-                Bukkit.broadcastMessage(ride == null ? "yay" : "nay");
-                if (ride == null) return;
-                if (ride instanceof ArmorStandRide) {
-                    event.setCancelled(true);
-                    player.teleport(player.getLocation());
-                }
-            }
-        });*/
     }
 }

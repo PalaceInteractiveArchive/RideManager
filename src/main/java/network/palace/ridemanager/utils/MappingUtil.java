@@ -19,10 +19,22 @@ import java.util.HashMap;
 public class MappingUtil {
     private HashMap<String, ModelMap> maps = new HashMap<>();
 
+    /**
+     * Get all loaded ModelMaps
+     *
+     * @return a HashMap of the name of the map mapped to the corresponding ModelMap object
+     */
     public HashMap<String, ModelMap> getMaps() {
         return new HashMap<>(maps);
     }
 
+    /**
+     * Get a ModelMap by its name
+     *
+     * @param name the name
+     * @return the ModelMap, or null if none was found
+     * @implNote If no ModelMap is found, the plugin will attempt to load it from the file system. If this fails, null will be returned.
+     */
     public ModelMap getMap(String name) {
         ModelMap map;
         if (maps.containsKey(name)) {
@@ -33,6 +45,12 @@ public class MappingUtil {
         return map;
     }
 
+    /**
+     * Read a ModelMap file from the file system
+     *
+     * @param name the name of the map *excluding* the extension .map
+     * @return null if file doesn't exist, and a ModelMap object if the file does exist
+     */
     private ModelMap loadMap(String name) {
         File f = new File("plugins/RideManager/maps/" + name + ".map");
         if (!f.exists()) {
@@ -80,6 +98,9 @@ public class MappingUtil {
         return map;
     }
 
+    /**
+     * Clear all loaded ModelMaps
+     */
     public void reset() {
         maps.clear();
     }

@@ -19,13 +19,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 
 /**
  * Created by Marc on 1/15/17.
  */
-@PluginInfo(name = "RideManager", version = "1.1.3", depend = {"Core", "ProtocolLib"}, canReload = false)
+@PluginInfo(name = "RideManager", version = "1.1.4", depend = {"Core", "ProtocolLib"}, canReload = false)
 public class RideManager extends Plugin {
     @Getter private static RideManager instance;
     @Getter private static MovementUtil movementUtil;
@@ -73,6 +72,12 @@ public class RideManager extends Plugin {
         Bukkit.getScheduler().cancelTasks(this);
     }
 
+    /**
+     * Get the current ride a player is on
+     *
+     * @param player the player
+     * @return the Ride the player is on, or null if they're not on a ride
+     */
     public Ride getCurrentRide(CPlayer player) {
         for (Ride r : movementUtil.getRides()) {
             if (r.getOnRide().contains(player.getUniqueId())) {
@@ -82,82 +87,12 @@ public class RideManager extends Plugin {
         return null;
     }
 
-    public static BlockFace getBlockFace(String s) {
-        switch (s.toLowerCase()) {
-            case "n":
-                return BlockFace.NORTH;
-            case "nnw":
-                return BlockFace.NORTH_NORTH_WEST;
-            case "nw":
-                return BlockFace.NORTH_WEST;
-            case "wnw":
-                return BlockFace.WEST_NORTH_WEST;
-            case "w":
-                return BlockFace.WEST;
-            case "wsw":
-                return BlockFace.WEST_SOUTH_WEST;
-            case "sw":
-                return BlockFace.SOUTH_WEST;
-            case "ssw":
-                return BlockFace.SOUTH_SOUTH_WEST;
-            case "s":
-                return BlockFace.SOUTH;
-            case "sse":
-                return BlockFace.SOUTH_SOUTH_EAST;
-            case "se":
-                return BlockFace.SOUTH_EAST;
-            case "ese":
-                return BlockFace.EAST_SOUTH_EAST;
-            case "e":
-                return BlockFace.EAST;
-            case "ene":
-                return BlockFace.EAST_NORTH_EAST;
-            case "ne":
-                return BlockFace.NORTH_EAST;
-            case "nne":
-                return BlockFace.NORTH_NORTH_EAST;
-        }
-        return BlockFace.NORTH;
-    }
-
-    public static float getYaw(BlockFace dir) {
-        switch (dir) {
-            case NORTH:
-                return 180;
-            case EAST:
-                return -90;
-            case SOUTH:
-                return 0;
-            case WEST:
-                return 90;
-            case NORTH_EAST:
-                break;
-            case NORTH_WEST:
-                break;
-            case SOUTH_EAST:
-                break;
-            case SOUTH_WEST:
-                break;
-            case WEST_NORTH_WEST:
-                break;
-            case NORTH_NORTH_WEST:
-                break;
-            case NORTH_NORTH_EAST:
-                break;
-            case EAST_NORTH_EAST:
-                break;
-            case EAST_SOUTH_EAST:
-                break;
-            case SOUTH_SOUTH_EAST:
-                break;
-            case SOUTH_SOUTH_WEST:
-                break;
-            case WEST_SOUTH_WEST:
-                break;
-        }
-        return 0;
-    }
-
+    /**
+     * Load a location from a section of a config file
+     *
+     * @param section the ConfigurationSection with location information
+     * @return a Location with the x,y,z,yaw,pitch values from the config
+     */
     public static Location parseLocation(ConfigurationSection section) {
         World world = Bukkit.getWorlds().get(0);
         double x = section.getDouble("x");

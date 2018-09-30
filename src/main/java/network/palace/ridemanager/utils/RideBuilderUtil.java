@@ -26,129 +26,6 @@ public class RideBuilderUtil {
     @Getter private PathDataTimer pathDataTimer;
 
     public RideBuilderUtil() {
-        /*Core.runTaskTimer(new Runnable() {
-            @Override
-            public void run() {
-                for (BuildSession session : new ArrayList<>(sessions.values())) {
-                    CPlayer player = Core.getPlayerManager().getPlayer(session.getUuid());
-                    if (player == null) {
-                        try {
-                            session.save();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        removeSession(session.getUuid());
-                        continue;
-                    }
-                    CPlayerParticlesManager particles = player.getParticles();
-                    List<RideAction> actions = session.getActions();
-                    RideAction current = session.getCurrentAction();
-                    if (current != null) {
-                        actions.add(current);
-                    }
-                    if (session.isShowArmorStands()) {
-                        HashMap<Location, ArmorStand> stands = session.getStands();
-                        Optional<RideAction> optional = actions.stream().filter(a -> a instanceof MoveAction).findFirst();
-                        if (!optional.isPresent()) continue;
-                        MoveAction lastAction = (MoveAction) optional.get();
-                        for (RideAction action : actions) {
-                            if (action instanceof FakeExitAction) {
-                                FakeExitAction act = (FakeExitAction) action;
-                                Location loc = lastAction.getFinalLocation();
-                                ArmorStand stand = getStand(stands, loc);
-                                stand.setCustomName(ChatColor.GREEN + "Exit");
-                            } else if (action instanceof InclineAction) {
-                                InclineAction act = (InclineAction) action;
-                            } else if (action instanceof FakeRotateAction) {
-                                FakeRotateAction act = (FakeRotateAction) action;
-                                Location loc = lastAction.getFinalLocation();
-                                ArmorStand stand = getStand(stands, loc);
-                                stand.setCustomName(ChatColor.GREEN + "Rotate to " + act.getAngle() + " degrees over " + act.getTicks() + " ticks");
-                            } else if (action instanceof FakeSpawnAction) {
-                                FakeSpawnAction act = (FakeSpawnAction) action;
-
-                            } else if (action instanceof SpeedAction) {
-                                SpeedAction act = (SpeedAction) action;
-
-                            } else if (action instanceof FakeStraightAction) {
-                                FakeStraightAction act = (FakeStraightAction) action;
-
-                            } else if (action instanceof FakeTeleportAction) {
-                                FakeTeleportAction act = (FakeTeleportAction) action;
-
-                            } else if (action instanceof FakeTurnAction) {
-                                FakeTurnAction act = (FakeTurnAction) action;
-
-                            } else if (action instanceof FakeWaitAction) {
-                                FakeWaitAction act = (FakeWaitAction) action;
-                            }
-                            if (action instanceof MoveAction) {
-                                lastAction = (MoveAction) action;
-                            }
-                        }
-                    }
-
-//                    player.sendMessage("A");
-                    Location start;
-                    if (actions.isEmpty() || !(actions.get(0) instanceof FakeSpawnAction)) {
-//                        player.sendMessage("B");
-                        continue;
-                    }
-//                    player.sendMessage("C");
-                    start = ((FakeSpawnAction) actions.get(0)).getLocation();
-//                    player.sendMessage("D " + start.getBlockX() + "," + start.getBlockY() + "," + start.getBlockZ());
-                    if (start == null) continue;
-//                    player.sendMessage("E");
-//                    particle(particles, start, true);
-//                    player.sendMessage("F");
-                    for (int i = 1; i < actions.size(); i++) {
-                        RideAction action = actions.get(i);
-                        if (!(action instanceof MoveAction)) continue;
-                        MoveAction move = (MoveAction) action;
-                        Location finalLoc = move.getFinalLocation();
-
-//                        particle(particles, start, true);
-
-                        for (double n = 0; n < finalLoc.distance(start); n += 0.5) {
-                            double dx = finalLoc.getX() - start.getX();
-                            double dy = finalLoc.getY() - start.getY();
-                            double dz = finalLoc.getZ() - start.getZ();
-                            Vector v = new Vector(dx, dy, dz);
-                            double dis = 2 * start.distance(finalLoc);
-                            v.divide(new Vector(dis, dis, dis));
-                            start.add(v);
-                            particle(particles, start, false);
-                        }
-
-                        start = move.getFinalLocation();
-                    }
-                }
-            }
-
-            private void particle(CPlayerParticlesManager part, Location loc, boolean action) {
-                if (action) {
-                    part.send(loc, Particle.VILLAGER_HAPPY, 2);
-                } else {
-                    part.send(loc, Particle.REDSTONE, 1);
-                }
-            }
-
-            private ArmorStand getStand(HashMap<Location, ArmorStand> stands, Location loc) {
-                ArmorStand stand;
-                if (stands.get(loc) == null) {
-                    stand = loc.getWorld().spawn(loc.add(0, -1.87, 0), ArmorStand.class);
-                    stand.setCustomNameVisible(true);
-                    stand.setGravity(false);
-                    stand.setVisible(true);
-                    stand.setArms(false);
-                    stand.setBasePlate(false);
-                    stands.put(loc, stand);
-                } else {
-                    stand = stands.get(loc);
-                }
-                return stand;
-            }
-        }, 0L, 20L);*/
         pathDataTimer = new PathDataTimer();
         Core.runTaskTimer(pathDataTimer, 0L, 20L);
         Core.runTaskTimer(() -> {
@@ -163,14 +40,32 @@ public class RideBuilderUtil {
         }, 0L, 20L);
     }
 
+    /**
+     * Get build session for a player
+     *
+     * @param player the player
+     * @return the BuildSession or null if there is none
+     */
     public BuildSession getSession(CPlayer player) {
         return sessions.get(player.getUniqueId());
     }
 
+    /**
+     * Get build session for a player
+     *
+     * @param uuid the uuid of the player
+     * @return the BuildSession or null if there is none
+     */
     public BuildSession getSession(UUID uuid) {
         return sessions.get(uuid);
     }
 
+    /**
+     * Create a new build session for a player
+     *
+     * @param player the player
+     * @return the new BuildSession
+     */
     public BuildSession newSession(CPlayer player) {
         BuildSession session = new BuildSession(player.getUniqueId());
         sessions.put(player.getUniqueId(), session);
@@ -178,6 +73,13 @@ public class RideBuilderUtil {
         return session;
     }
 
+    /**
+     * Load a build session for a player
+     *
+     * @param player the player
+     * @param file   the ride's file
+     * @return the BuildSession
+     */
     public BuildSession loadSession(CPlayer player, File file) {
         BuildSession session = newSession(player);
         player.sendMessage(ChatColor.GREEN + "Session created, loading actions now...");
@@ -185,8 +87,15 @@ public class RideBuilderUtil {
         return session;
     }
 
+    /**
+     * Remove a player's build session
+     *
+     * @param uuid the uuid of the player
+     * @return the BuildSession that was removed, or null if there was none
+     */
     public BuildSession removeSession(UUID uuid) {
         BuildSession session = sessions.remove(uuid);
+        if (session == null) return null;
         List<ArmorStand> stands = new ArrayList<>(session.getStands().values());
         for (ArmorStand stand : stands) {
             stand.remove();
@@ -195,6 +104,13 @@ public class RideBuilderUtil {
         return session;
     }
 
+    /**
+     * Process a player moving for editing actions
+     *
+     * @param player the player
+     * @param from   where the player moved from
+     * @param to     where the player moved to
+     */
     public void moveEvent(CPlayer player, Location from, Location to) {
         if (to.getX() == from.getX() && to.getY() == from.getY() && to.getZ() == from.getZ()) return;
         BuildSession session = getSession(player);
@@ -229,12 +145,27 @@ public class RideBuilderUtil {
         session.setEditAction(newAction);
     }
 
+    /**
+     * Set a player's sneaking value
+     *
+     * @param player the player
+     * @param sneak  whether or not the player is sneaking
+     */
     public void toggleShift(CPlayer player, boolean sneak) {
         BuildSession session = getSession(player);
         if (session == null) return;
         session.setSneaking(sneak);
     }
 
+    /**
+     * Edit an action's location
+     *
+     * @param player  the player
+     * @param session the player's BuildSession
+     * @param a       the action
+     * @param v       the vector representing the change for the action
+     * @return an updated instance of the action, or null if the action wasn't supported
+     */
     public RideAction changeLocation(CPlayer player, BuildSession session, RideAction a, Vector v) {
         RideAction newAction = null;
         Location to = null;
@@ -309,6 +240,13 @@ public class RideBuilderUtil {
         return newAction;
     }
 
+    /**
+     * Convert a list of RideActions into FakeActions for ride building
+     *
+     * @param list the list of RideActions
+     * @return a list of FakeActions
+     * @implNote not every RideAction necessarily has a corresponding FakeAction
+     */
     public List<RideAction> getFakeActions(LinkedList<RideAction> list) {
         List<RideAction> finalList = new ArrayList<>();
         for (RideAction a : list) {
@@ -338,10 +276,21 @@ public class RideBuilderUtil {
         return finalList;
     }
 
+    /**
+     * Get a list of existing BuildSessions
+     *
+     * @return a list of existing BuildSessions
+     */
     public List<BuildSession> getSessions() {
         return new ArrayList<>(sessions.values());
     }
 
+    /**
+     * Set a player's inventory for ride building
+     *
+     * @param uuid  the uuid of the player
+     * @param value true if entering ride building, false if exiting
+     */
     public void setInventory(UUID uuid, boolean value) {
         CPlayer player = Core.getPlayerManager().getPlayer(uuid);
         if (value) {

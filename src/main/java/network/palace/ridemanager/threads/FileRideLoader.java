@@ -3,9 +3,9 @@ package network.palace.ridemanager.threads;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import network.palace.ridemanager.handlers.SensorType;
 import network.palace.ridemanager.handlers.actions.*;
 import network.palace.ridemanager.handlers.actions.sensors.*;
+import network.palace.ridemanager.handlers.builder.SensorType;
 import network.palace.ridemanager.handlers.ride.file.FileRide;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -133,22 +133,8 @@ public class FileRideLoader implements Runnable {
                         Location p0 = strToLoc(tokens[2]);
                         TurnAction a = new TurnAction(to, p0);
                         actions.add(a);
-                        /*if (Math.abs(angle) % 90 == 0) {
-                            Location origin = null;
-                            //TOD Calculate origin in action?
-                            CircleTurnAction a = new CircleTurnAction(to, angle);
-                            actions.add(a);
-                        } else {*/
-                        //}
                         break;
                     }
-                    /*case "NewTurn": {
-                        Location to = strToLoc(tokens[1]);
-                        int angle = getInt(tokens[2]);
-                        TurnAction a = new TurnAction(to, angle);
-                        actions.add(a);
-                        break;
-                    }*/
                     case "Rotate": {
                         long angle = getLong(tokens[1]);
                         boolean right = Boolean.parseBoolean(tokens[2]);
@@ -239,6 +225,13 @@ public class FileRideLoader implements Runnable {
         return Boolean.parseBoolean(s);
     }
 
+    /**
+     * Convert a string to a Location object
+     *
+     * @param string the string
+     * @return the Location
+     * @implNote string should follow the format x,y,z
+     */
     public static Location strToLoc(String string) {
         Location l = null;
         if (string.length() == 0) {

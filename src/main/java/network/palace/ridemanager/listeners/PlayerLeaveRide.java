@@ -70,14 +70,32 @@ public class PlayerLeaveRide implements Listener {
         ejectPlayer(player);
     }
 
+    /**
+     * Eject a UUID from all rides
+     *
+     * @param uuid the uuid
+     */
     private void ejectUUID(UUID uuid) {
         RideManager.getMovementUtil().ejectUUID(uuid);
     }
 
+    /**
+     * Eject a player from the ride they're currently on
+     *
+     * @param player the player
+     * @implNote If they're not on a ride, nothing will happen
+     */
     private void ejectPlayer(CPlayer player) {
         ejectPlayer(player, RideManager.getMovementUtil().getRide(player));
     }
 
+    /**
+     * Eject a player from a specific ride
+     *
+     * @param player the player
+     * @param ride   the ride
+     * @implNote If the ride is null, or if the player is not on the provided ride, nothing will happen
+     */
     private void ejectPlayer(CPlayer player, Ride ride) {
         if (ride == null) return;
         ride.handleEject(player, true, true);

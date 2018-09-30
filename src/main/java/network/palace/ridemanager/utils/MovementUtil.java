@@ -22,121 +22,64 @@ public class MovementUtil {
     @Getter private static long tick = 0;
 
     public MovementUtil() {
-//        loadRides();
         taskid = Core.runTaskTimer(() -> {
             for (Ride ride : new ArrayList<>(rides)) {
                 ride.move();
             }
-            /*
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                Vector v = p.getVelocity();
-//                    p.sendMessage(v.toString());
-                p.setVelocity(new Vector(0.1, v.getY(), 0));
-            }*/
             tick++;
         }, 0L, 1L);
     }
 
-    /*public void loadRides() {
-        despawnAll();
-        rides.clear();
-        File dir = new File("plugins/RideManager");
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-        File file = new File("plugins/RideManager/rides.yml");
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Core.logMessage("RideManager", "New configuration file generated!");
-            return;
-        }
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-        if (config == null) {
-            return;
-        }
-        ConfigurationSection sec = config.getConfigurationSection("rides");
-        if (sec != null) {
-            Set<String> names = sec.getKeys(false);
-            for (String s : names) {
-                ConfigurationSection current = config.getConfigurationSection("rides." + s);
-                RideType type = RideType.fromString(current.getString("type"));
-                String displayName = ChatColor.translateAlternateColorCodes('&', current.getString("name"));
-                int riders = current.getInt("riders");
-                double delay = current.getDouble("delay");
-                Location exit = RideManager.parseLocation(current.getConfigurationSection("exit"));
-                Ride ride = null;
-                switch (type) {
-                    case FILE:
-                        ride = new FileRide(s, displayName, riders, delay, exit, current.getString("file"));
-                        break;
-                    case SIGN: {
-                        Location spawnSign = RideManager.parseLocation(current.getConfigurationSection("sign"));
-                        ride = new SignRide(s, displayName, riders, delay, exit, spawnSign, current.getString("model"));
-                        break;
-                    }
-                    case COASTER:
-                        break;
-                    case TEACUPS: {
-                        Location center = RideManager.parseLocation(current.getConfigurationSection("center"));
-                        ride = new TeacupsRide(s, displayName, delay, exit, center);
-                        break;
-                    }
-                    case CAROUSEL: {
-                        Location center = RideManager.parseLocation(current.getConfigurationSection("center"));
-                        ride = new CarouselRide(s, displayName, delay, exit, center);
-                        break;
-                    }
-                    case AERIAL_CAROUSEL: {
-                        Location center = RideManager.parseLocation(current.getConfigurationSection("center"));
-                        ConfigurationSection support = current.getConfigurationSection("support");
-                        ride = new AerialCarouselRide(s, displayName, delay, exit, center, current.getDouble("aerialRadius"),
-                                support.getDouble("radius"), current.getBoolean("small"), support.getDouble("angle"),
-                                support.getDouble("height"), support.getDouble("movein"));
-                        break;
-                    }
-                    case ARMORSTAND:
-                        String fileName = current.getString("file");
-                        ride = new ArmorStandRide(s, displayName, riders, delay, exit, fileName);
-                        break;
-                }
-                if (ride != null) {
-                    rides.add(ride);
-                } else {
-                    Core.logMessage("RideManager", ChatColor.RED + "Error loading ride " + ChatColor.GREEN + s);
-                }
-            }
-        }
-        Core.logMessage("RideManager", ChatColor.GREEN + "Loaded " + ChatColor.BOLD + rides.size() +
-                ChatColor.GREEN + " rides!");
-    }*/
-
+    /**
+     * Start tracking new ride
+     *
+     * @param ride the ride
+     */
     public void addRide(Ride ride) {
         rides.add(ride);
     }
 
+    /**
+     * Stop tracking a ride
+     *
+     * @param ride the ride
+     */
     public void removeRide(Ride ride) {
         rides.remove(ride);
     }
 
+    /**
+     * Get a list of all currently tracked rides
+     *
+     * @return an ArrayList of Rides
+     */
     public List<Ride> getRides() {
         return new ArrayList<>(rides);
     }
 
+    /**
+     * Despawn all rides
+     */
     public void despawnAll() {
         for (Ride ride : getRides()) {
             ride.despawn();
         }
     }
 
+    /**
+     * Shutdown command; despawns all rides and cancels the movement task, which cannot be restarted
+     */
     public void stop() {
         despawnAll();
         Bukkit.getScheduler().cancelTask(taskid);
     }
 
+    /**
+     * Get a ride by its short name
+     *
+     * @param name the name
+     * @return the Ride, or null if one wasn't found
+     */
     public Ride getRide(String name) {
         for (Ride r : getRides()) {
             if (r.getName().equalsIgnoreCase(name)) {
@@ -146,6 +89,12 @@ public class MovementUtil {
         return null;
     }
 
+    /**
+     * Get a ride by one of the players riding it
+     *
+     * @param cp the player
+     * @return the Ride, or null if the player isn't on a ride
+     */
     public Ride getRide(CPlayer cp) {
         for (Ride ride : getRides()) {
             if (ride.getOnRide().contains(cp.getUniqueId())) {
@@ -155,6 +104,14 @@ public class MovementUtil {
         return null;
     }
 
+    /**
+     * Sit a player down on a ride
+     *
+     * @param player the player
+     * @param stand  the ArmorStand they are being seated on
+     * @return true if they do sit down, false if not (seat is full, can't board right now, etc.)
+     * @implNote Player can't board a ride while sneaking; this fixes a problem where they would immediately be ejected
+     */
     public boolean sitDown(CPlayer player, ArmorStand stand) {
         if (player.getBukkitPlayer().isSneaking()) {
             player.sendMessage(ChatColor.RED + "You cannot board a ride while sneaking!");
@@ -174,6 +131,7 @@ public class MovementUtil {
      * @param player the player
      * @param id     the id of the entity they click
      * @return whether or not they sit on a ride vehicle
+     * @implNote Player can't board a ride while sneaking; this fixes a problem where they would immediately be ejected
      */
     public boolean sitDown(CPlayer player, int id) {
         boolean rideStand = false;
@@ -198,12 +156,22 @@ public class MovementUtil {
         return false;
     }
 
+    /**
+     * Eject a player from all rides by their UUID
+     *
+     * @param uuid the uuid
+     */
     public void ejectUUID(UUID uuid) {
         for (Ride ride : getRides()) {
             ride.removeFromOnRide(uuid);
         }
     }
 
+    /**
+     * Get smallest y value, commonly used for the y-value of velocity vectors
+     *
+     * @return Double.MIN_VALUE
+     */
     public static double getYMin() {
         return Double.MIN_VALUE;
     }

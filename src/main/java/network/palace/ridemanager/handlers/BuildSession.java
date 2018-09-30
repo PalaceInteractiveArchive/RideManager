@@ -9,6 +9,7 @@ import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.actions.RideAction;
 import network.palace.ridemanager.handlers.actions.sensors.RideSensor;
 import network.palace.ridemanager.handlers.builder.ActionType;
+import network.palace.ridemanager.handlers.builder.SensorType;
 import network.palace.ridemanager.handlers.builder.actions.*;
 import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.Ride;
@@ -155,56 +156,14 @@ public class BuildSession {
                 break;
             }
         }
-        /*
-        RideBuilderUtil.BlockAction a = RideBuilderUtil.BlockAction.fromBlock(block);
-        if (a == null) return false;
-
-        if (currentAction != null) {
-            if (!a.getClazz().equals(currentAction.getClass())) {
-                actions.add(currentAction);
-//            } else {
-                // Modify currentAction value
-            }
-        }
-
-        currentAction = a.newAction();
-        String msg = ChatColor.GREEN + "You created a " + ChatColor.YELLOW;
-        switch (a) {
-            case SPAWN:
-                msg += "Spawn";
-                ((FakeSpawnAction) currentAction).setLocation(block.getLocation());
-                break;
-            case STRAIGHT:
-                msg += "Straight";
-                ((FakeStraightAction) currentAction).setTo(block.getLocation());
-                break;
-            case TURN:
-                msg += "Turn";
-                break;
-            case ROTATE:
-                msg += "Rotate";
-                break;
-            case WAIT:
-                msg += "Wait";
-                break;
-            case INCLINE:
-                msg += "Incline";
-                break;
-            case DECLINE:
-                msg += "Decline";
-                break;
-            case TELEPORT:
-                msg += "Teleport";
-                break;
-            case EXIT:
-                msg += "Exit";
-                break;
-        }
-        msg += " action!";
-        player.sendMessage(msg);*/
         return true;
     }
 
+    /**
+     * Open an inventory containing the different action types
+     *
+     * @param player the player
+     */
     private void openActionMenu(CPlayer player) {
         Inventory inv = Bukkit.createInventory(player.getBukkitPlayer(), 27, ChatColor.GREEN + "New Action");
         int i = 0;
@@ -217,10 +176,30 @@ public class BuildSession {
         player.openInventory(inv);
     }
 
+    /**
+     * Open an inventory containing the different sensor types
+     *
+     * @param player the player
+     */
     private void openSensorMenu(CPlayer player) {
+        Inventory inv = Bukkit.createInventory(player.getBukkitPlayer(), 27, ChatColor.GREEN + "New Sensor");
+        int i = 0;
+        for (SensorType s : SensorType.values()) {
+            inv.setItem(i++, s.getItem());
+            if (i >= 27) {
+                break;
+            }
+        }
+        player.openInventory(inv);
     }
 
-    @SuppressWarnings("deprecation")
+    /**
+     * Process a click on a ride builder inventory
+     *
+     * @param event  the click event
+     * @param player the player clicking
+     * @param name   the name of the clicked inventory
+     */
     public void handleInventoryClick(InventoryClickEvent event, CPlayer player, String name) {
         ItemStack item = event.getCurrentItem();
         switch (name) {
@@ -231,7 +210,7 @@ public class BuildSession {
                     if (a == null) continue;
                     ItemStack actionItem = a.getItem();
                     if (actionItem == null) continue;
-                    if (item.getType().equals(actionItem.getType()) && item.getData().getData() == actionItem.getData().getData()) {
+                    if (item.equals(actionItem)) {
                         editAction(player, action);
                         this.possibleActions = null;
                         return;
@@ -266,7 +245,6 @@ public class BuildSession {
                 }
                 currentLocation.add(0.5, 0, 0.5);
                 editAction = action.newAction(currentLocation, this);
-//                editAction = currentAction;
                 player.sendMessage(ChatColor.GREEN + "Created a new " + editAction.getActionType().getColoredName() + " action.");
                 player.closeInventory();
                 break;
@@ -274,6 +252,12 @@ public class BuildSession {
         }
     }
 
+    /**
+     * Process an interact event for the ride builder
+     *
+     * @param event  the interact event
+     * @param player the player who called the event
+     */
     public void handleInteract(PlayerInteractEvent event, CPlayer player) {
         ItemStack item = player.getInventory().getItemInMainHand();
         if (!item.getType().equals(Material.STONE_SPADE)) return;
@@ -395,6 +379,12 @@ public class BuildSession {
         chooseAction(player, possibleActions);
     }
 
+    /**
+     * Open an inventory containing a list of possible actions the player then has to choose from
+     *
+     * @param player          the player
+     * @param possibleActions the list of possible actions
+     */
     private void chooseAction(CPlayer player, List<RideAction> possibleActions) {
         int size = possibleActions.size();
         if (size == 1) {
@@ -418,6 +408,12 @@ public class BuildSession {
         player.openInventory(inv);
     }
 
+    /**
+     * Set the action a player is editing
+     *
+     * @param player the player
+     * @param action the action being edited
+     */
     private void editAction(CPlayer player, RideAction action) {
         this.editAction = action;
         editHelp(player, editAction);
@@ -601,6 +597,12 @@ public class BuildSession {
         }
     }
 
+    /**
+     * Send help messages based on the type of action being edited
+     *
+     * @param player the player
+     * @param action the action
+     */
     private void editHelp(CPlayer player, RideAction action) {
         if (action.getActionType() == null) return;
         switch (action.getActionType()) {
@@ -638,10 +640,20 @@ public class BuildSession {
                 " when you've finished editing.");
     }
 
+    /**
+     * Get a list of all actions in the BuildSession, excluding the action currently being edited
+     *
+     * @return an ArrayList of all actions
+     */
     public List<RideAction> getActions() {
         return new ArrayList<>(actions);
     }
 
+    /**
+     * Save all data to the ride's file
+     *
+     * @throws IOException if there's an error writing to the file
+     */
     public void save() throws IOException {
         File file = new File("plugins/RideManager/rides/" + fileName);
         if (!file.exists()) {
@@ -671,6 +683,9 @@ public class BuildSession {
         bw.close();
     }
 
+    /**
+     * Update the boss bar which contains a lot of ride builder info
+     */
     public void updateBossBar() {
         CPlayer player = Core.getPlayerManager().getPlayer(uuid);
         if (player == null) return;
@@ -685,12 +700,20 @@ public class BuildSession {
                 1, BarColor.BLUE, BarStyle.SOLID);
     }
 
+    /**
+     * Remove the player's boss bar
+     */
     public void removeBossBar() {
         CPlayer player = Core.getPlayerManager().getPlayer(uuid);
         if (player == null) return;
         player.getBossBar().remove();
     }
 
+    /**
+     * Spawn or despawn a display vehicle at the station of the ride
+     *
+     * @return true if spawned, false if despawned
+     */
     public boolean toggleDisplayVehicle() {
         displayVehicle = !displayVehicle;
         if (!displayVehicle && displayVehicleUUID != null) {
@@ -723,6 +746,11 @@ public class BuildSession {
         return displayVehicle;
     }
 
+    /**
+     * Get the last location in the current ride path
+     *
+     * @return the last location, or the spawn location if there's an error getting the last location
+     */
     public Location getLastLocation() {
         Location last = RideManager.getRideBuilderUtil().getPathDataTimer().runTimer(this, false);
         if (last == null) {

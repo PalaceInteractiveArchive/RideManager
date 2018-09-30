@@ -58,20 +58,4 @@ public class PlayerInteract implements Listener {
                 break;
         }
     }
-/*
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-    public void onEntityClick(PlayerInteractEntityEvent event) {
-        CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
-        Bukkit.broadcastMessage(event.getPlayer().getName());
-        if (player == null) return;
-        Entity e = event.getRightClicked();
-        Bukkit.broadcastMessage(e.getType().name());
-        if (!e.getType().equals(EntityType.ARMOR_STAND)) return;
-        ArmorStand stand = (ArmorStand) e;
-        Bukkit.broadcastMessage("HELLO THERE " + stand.getUniqueId());
-        if (RideManager.getMovementUtil().sitDown(player, stand)) {
-            Bukkit.broadcastMessage("AYY " + player.getName() + " " + stand.getUniqueId());
-            event.setCancelled(true);
-        }
-    }*/
 }

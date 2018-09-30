@@ -30,10 +30,23 @@ public class MathUtil {
         return floor == num ? floor : floor - (int) (Double.doubleToRawLongBits(num) >>> 63);
     }
 
+    /**
+     * Calculate the square of a number
+     *
+     * @param num the number
+     * @return number^2
+     */
     public static double square(double num) {
         return num * num;
     }
 
+    /**
+     * Round the X,Y,Z coords of a location to a certain amount of decimal places
+     *
+     * @param loc    the location
+     * @param places the number of decimal places to round to
+     * @return the location with rounded X,Y,Z coordinates
+     */
     public static Location round(Location loc, int places) {
         StringBuilder pattern = new StringBuilder("#.");
         for (int i = 0; i < places; i++) {
@@ -47,6 +60,15 @@ public class MathUtil {
         return loc;
     }
 
+    /**
+     * Get the slope of the bezier curve at a certain point t
+     *
+     * @param t  the point along the curve to calculate
+     * @param p0 the point controlling the curvature of the curve
+     * @param p1 the starting point
+     * @param p2 the ending point
+     * @return the angle (in degrees) at a certain point t along the bezier curve
+     */
     public static float getBezierAngleAt(double t, Location p0, Location p1, Location p2) {
         if (p1 == null || p2 == null) return 0f;
         double x = 2 * (1 - t) * (p0.getX() - p1.getX()) + 2 * t * (p2.getX() - p0.getX());
