@@ -26,9 +26,9 @@ public class ShowSensor extends RideSensor {
         super.activate();
         if (file == null) return;
         if (delay > 0) {
-            Core.runTaskLater(() -> ShowPlugin.startShow(getRandomString(), new RideShow(RideManager.getInstance(), file, cart)), 20 * delay);
+            Core.runTaskLater(() -> ShowPlugin.startShow(getRandomString(), new RideShow(RideManager.getInstance(), file, vehicle)), 20 * delay);
         } else {
-            ShowPlugin.startShow(getRandomString(), new RideShow(RideManager.getInstance(), file, cart));
+            ShowPlugin.startShow(getRandomString(), new RideShow(RideManager.getInstance(), file, vehicle));
         }
     }
 
@@ -40,10 +40,10 @@ public class ShowSensor extends RideSensor {
     private String getRandomString() {
         String s;
         int random = (int) (randomGenerator.nextDouble() * 999999) + showNumber++;
-        if (cart == null) {
+        if (vehicle == null) {
             s = random + "";
         } else {
-            s = cart.getRide().getName().replaceAll(" ", "_") + "_" + random;
+            s = vehicle.getRide().getName().replaceAll(" ", "_") + "_" + random;
         }
         return s;
     }

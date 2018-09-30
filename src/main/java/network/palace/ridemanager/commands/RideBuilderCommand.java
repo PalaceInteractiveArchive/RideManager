@@ -9,7 +9,7 @@ import network.palace.ridemanager.commands.ridebuilder.*;
  * @author Marc
  * @since 8/7/17
  */
-@CommandMeta(description = "Default Ride Builder command", rank = Rank.DEVELOPER)
+@CommandMeta(description = "Default Ride Builder command", rank = Rank.DEVELOPER, aliases = {"one", "two"})
 public class RideBuilderCommand extends CoreCommand {
 
     public RideBuilderCommand() {
@@ -24,6 +24,7 @@ public class RideBuilderCommand extends CoreCommand {
         registerSubCommand(new PathCommand());
         registerSubCommand(new SaveCommand());
         registerSubCommand(new StandCommand());
+        registerSubCommand(new VehicleCommand());
         registerSubCommand(new YCommand());
     }
 

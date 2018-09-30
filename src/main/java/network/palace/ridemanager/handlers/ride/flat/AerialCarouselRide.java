@@ -643,7 +643,6 @@ public class AerialCarouselRide extends Ride {
             support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
             support.setHelmet(pole);
             this.support = Optional.of(support);
-//            Bukkit.broadcastMessage("Spawned!");
         }
 
         public Vehicle(ArmorStand stand, double angle) {

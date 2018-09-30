@@ -1,5 +1,6 @@
 package network.palace.ridemanager.utils;
 
+import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.core.utils.ItemUtil;
@@ -22,6 +23,7 @@ import java.util.*;
 public class RideBuilderUtil {
     private HashMap<UUID, BuildSession> sessions = new HashMap<>();
     private List<UUID> inventory = new ArrayList<>();
+    @Getter private PathDataTimer pathDataTimer;
 
     public RideBuilderUtil() {
         /*Core.runTaskTimer(new Runnable() {
@@ -147,7 +149,8 @@ public class RideBuilderUtil {
                 return stand;
             }
         }, 0L, 20L);*/
-        Core.runTaskTimer(new PathDataTimer(), 0L, 20L);
+        pathDataTimer = new PathDataTimer();
+        Core.runTaskTimer(pathDataTimer, 0L, 20L);
         Core.runTaskTimer(() -> {
             for (BuildSession session : sessions.values()) {
                 CPlayer player = Core.getPlayerManager().getPlayer(session.getUuid());
@@ -264,12 +267,35 @@ public class RideBuilderUtil {
                 FakeTurnAction act = (FakeTurnAction) a;
                 switch (session.getEditLocation()) {
                     case 0: {
-                        newAction = new FakeTurnAction(MathUtil.round(act.getTo().clone().add(v), 4), act.getP0());
+                        newAction = new FakeTurnAction(MathUtil.round(act.getTo().clone().add(v), 4), act.getFrom(), act.getP0());
                         to = ((FakeTurnAction) newAction).getTo();
                         break;
                     }
                     case 1: {
-                        newAction = new FakeTurnAction(act.getTo(), MathUtil.round(act.getP0().clone().add(v), 4));
+                        Location from = act.getFrom();
+                        float yaw = from.getYaw();
+                        double rads = Math.toRadians(yaw);
+
+                        Vector direction = new Vector(Math.cos(rads), 0, Math.sin(rads));
+
+                        double length = direction.length() * Math.cos(v.angle(direction) - Math.toRadians(90));
+
+                        double length_x = length * Math.cos(rads);
+                        double length_z = length * Math.sin(rads);
+
+                        Vector change = new Vector(-length_z, 0, length_x);
+
+                        Vector facing = player.getLocation().getDirection().setY(0);
+
+                        boolean backward = Math.abs(Math.toDegrees(v.angle(facing))) > 90;
+
+                        if (backward) {
+                            change.multiply(-1);
+                        }
+
+                        change.multiply(0.25);
+
+                        newAction = new FakeTurnAction(act.getTo(), act.getFrom(), MathUtil.round(act.getP0().clone().add(change), 4));
                         to = ((FakeTurnAction) newAction).getP0();
                         break;
                     }

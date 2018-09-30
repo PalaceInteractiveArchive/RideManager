@@ -11,6 +11,7 @@ import org.bukkit.Location;
 @Setter
 public class FakeTurnAction extends FakeAction {
     private Location to;
+    private Location from = null;
     private Location p0;
 
     public FakeTurnAction() {
@@ -18,8 +19,13 @@ public class FakeTurnAction extends FakeAction {
     }
 
     public FakeTurnAction(Location to, Location p0) {
+        this(to, null, p0);
+    }
+
+    public FakeTurnAction(Location to, Location from, Location p0) {
         super(true);
         this.to = to;
+        this.from = from;
         this.p0 = p0;
     }
 

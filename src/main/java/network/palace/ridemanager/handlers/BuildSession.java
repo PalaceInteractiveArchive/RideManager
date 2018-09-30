@@ -1,6 +1,7 @@
 package network.palace.ridemanager.handlers;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
@@ -9,6 +10,7 @@ import network.palace.ridemanager.handlers.actions.RideAction;
 import network.palace.ridemanager.handlers.actions.sensors.RideSensor;
 import network.palace.ridemanager.handlers.builder.ActionType;
 import network.palace.ridemanager.handlers.builder.actions.*;
+import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.threads.FileRideLoader;
 import network.palace.ridemanager.utils.MovementUtil;
@@ -34,7 +36,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class BuildSession {
     @Getter private final UUID uuid;
     @Getter @Setter private String name;
@@ -49,6 +51,8 @@ public class BuildSession {
     @Getter @Setter private boolean path = true;
     @Getter @Setter private boolean changeY;
     @Getter @Setter private boolean sneaking;
+    @Getter @Setter private boolean displayVehicle = false;
+    @Getter @Setter private UUID displayVehicleUUID = null;
     @Getter HashMap<Location, ArmorStand> stands = new HashMap<>();
     private RideBuilderUtil.ConfirmCallback confirm = null;
     @Getter @Setter private Location currentLocation = null;
@@ -56,16 +60,6 @@ public class BuildSession {
     @Getter @Setter private RideAction editAction = null;
     @Getter @Setter private boolean editingLocation = false;
     @Getter @Setter private int editLocation = 0;
-
-    public BuildSession(UUID uuid) {
-        this.uuid = uuid;
-        /*Core.runTaskTimer(() -> {
-            Bukkit.broadcastMessage(actions.size() + " completed actions.");
-            actions.forEach(a -> Bukkit.broadcastMessage("- " + a.getActionType().name()));
-            Bukkit.broadcastMessage(currentAction == null ? "currentAction == null" : ("currentAction = " + currentAction.getActionType().name()));
-            Bukkit.broadcastMessage(editAction == null ? "editAction == null" : ("editAction = " + editAction.getActionType().name()));
-        }, 0L, 20L);*/
-    }
 
     /**
      * Load actions from a file save
@@ -271,7 +265,7 @@ public class BuildSession {
                     }
                 }
                 currentLocation.add(0.5, 0, 0.5);
-                editAction = action.newAction(currentLocation);
+                editAction = action.newAction(currentLocation, this);
 //                editAction = currentAction;
                 player.sendMessage(ChatColor.GREEN + "Created a new " + editAction.getActionType().getColoredName() + " action.");
                 player.closeInventory();
@@ -685,13 +679,56 @@ public class BuildSession {
         ChatColor locky = roundedLockY != 0 ? ChatColor.GREEN : ChatColor.RED;
         ChatColor edity = isChangeY() ? ChatColor.GREEN : ChatColor.RED;
         ChatColor stands = isShowArmorStands() ? ChatColor.GREEN : ChatColor.RED;
+        ChatColor display = isDisplayVehicle() ? ChatColor.GREEN : ChatColor.RED;
         player.getBossBar().setEverything(ChatColor.AQUA + "Ride " + name + " " + path + "Path " + locky +
-                "LockY: " + roundedLockY + edity + " Edit Y" + stands + " Stands", 1, BarColor.BLUE, BarStyle.SOLID);
+                        "LockY: " + roundedLockY + edity + " Edit Y" + stands + " Stands" + display + " Display",
+                1, BarColor.BLUE, BarStyle.SOLID);
     }
 
     public void removeBossBar() {
         CPlayer player = Core.getPlayerManager().getPlayer(uuid);
         if (player == null) return;
         player.getBossBar().remove();
+    }
+
+    public boolean toggleDisplayVehicle() {
+        displayVehicle = !displayVehicle;
+        if (!displayVehicle && displayVehicleUUID != null) {
+            Optional<ArmorStand> opt = spawn.getWorld().getEntitiesByClass(ArmorStand.class).stream().filter(a -> a.getUniqueId().equals(displayVehicleUUID)).findFirst();
+            opt.ifPresent(a -> {
+                a.remove();
+                displayVehicleUUID = null;
+            });
+        } else if (displayVehicle) {
+            ArmorStand stand = spawn.getWorld().spawn(spawn.clone().add(0, -MovementUtil.armorStandHeight, 0), ArmorStand.class);
+            stand.setGravity(false);
+            stand.setVisible(false);
+            stand.setArms(false);
+            stand.setBasePlate(false);
+            displayVehicleUUID = stand.getUniqueId();
+            int index = fileName.indexOf(".ride");
+            String mapName = "";
+            if (index != -1) {
+                mapName = fileName.substring(0, index);
+            }
+            ModelMap map = RideManager.getMappingUtil().getMap(mapName);
+            if (map != null && map.getItem() != null) {
+                stand.setHelmet(map.getItem());
+            } else {
+                stand.remove();
+                displayVehicle = false;
+                displayVehicleUUID = null;
+            }
+        }
+        return displayVehicle;
+    }
+
+    public Location getLastLocation() {
+        Location last = RideManager.getRideBuilderUtil().getPathDataTimer().runTimer(this, false);
+        if (last == null) {
+            return spawn;
+        } else {
+            return last;
+        }
     }
 }

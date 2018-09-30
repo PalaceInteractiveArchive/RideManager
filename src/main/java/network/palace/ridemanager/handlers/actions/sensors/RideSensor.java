@@ -2,14 +2,14 @@ package network.palace.ridemanager.handlers.actions.sensors;
 
 import lombok.Getter;
 import lombok.Setter;
-import network.palace.ridemanager.handlers.ride.file.Cart;
+import network.palace.ridemanager.handlers.ride.file.RideVehicle;
 import org.bukkit.Location;
 
 import java.util.UUID;
 
 public abstract class RideSensor {
     @Getter protected UUID id = UUID.randomUUID();
-    @Getter @Setter protected Cart cart = null;
+    @Getter @Setter protected RideVehicle vehicle = null;
     @Getter protected Location location;
     @Getter protected double radius;
     @Getter protected boolean activated = false;
@@ -27,8 +27,8 @@ public abstract class RideSensor {
         this.activated = true;
     }
 
-    public RideSensor load(Cart cart) {
-        setCart(cart);
+    public RideSensor load(RideVehicle vehicle) {
+        setVehicle(vehicle);
         return this;
     }
 

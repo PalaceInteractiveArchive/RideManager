@@ -52,6 +52,24 @@ public class MappingUtil {
             if (item != null)
                 map.setItem(item);
         }
+        if (file.contains("length")) {
+            double length = file.getDouble("length");
+            map.setLength(length);
+        } else {
+            map.setLength(1);
+        }
+        if (file.contains("space")) {
+            double space = file.getDouble("space");
+            map.setSpaceBetweenCarts(space);
+        } else {
+            map.setSpaceBetweenCarts(1);
+        }
+        if (file.contains("carts")) {
+            int carts = file.getInt("carts");
+            map.setCartCount(carts);
+        } else {
+            map.setCartCount(1);
+        }
         ConfigurationSection sec = file.getConfigurationSection("seats");
         World w = Bukkit.getWorlds().get(0);
         for (String s : sec.getKeys(false)) {

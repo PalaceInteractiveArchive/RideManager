@@ -5,7 +5,6 @@ import lombok.Setter;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.handlers.actions.RideAction;
-import network.palace.ridemanager.handlers.actions.sensors.RideSensor;
 import network.palace.ridemanager.handlers.ride.ModelMap;
 import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.utils.MathUtil;
@@ -25,21 +24,18 @@ import java.util.*;
  * Created by Marc on 5/2/17.
  */
 public class Cart {
-    @Getter private final FileRide ride;
+    @Getter private final RideVehicle vehicle;
     private final LinkedHashMap<Integer, RideAction> actions;
-    private final LinkedList<RideSensor> sensors;
     @Getter private final ModelMap map;
     @Getter private final ItemStack model;
-    @Getter private double speed = 0;
     @Getter @Setter private float yaw = 0;
     @Getter @Setter private float pitch = 0;
     @Getter private int currentActionIndex = 0;
-    @Getter @Setter private long spawnTime;
     @Getter @Setter private EulerAngle headPose;
     @Getter @Setter private Optional<ArmorStand> base = Optional.empty();
-    @Getter private boolean spawned = false;
     @Getter private boolean finished = false;
     @Getter private Vector velocity = new Vector();
+    @Getter private boolean spawned = false;
 
     private Location lastLocation;
 
@@ -53,22 +49,18 @@ public class Cart {
     private final List<Seat> seats;
 
     @Getter private long creationTimestamp;
-    private boolean deleted;
 
-    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, LinkedList<RideSensor> sensors, ItemStack model, ModelMap map) {
-        this(ride, actions, sensors, model, map, 0.1);
+    public Cart(RideVehicle vehicle, LinkedHashMap<Integer, RideAction> actions, ItemStack model, ModelMap map) {
+        this(vehicle, actions, model, map, 0.1);
     }
 
-    public Cart(FileRide ride, LinkedHashMap<Integer, RideAction> actions, LinkedList<RideSensor> sensors, ItemStack model, ModelMap map, double speed) {
-        this.ride = ride;
+    public Cart(RideVehicle vehicle, LinkedHashMap<Integer, RideAction> actions, ItemStack model, ModelMap map, double speed) {
+        this.vehicle = vehicle;
         this.actions = actions;
-        this.sensors = sensors;
         this.map = map;
         this.seats = new ArrayList<>();
         creationTimestamp = System.currentTimeMillis();
         this.actions.values().forEach(a -> a.setCart(this));
-        this.sensors.forEach(s -> s.setCart(this));
-        setSpeed(speed);
         this.model = model;
     }
 
@@ -125,14 +117,15 @@ public class Cart {
 
     public void teleport(Location loc) {
         loc.setY(loc.getY() - MovementUtil.armorStandHeight);
-        if (getRide().isAutoYaw()) setYaw(loc.getYaw());
+        if (getVehicle().isAutoYaw()) {
+            setYaw(loc.getYaw());
+        }
         teleport(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ());
     }
 
     private void teleport(World world, double x, double y, double z) {
         updateLocation(world, x, y, z, yaw, pitch);
-        Location loc = new Location(world, x, y, z);
-        loc.setYaw(getYaw());
+        Location loc = new Location(world, x, y, z, yaw, pitch);
 
         seats.forEach(s -> s.move(loc));
 
@@ -149,8 +142,8 @@ public class Cart {
             finished = true;
             List<UUID> passengers = new ArrayList<>();
             getSeats().forEach(s -> s.getPassengers().forEach(p -> passengers.add(p.getUniqueId())));
-            ride.rewardCurrency(passengers.toArray(new UUID[]{}));
-            new RideEndEvent(ride, passengers.toArray(new UUID[]{})).call();
+            getRide().rewardCurrency(passengers.toArray(new UUID[]{}));
+            new RideEndEvent(getRide(), passengers.toArray(new UUID[]{})).call();
             despawn();
             return;
         }
@@ -158,16 +151,10 @@ public class Cart {
         if (a.isFinished()) {
             currentActionIndex++;
         }
-        final Location currentLocation = getLocation();
-        for (RideSensor sensor : sensors) {
-            if (!sensor.isActivated() && sensor.isInRadius(currentLocation)) {
-                sensor.activate();
-            }
-        }
     }
 
     public void setSpeed(double p) {
-        this.speed = p > 1 ? 1 : (p < 0 ? 0 : p);
+        vehicle.setSpeed(p);
     }
 
     public void spawn(Location loc) {
@@ -305,5 +292,13 @@ public class Cart {
         this.velocity = v;
         base.ifPresent(base -> base.setVelocity(v));
         getSeats().forEach(s -> s.setVelocity(v));
+    }
+
+    public double getSpeed() {
+        return vehicle.getSpeed();
+    }
+
+    public FileRide getRide() {
+        return vehicle.getRide();
     }
 }

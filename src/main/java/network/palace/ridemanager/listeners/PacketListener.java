@@ -9,6 +9,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
+import network.palace.core.player.Rank;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.PlayerLeaveRideEvent;
 import network.palace.ridemanager.handlers.ride.Ride;
@@ -48,7 +49,7 @@ public class PacketListener implements Listener {
             }
         });
         //Click to board ride vehicle
-        ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(RideManager.getInstance(), PacketType.Play.Client.USE_ENTITY) {
+        manager.addPacketListener(new PacketAdapter(RideManager.getInstance(), PacketType.Play.Client.USE_ENTITY) {
             @Override
             public void onPacketReceiving(PacketEvent event) {
                 CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
@@ -57,6 +58,15 @@ public class PacketListener implements Listener {
                 if (RideManager.getMovementUtil().sitDown(player, id)) {
                     event.setCancelled(true);
                 }
+            }
+        });
+        //Edit actions
+        manager.addPacketListener(new PacketAdapter(RideManager.getInstance(), PacketType.Play.Client.POSITION, PacketType.Play.Client.POSITION_LOOK) {
+            @Override
+            public void onPacketReceiving(PacketEvent event) {
+                CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
+                if (player == null || player.getRank().getRankId() < Rank.MOD.getRankId()) return;
+                PacketContainer packet = event.getPacket();
             }
         });
         /*

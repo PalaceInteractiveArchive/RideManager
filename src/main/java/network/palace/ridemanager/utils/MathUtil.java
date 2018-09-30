@@ -46,4 +46,12 @@ public class MathUtil {
         loc.setZ(Double.parseDouble(df.format(loc.getZ())));
         return loc;
     }
+
+    public static float getBezierAngleAt(double t, Location p0, Location p1, Location p2) {
+        if (p1 == null || p2 == null) return 0f;
+        double x = 2 * (1 - t) * (p0.getX() - p1.getX()) + 2 * t * (p2.getX() - p0.getX());
+        double z = 2 * (1 - t) * (p0.getZ() - p1.getZ()) + 2 * t * (p2.getZ() - p0.getZ());
+        double radAngle = Math.atan2(z, x);
+        return (float) Math.toDegrees(radAngle);
+    }
 }

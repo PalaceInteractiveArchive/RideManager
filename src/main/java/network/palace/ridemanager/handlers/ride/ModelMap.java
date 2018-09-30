@@ -14,6 +14,9 @@ import java.util.List;
  */
 public class ModelMap {
     private HashMap<Integer, Seat> seats = new HashMap<>();
+    @Getter @Setter private double length;
+    @Getter @Setter private double spaceBetweenCarts;
+    @Getter @Setter private int cartCount;
     @Getter @Setter private ItemStack item = null;
 
     public HashMap<Integer, Seat> getMap() {

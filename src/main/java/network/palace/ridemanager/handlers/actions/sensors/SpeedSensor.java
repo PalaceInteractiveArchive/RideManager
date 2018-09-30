@@ -17,13 +17,13 @@ public class SpeedSensor extends RideSensor {
     public void activate() {
         super.activate();
         if (time == 0) {
-            cart.setSpeed(speed);
+            vehicle.setSpeed(speed);
             return;
         }
-        double current = cart.getSpeed();
+        double current = vehicle.getSpeed();
         double change = (speed - current) / time;
 
-        int taskID = Core.runTaskTimer(() -> cart.setSpeed(cart.getSpeed() + change), 0L, 1L);
+        int taskID = Core.runTaskTimer(() -> vehicle.setSpeed(vehicle.getSpeed() + change), 0L, 1L);
 
         Core.runTaskLater(() -> Core.cancelTask(taskID), time);
     }

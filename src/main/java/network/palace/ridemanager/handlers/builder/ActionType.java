@@ -3,13 +3,16 @@ package network.palace.ridemanager.handlers.builder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import network.palace.core.utils.ItemUtil;
+import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.handlers.actions.RideAction;
 import network.palace.ridemanager.handlers.builder.actions.*;
+import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
 @AllArgsConstructor
 @Getter
@@ -37,7 +40,7 @@ public enum ActionType {
      * @param loc location of the block placed to create this action
      * @return A RideAction
      */
-    public FakeAction newAction(Location loc) {
+    public FakeAction newAction(Location loc, BuildSession session) {
         if (clazz == null) return null;
         FakeAction action;
         try {
@@ -56,7 +59,20 @@ public enum ActionType {
                 break;
             case TURN:
                 ((FakeTurnAction) action).setTo(loc);
-                ((FakeTurnAction) action).setP0(loc);
+                Location last = session.getLastLocation();
+                if (last == null) {
+                    ((FakeTurnAction) action).setP0(loc);
+                } else {
+                    float yaw = last.getYaw();
+
+                    Vector p0Vector = Ride.getRelativeVector(yaw, 3);
+                    p0Vector.multiply(new Vector(-1, 1, 1));
+
+                    Location p0 = last.clone().add(p0Vector);
+
+                    ((FakeTurnAction) action).setP0(p0);
+                    ((FakeTurnAction) action).setFrom(last);
+                }
                 break;
             case ROTATE:
                 break;

@@ -14,7 +14,7 @@ public class TextSensor extends RideSensor {
     @Override
     public void activate() {
         super.activate();
-        for (CPlayer player : cart.getPassengers()) {
+        for (CPlayer player : vehicle.getPassengers()) {
             player.sendMessage(text);
         }
     }

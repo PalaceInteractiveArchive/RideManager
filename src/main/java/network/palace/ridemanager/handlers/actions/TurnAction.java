@@ -2,6 +2,7 @@ package network.palace.ridemanager.handlers.actions;
 
 import lombok.Getter;
 import network.palace.ridemanager.handlers.builder.ActionType;
+import network.palace.ridemanager.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -11,7 +12,6 @@ public class TurnAction extends MoveAction {
     @Getter private Location p0 = null;
     private Location p1 = null;
     private Location p2 = null;
-    private float angle = 0;
     private Location original;
     private double t = 0;
     private double yDifference;
@@ -37,20 +37,16 @@ public class TurnAction extends MoveAction {
             p2 = new Location(original.getWorld(), p2_x, original.getY(), p2_z);
 
             yDifference = to.getY() - original.getY();
-
-            double x = 2 * (p2.getX() - p0.getX());
-            double z = 2 * (p2.getZ() - p0.getZ());
-
-            angle = (float) Math.toDegrees(((float) Math.atan2(z, x)));
         }
 
         if (t >= 1) {
+            t = 1;
             Vector v = to.toVector().subtract(cart.getLocation().toVector());
             if (v.getY() == 0) {
                 v.setY(MovementUtil.getYMin());
             }
             cart.setVelocity(v);
-            to.setYaw(original.getYaw() + angle);
+            to.setYaw(MathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
             cart.teleport(to);
             finished = true;
             return;
@@ -78,10 +74,30 @@ public class TurnAction extends MoveAction {
             v.setY(MovementUtil.getYMin());
         }
         cart.setVelocity(v);
-        next.setYaw(original.getYaw() + (float) (angle * t));
+        next.setYaw(MathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
         cart.teleport(next);
 
-        t += cart.getSpeed() * 0.1;
+        t += changeOfT();
+    }
+
+    private double changeOfT() {
+        double speed = cart.getSpeed();
+
+        double v1_x = 2 * p1.getX() - 4 * p0.getX() + 2 * p2.getX();
+        double v1_z = 2 * p1.getZ() - 4 * p0.getZ() + 2 * p2.getZ();
+
+        double v2_x = 2 * p0.getX() - 2 * p1.getX();
+        double v2_z = 2 * p0.getZ() - 2 * p1.getZ();
+
+        Vector v1 = new Vector(v1_x, 0, v1_z);
+        Vector v2 = new Vector(v2_x, 0, v2_z);
+
+        double newT = (speed / ((v1.multiply(t)).add(v2)).length());
+        if (newT > 1) {
+            return 1;
+        } else {
+            return newT;
+        }
     }
 
     @Override
@@ -96,7 +112,7 @@ public class TurnAction extends MoveAction {
 
     @Override
     public String toString() {
-        return "Turn " + to.getX() + "," + to.getY() + "," + to.getZ() + " " + angle;
+        return "Turn " + to.getX() + "," + to.getY() + "," + to.getZ() + " " + p0.getX() + "," + p0.getY() + "," + p0.getZ();
     }
 
     @Override

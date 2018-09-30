@@ -31,8 +31,8 @@ import java.util.*;
 public class FileRide extends Ride {
     @Getter private File rideFile;
     @Getter @Setter private long lastSpawn = System.currentTimeMillis();
-    private Optional<Cart> atStation = Optional.empty();
-    private List<Cart> inRide = new ArrayList<>();
+    private Optional<RideVehicle> atStation = Optional.empty();
+    private List<RideVehicle> inRide = new ArrayList<>();
     private LinkedList<RideAction> actions = new LinkedList<>();
     private LinkedList<RideSensor> sensors = new LinkedList<>();
     @Getter @Setter private Location spawn = null;
@@ -82,13 +82,13 @@ public class FileRide extends Ride {
      */
     @Override
     public void move() {
-        atStation.ifPresent(c -> c.setVelocity(new Vector(0, MovementUtil.getYMin(), 0)));
-        for (Cart c : new ArrayList<>(inRide)) {
-            if (c.isFinished()) {
-                inRide.remove(c);
+        atStation.ifPresent(v -> v.setVelocity(new Vector(0, MovementUtil.getYMin(), 0)));
+        for (RideVehicle v : new ArrayList<>(inRide)) {
+            if (v.isFinished()) {
+                inRide.remove(v);
                 continue;
             }
-            c.move();
+            v.move();
         }
     }
 
@@ -97,11 +97,11 @@ public class FileRide extends Ride {
      */
     @Override
     public void despawn() {
-        atStation.ifPresent(Cart::despawn);
+        atStation.ifPresent(RideVehicle::despawn);
         atStation = Optional.empty();
-        for (Cart c : new ArrayList<>(inRide)) {
-            c.despawn();
-            inRide.remove(c);
+        for (RideVehicle v : new ArrayList<>(inRide)) {
+            v.despawn();
+            inRide.remove(v);
         }
     }
 
@@ -144,7 +144,7 @@ public class FileRide extends Ride {
     @Override
     public void start(List<CPlayer> riders) {
         if (!atStation.isPresent()) return;
-        Cart atStation = this.atStation.get();
+        RideVehicle atStation = this.atStation.get();
         new RideStartEvent(this).call();
         for (CPlayer player : new ArrayList<>(riders)) {
             if (getOnRide().contains(player.getUniqueId())) {
@@ -238,16 +238,16 @@ public class FileRide extends Ride {
         if (model == null) {
             model = ItemUtil.create(Material.SHEARS, 1, (byte) 11);
         }
-        Cart c = new Cart(this, cartActions, cartSensors, model, modelMap);
-        c.setSpeed(speed);
-        c.spawn(spawn.clone());
-        atStation = Optional.of(c);
+        RideVehicle v = new RideVehicle(this, cartActions, cartSensors, model, modelMap, 1);
+        v.setSpeed(speed);
+        v.spawn(spawn.clone());
+        atStation = Optional.of(v);
     }
 
     public List<Cart> getCarts() {
         List<Cart> list = new ArrayList<>();
-        atStation.ifPresent(list::add);
-        list.addAll(inRide);
+        atStation.ifPresent(v -> list.addAll(v.getCarts()));
+        inRide.forEach(v -> list.addAll(v.getCarts()));
         return list;
     }
 

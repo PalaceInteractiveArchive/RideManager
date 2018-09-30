@@ -17,6 +17,7 @@ import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftEntity;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -122,13 +123,18 @@ public abstract class Ride {
     }
 
     public static Location getRelativeLocation(double angle, double radius, Location center) {
+        Vector change = getRelativeVector(angle, radius);
+        return center.clone().add(change);
+    }
+
+    public static Vector getRelativeVector(double angle, double radius) {
         if (angle < 0) {
-            angle = 360 + angle;
+            angle += 360;
         }
         double rad = Math.toRadians(angle);
         double x = Math.sin(rad) * radius;
         double z = Math.cos(rad) * radius;
-        return center.clone().add(x, 0, z);
+        return new Vector(x, 0, z);
     }
 
     public void loadSurroundingChunks(Location loc) {
