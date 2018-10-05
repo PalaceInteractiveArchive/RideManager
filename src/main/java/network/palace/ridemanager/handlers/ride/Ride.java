@@ -118,7 +118,7 @@ public abstract class Ride {
         }
         Entity e = ((CraftEntity) entity).getHandle();
         e.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-        e.h(loc.getYaw());
+        e.setHeadRotation(loc.getYaw());
         e.world.entityJoinedWorld(e, false);
     }
 
@@ -202,7 +202,7 @@ public abstract class Ride {
     public static ArmorStand lock(ArmorStand stand) {
         try {
             Field f = Class.forName("net.minecraft.server.v" + RideManager.getMinecraftVersion() + ".EntityArmorStand")
-                    .getDeclaredField("bA");
+                    .getDeclaredField("bB");
             if (f != null) {
                 f.setAccessible(true);
                 Object craftStand = Class.forName("org.bukkit.craftbukkit.v" + RideManager.getMinecraftVersion() +
