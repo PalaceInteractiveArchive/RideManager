@@ -9,7 +9,7 @@ import network.palace.ridemanager.handlers.builder.actions.FakeExitAction;
 import network.palace.ridemanager.handlers.builder.actions.FakeSpawnAction;
 import network.palace.ridemanager.handlers.builder.actions.FakeStraightAction;
 import network.palace.ridemanager.handlers.builder.actions.FakeTurnAction;
-import network.palace.ridemanager.utils.MathUtil;
+import network.palace.ridemanager.utils.RideMathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -124,7 +124,7 @@ public class PathDataTimer implements Runnable {
                             if (v.getY() == 0) {
                                 v.setY(MovementUtil.getYMin());
                             }
-                            to.setYaw(MathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
+                            to.setYaw(RideMathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
                             start = to;
                             finished = true;
                             if (particles) pathParticle(player, start, false);
@@ -153,7 +153,7 @@ public class PathDataTimer implements Runnable {
                             v.setY(MovementUtil.getYMin());
                         }
 
-                        next.setYaw(MathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
+                        next.setYaw(RideMathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
                         start = next;
                         if (particles) pathParticle(player, start, false);
 
