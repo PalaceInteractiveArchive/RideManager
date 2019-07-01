@@ -70,7 +70,7 @@ public class BuildSession {
     public void load(File file) {
         loading = true;
         fileName = file.getName();
-        Core.runTaskAsynchronously(new FileRideLoader(null, file, (name, actionList, sensorList, spawn, speed, setYaw) -> {
+        Core.runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(null, file, (name, actionList, sensorList, spawn, speed, setYaw) -> {
             setName(name);
             actions = RideManager.getRideBuilderUtil().getFakeActions(actionList);
 //            sensors = RideManager.getRideBuilderUtil().getFakeSensors(sensorList);
@@ -134,7 +134,7 @@ public class BuildSession {
      */
     @SuppressWarnings("deprecation")
     public boolean placeBlock(CPlayer player, Block block) {
-        if (!block.getType().equals(Material.STAINED_CLAY)) return false;
+        if (!block.getType().name().toLowerCase().endsWith("terracotta")) return false;
         switch (block.getData()) {
             // Action
             case 5: {
@@ -260,7 +260,7 @@ public class BuildSession {
      */
     public void handleInteract(PlayerInteractEvent event, CPlayer player) {
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (!item.getType().equals(Material.STONE_SPADE)) return;
+        if (!item.getType().equals(Material.STONE_SHOVEL)) return;
         event.setCancelled(true);
         switch (event.getAction()) {
             case LEFT_CLICK_AIR:

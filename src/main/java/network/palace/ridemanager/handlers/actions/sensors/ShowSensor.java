@@ -26,7 +26,7 @@ public class ShowSensor extends RideSensor {
         super.activate();
         if (file == null) return;
         if (delay > 0) {
-            Core.runTaskLater(() -> ShowPlugin.startShow(getRandomString(), new RideShow(RideManager.getInstance(), file, vehicle)), 20 * delay);
+            Core.runTaskLater(RideManager.getInstance(), () -> ShowPlugin.startShow(getRandomString(), new RideShow(RideManager.getInstance(), file, vehicle)), 20 * delay);
         } else {
             ShowPlugin.startShow(getRandomString(), new RideShow(RideManager.getInstance(), file, vehicle));
         }
