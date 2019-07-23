@@ -17,19 +17,20 @@ import org.bukkit.util.Vector;
 @AllArgsConstructor
 @Getter
 public enum ActionType {
-    SPAWN(Material.LIME_TERRACOTTA, ChatColor.GREEN, FakeSpawnAction.class),
-    STRAIGHT(Material.YELLOW_TERRACOTTA, ChatColor.YELLOW, FakeStraightAction.class),
-    TURN(Material.RED_TERRACOTTA, ChatColor.RED, FakeTurnAction.class),
+    SPAWN(Material.STAINED_CLAY, (byte) 5, ChatColor.GREEN, FakeSpawnAction.class),
+    STRAIGHT(Material.STAINED_CLAY, (byte) 4, ChatColor.YELLOW, FakeStraightAction.class),
+    TURN(Material.STAINED_CLAY, (byte) 14, ChatColor.RED, FakeTurnAction.class),
     //    NEWTURN(Material.STAINED_CLAY, (byte) 7, ChatColor.RED, FakeNewTurnAction.class),
-    ROTATE(Material.ORANGE_TERRACOTTA, ChatColor.GOLD, FakeRotateAction.class),
-    WAIT(Material.GREEN_TERRACOTTA, ChatColor.DARK_GREEN, FakeWaitAction.class),
-    INCLINE(Material.LIGHT_BLUE_TERRACOTTA, ChatColor.AQUA, null),
-    DECLINE(Material.BLUE_TERRACOTTA, ChatColor.BLUE, null),
-    TELEPORT(Material.CYAN_TERRACOTTA, ChatColor.GRAY, FakeTeleportAction.class),
-    LAUNCH(Material.MAGENTA_TERRACOTTA, ChatColor.DARK_PURPLE, null),
-    STOP(Material.PINK_TERRACOTTA, ChatColor.LIGHT_PURPLE, null),
-    EXIT(Material.BLACK_TERRACOTTA, ChatColor.DARK_GRAY, FakeExitAction.class);
+    ROTATE(Material.STAINED_CLAY, (byte) 1, ChatColor.GOLD, FakeRotateAction.class),
+    WAIT(Material.STAINED_CLAY, (byte) 13, ChatColor.DARK_GREEN, FakeWaitAction.class),
+    INCLINE(Material.STAINED_CLAY, (byte) 3, ChatColor.AQUA, null),
+    DECLINE(Material.STAINED_CLAY, (byte) 11, ChatColor.BLUE, null),
+    TELEPORT(Material.STAINED_CLAY, (byte) 9, ChatColor.GRAY, FakeTeleportAction.class),
+    LAUNCH(Material.STAINED_CLAY, (byte) 2, ChatColor.DARK_PURPLE, null),
+    STOP(Material.STAINED_CLAY, (byte) 6, ChatColor.LIGHT_PURPLE, null),
+    EXIT(Material.STAINED_CLAY, (byte) 15, ChatColor.DARK_GRAY, FakeExitAction.class);
     private final Material type;
+    private final byte data;
     private final ChatColor color;
     private final Class clazz;
 
@@ -101,21 +102,23 @@ public enum ActionType {
     }
 
     public ItemStack getItem() {
-        return ItemUtil.create(type, getColoredName());
+        return ItemUtil.create(type, getColoredName(), data);
     }
 
+    @SuppressWarnings("deprecation")
     public static ActionType fromBlock(Block b) {
         for (ActionType a : ActionType.values()) {
-            if (a.type.equals(b.getType())) {
+            if (a.type.equals(b.getType()) && a.data == b.getData()) {
                 return a;
             }
         }
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     public static ActionType fromItem(ItemStack i) {
         for (ActionType a : ActionType.values()) {
-            if (a.type.equals(i.getType())) {
+            if (a.type.equals(i.getType()) && a.data == i.getData().getData()) {
                 return a;
             }
         }

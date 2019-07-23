@@ -134,7 +134,7 @@ public class BuildSession {
      */
     @SuppressWarnings("deprecation")
     public boolean placeBlock(CPlayer player, Block block) {
-        if (!block.getType().name().toLowerCase().endsWith("terracotta")) return false;
+        if (!block.getType().equals(Material.STAINED_CLAY)) return false;
         switch (block.getData()) {
             // Action
             case 5: {
@@ -260,7 +260,7 @@ public class BuildSession {
      */
     public void handleInteract(PlayerInteractEvent event, CPlayer player) {
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (!item.getType().equals(Material.STONE_SHOVEL)) return;
+        if (!item.getType().equals(Material.STONE_SPADE)) return;
         event.setCancelled(true);
         switch (event.getAction()) {
             case LEFT_CLICK_AIR:

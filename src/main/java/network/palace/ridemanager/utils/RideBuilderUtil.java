@@ -302,10 +302,10 @@ public class RideBuilderUtil {
             int i = 0;
             PlayerInventory inv = player.getInventory();
             inv.setItem(0, ItemUtil.create(Material.COMPASS));
-            inv.setItem(1, ItemUtil.create(Material.WOODEN_AXE));
-            inv.setItem(2, ItemUtil.create(Material.LIME_TERRACOTTA, ChatColor.GREEN + "Create an Action"));
-            inv.setItem(3, ItemUtil.create(Material.LIGHT_BLUE_TERRACOTTA, ChatColor.AQUA + "Create a Sensor"));
-            inv.setItem(4, ItemUtil.create(Material.STONE_SHOVEL, ChatColor.GRAY + "Edit Action/Sensor"));
+            inv.setItem(1, ItemUtil.create(Material.WOOD_AXE));
+            inv.setItem(2, ItemUtil.create(Material.STAINED_CLAY, ChatColor.GREEN + "Create an Action", (byte) 5));
+            inv.setItem(3, ItemUtil.create(Material.STAINED_CLAY, ChatColor.AQUA + "Create a Sensor", (byte) 3));
+            inv.setItem(4, ItemUtil.create(Material.STONE_SPADE, ChatColor.GRAY + "Edit Action/Sensor"));
         } else {
             if (!inventory.contains(uuid)) return;
             inventory.remove(uuid);
@@ -315,7 +315,7 @@ public class RideBuilderUtil {
                 inv.setItem(i, ItemUtil.create(Material.AIR));
             }
             inv.setItem(0, ItemUtil.create(Material.COMPASS));
-            inv.setItem(1, ItemUtil.create(Material.WOODEN_AXE));
+            inv.setItem(1, ItemUtil.create(Material.WOOD_AXE));
         }
     }
 

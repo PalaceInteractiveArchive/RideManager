@@ -15,12 +15,12 @@ import org.bukkit.inventory.ItemStack;
 @AllArgsConstructor
 @Getter
 public enum SensorType {
-    BLOCK(Material.LIME_TERRACOTTA, ChatColor.GREEN, null),
-    SHOW(Material.YELLOW_TERRACOTTA, ChatColor.YELLOW, null),
-    SPEED(Material.RED_TERRACOTTA, ChatColor.RED, null),
-    TEXT(Material.ORANGE_TERRACOTTA, ChatColor.GOLD, null);
+    BLOCK(Material.STAINED_CLAY, (byte) 5, ChatColor.GREEN, null),
+    SHOW(Material.STAINED_CLAY, (byte) 4, ChatColor.YELLOW, null),
+    SPEED(Material.STAINED_CLAY, (byte) 14, ChatColor.RED, null),
+    TEXT(Material.STAINED_CLAY, (byte) 1, ChatColor.GOLD, null);
     private final Material type;
-    //    private final byte data;
+    private final byte data;
     private final ChatColor color;
     private final Class clazz;
 
@@ -62,21 +62,23 @@ public enum SensorType {
     }
 
     public ItemStack getItem() {
-        return ItemUtil.create(type, getColoredName());
+        return ItemUtil.create(type, getColoredName(), data);
     }
 
+    @SuppressWarnings("deprecation")
     public static SensorType fromBlock(Block b) {
         for (SensorType a : SensorType.values()) {
-            if (a.type.equals(b.getType())) {
+            if (a.type.equals(b.getType()) && a.data == b.getData()) {
                 return a;
             }
         }
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     public static SensorType fromItem(ItemStack i) {
         for (SensorType a : SensorType.values()) {
-            if (a.type.equals(i.getType())) {
+            if (a.type.equals(i.getType()) && a.data == i.getData().getData()) {
                 return a;
             }
         }

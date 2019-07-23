@@ -392,7 +392,7 @@ public class AerialCarouselRide extends Ride {
                             CPlayer cp = Core.getPlayerManager().getPlayer(uuid);
                             if (cp == null || cp.getRank().getRankId() < Rank.MOD.getRankId()) continue;
                             ItemStack i = cp.getInventory().getItem(4);
-                            if (i == null || !i.getType().equals(Material.GLASS_PANE)) continue;
+                            if (i == null || !i.getType().equals(Material.THIN_GLASS)) continue;
                             cp.performCommand("build");
                         }
                         break;
@@ -701,7 +701,7 @@ public class AerialCarouselRide extends Ride {
             passenger.getScoreboard().toggleTags(false);
             stand.ifPresent(s -> s.removePassenger(passenger.getBukkitPlayer()));
             passenger.teleport(getExit());
-            passenger.getInventory().setItem(4, ItemUtil.create(Material.GLASS_PANE, 1, ChatColor.GRAY +
+            passenger.getInventory().setItem(4, ItemUtil.create(Material.THIN_GLASS, 1, ChatColor.GRAY +
                     "This Slot is Reserved for " + ChatColor.BLUE + "Ride Items", Arrays.asList(ChatColor.GRAY +
                     "This is for games such as " + ChatColor.GREEN + "Buzz", ChatColor.GREEN +
                     "Lightyear's Space Ranger Spin ", ChatColor.GRAY + "and " + ChatColor.YELLOW +
