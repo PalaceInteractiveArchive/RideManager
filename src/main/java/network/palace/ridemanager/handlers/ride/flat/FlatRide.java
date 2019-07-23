@@ -5,6 +5,7 @@ import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
+import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
@@ -43,7 +44,7 @@ public abstract class FlatRide extends Ride {
             }
         };
         if (async) {
-            Core.runTask(task);
+            Core.runTask(RideManager.getInstance(), task);
         } else {
             task.run();
         }

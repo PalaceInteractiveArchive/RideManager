@@ -3,6 +3,7 @@ package network.palace.ridemanager.utils;
 import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
+import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.ride.Ride;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -22,7 +23,7 @@ public class MovementUtil {
     @Getter private static long tick = 0;
 
     public MovementUtil() {
-        taskid = Core.runTaskTimer(() -> {
+        taskid = Core.runTaskTimer(RideManager.getInstance(), () -> {
             for (Ride ride : new ArrayList<>(rides)) {
                 ride.move();
             }

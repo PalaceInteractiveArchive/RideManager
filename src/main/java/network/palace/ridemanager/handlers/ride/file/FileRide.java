@@ -59,7 +59,7 @@ public class FileRide extends Ride {
             return;
         }
         loading = true;
-        Core.runTaskAsynchronously(new FileRideLoader(this, rideFile, (name, actionList, sensorList, spawn, speed, setYaw) -> {
+        Core.runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(this, rideFile, (name, actionList, sensorList, spawn, speed, setYaw) -> {
             actions = actionList;
             sensors = sensorList;
             setSpawn(spawn);
@@ -68,7 +68,7 @@ public class FileRide extends Ride {
             loading = false;
         }));
         if (delayInMillis < 0) return;
-        taskID = Core.runTaskTimer(() -> {
+        taskID = Core.runTaskTimer(RideManager.getInstance(), () -> {
             if (loading) return;
             spawn(delayInMillis);
             Core.cancelTask(taskID);
@@ -130,7 +130,7 @@ public class FileRide extends Ride {
             }
         };
         if (async) {
-            Core.runTask(task);
+            Core.runTask(RideManager.getInstance(), task);
         } else {
             task.run();
         }
@@ -205,7 +205,7 @@ public class FileRide extends Ride {
         for (Seat seat : atStation.get().getSeats()) {
             if (seat.getEntityId() != entityId || seat.hasPassenger()) continue;
             addToOnRide(player.getUniqueId());
-            Core.runTask(() -> seat.addPassenger(player));
+            Core.runTask(RideManager.getInstance(), () -> seat.addPassenger(player));
             return true;
         }
         return false;

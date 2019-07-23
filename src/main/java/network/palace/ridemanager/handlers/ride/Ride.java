@@ -3,24 +3,22 @@ package network.palace.ridemanager.handlers.ride;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.server.v1_12_R1.Entity;
 import network.palace.core.Core;
 import network.palace.core.economy.CurrencyType;
 import network.palace.core.mongo.MongoHandler;
 import network.palace.core.player.CPlayer;
-import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideMoveEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftEntity;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -105,21 +103,23 @@ public abstract class Ride {
     public abstract void handleEject(CPlayer player, boolean async, boolean force);
 
     public static void teleport(org.bukkit.entity.Entity entity, Location loc) {
-        if (!entity.getPassengers().isEmpty()) {
-            new RideMoveEvent(entity, entity.getLocation(), loc).call();
-//            new VehicleMoveEvent((Vehicle) entity, entity.getLocation(), loc);
-//        for (org.bukkit.entity.Entity ent : entity.getPassengers()) {
-//            if (ent instanceof Player) {
-//                Bukkit.getPluginManager().callEvent(new PlayerMoveEvent((Player) ent, ent.getLocation(), loc));
+        try {
+            if (!entity.getPassengers().isEmpty()) new RideMoveEvent(entity, entity.getLocation(), loc).call();
+            Method getHandle = entity.getClass().getMethod("getHandle");
+            Object minecraftEntity = getHandle.invoke(entity);
+            Method setLocation = minecraftEntity.getClass().getMethod("setLocation",
+                    Double.class, Double.class, Double.class, Float.class, Float.class);
+            Method setHeadRotation = minecraftEntity.getClass().getMethod("setHeadRotation", Float.class);
 
-//            } else if (ent instanceof Vehi/cle) {
-//                Bukkit.getPluginManager().callEvent(new VehicleMoveEvent((Vehicle) ent, ent.getLocation(), loc));
-//            }
+            Object worldServer = minecraftEntity.getClass().getField("world").get(minecraftEntity);
+            Method entityJoinedWorld = worldServer.getClass().getMethod("entityJoinedWorld", minecraftEntity.getClass(), Boolean.class);
+
+            setLocation.invoke(minecraftEntity, loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+            setHeadRotation.invoke(minecraftEntity, loc.getYaw());
+            entityJoinedWorld.invoke(minecraftEntity, minecraftEntity, false);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
+            e.printStackTrace();
         }
-        Entity e = ((CraftEntity) entity).getHandle();
-        e.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-        e.setHeadRotation(loc.getYaw());
-        e.world.entityJoinedWorld(e, false);
     }
 
     public static Location getRelativeLocation(double angle, double radius, Location center) {
@@ -201,11 +201,24 @@ public abstract class Ride {
 
     public static ArmorStand lock(ArmorStand stand) {
         try {
-            Field f = Class.forName("net.minecraft.server.v" + RideManager.getMinecraftVersion() + ".EntityArmorStand")
-                    .getDeclaredField("bB");
+            String lockField;
+            switch (Core.getMinecraftVersion()) {
+                case "v1_13_R1":
+                case "v1_13_R2":
+                    lockField = "bH";
+                    break;
+                case "v1_12_R1":
+                    lockField = "bB";
+                    break;
+                default:
+                    lockField = "bA";
+                    break;
+            }
+            Field f = Class.forName("net.minecraft.server." + Core.getMinecraftVersion() + ".EntityArmorStand")
+                    .getDeclaredField(lockField);
             if (f != null) {
                 f.setAccessible(true);
-                Object craftStand = Class.forName("org.bukkit.craftbukkit.v" + RideManager.getMinecraftVersion() +
+                Object craftStand = Class.forName("org.bukkit.craftbukkit." + Core.getMinecraftVersion() +
                         ".entity.CraftArmorStand").cast(stand);
                 Object handle = craftStand.getClass().getDeclaredMethod("getHandle").invoke(craftStand);
                 f.set(handle, 2096896);
@@ -215,6 +228,7 @@ public abstract class Ride {
         }
         return stand;
     }
+
 
     public abstract boolean sitDown(CPlayer player, ArmorStand stand);
 

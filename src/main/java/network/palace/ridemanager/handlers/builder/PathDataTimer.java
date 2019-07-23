@@ -9,8 +9,8 @@ import network.palace.ridemanager.handlers.builder.actions.FakeExitAction;
 import network.palace.ridemanager.handlers.builder.actions.FakeSpawnAction;
 import network.palace.ridemanager.handlers.builder.actions.FakeStraightAction;
 import network.palace.ridemanager.handlers.builder.actions.FakeTurnAction;
-import network.palace.ridemanager.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
+import network.palace.ridemanager.utils.RideMathUtil;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.util.Vector;
@@ -42,6 +42,8 @@ public class PathDataTimer implements Runnable {
         for (RideAction action : actions) {
             boolean finished = false;
             switch (action.getActionType()) {
+                case ROTATE:
+                    break;
                 case WAIT: {
                     if (particles) pathParticle(player, ((FakeSpawnAction) action).getLoc(), 0, 0, 1);
                     break;
@@ -50,6 +52,16 @@ public class PathDataTimer implements Runnable {
                     if (particles) pathParticle(player, ((FakeSpawnAction) action).getLoc(), 1, 1, 0);
                     break;
                 }
+                case INCLINE:
+                    break;
+                case DECLINE:
+                    break;
+                case TELEPORT:
+                    break;
+                case LAUNCH:
+                    break;
+                case STOP:
+                    break;
                 case STRAIGHT:
                 case EXIT: {
                     Location original = start.clone();
@@ -124,7 +136,7 @@ public class PathDataTimer implements Runnable {
                             if (v.getY() == 0) {
                                 v.setY(MovementUtil.getYMin());
                             }
-                            to.setYaw(MathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
+                            to.setYaw(RideMathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
                             start = to;
                             finished = true;
                             if (particles) pathParticle(player, start, false);
@@ -153,7 +165,7 @@ public class PathDataTimer implements Runnable {
                             v.setY(MovementUtil.getYMin());
                         }
 
-                        next.setYaw(MathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
+                        next.setYaw(RideMathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
                         start = next;
                         if (particles) pathParticle(player, start, false);
 
