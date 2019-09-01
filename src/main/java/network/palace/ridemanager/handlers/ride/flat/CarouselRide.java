@@ -5,6 +5,8 @@ import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
+import network.palace.core.utils.ItemUtil;
+import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.handlers.ride.ChunkStand;
@@ -92,12 +94,12 @@ public class CarouselRide extends FlatRide {
         loc23.setYaw(-45);
         loc24.setYaw(-75);
 
-        ItemStack i1 = new ItemStack(Material.SHEARS, 1, (byte) 1);
-        ItemStack i2 = new ItemStack(Material.SHEARS, 1, (byte) 1);
-        ItemStack i3 = new ItemStack(Material.SHEARS, 1, (byte) 1);
-        ItemStack i4 = new ItemStack(Material.SHEARS, 1, (byte) 1);
-        ItemStack i5 = new ItemStack(Material.SHEARS, 1, (byte) 1);
-        ItemStack i6 = new ItemStack(Material.SHEARS, 1, (byte) 1);
+        ItemStack i1 = ItemUtil.create(Material.SHEARS, 1, 1);
+        ItemStack i2 = ItemUtil.create(Material.SHEARS, 1, 1);
+        ItemStack i3 = ItemUtil.create(Material.SHEARS, 1, 1);
+        ItemStack i4 = ItemUtil.create(Material.SHEARS, 1, 1);
+        ItemStack i5 = ItemUtil.create(Material.SHEARS, 1, 1);
+        ItemStack i6 = ItemUtil.create(Material.SHEARS, 1, 1);
 
         Horse h1 = new Horse(loc1, 0, false, i1);
         Horse h2 = new Horse(loc2, 30, false, i2);
@@ -326,7 +328,7 @@ public class CarouselRide extends FlatRide {
             if (!horse.getStand().isPresent()) continue;
             if (horse.getStand().get().getEntityId() == entityId) {
                 addToOnRide(player.getUniqueId());
-                Core.runTask(() -> h.addPassenger(player));
+                Core.runTask(RideManager.getInstance(), () -> h.addPassenger(player));
                 return true;
             }
         }
@@ -436,7 +438,7 @@ public class CarouselRide extends FlatRide {
             Location loc = getRelativeLocation(angle + poleAngle, riderRadius, horseLoc);
             loc.setY(poleY);
             this.pole = new ChunkStand(loc, false, new EulerAngle(0, Math.toRadians(90), 0));
-            this.pole.setHelmet(new ItemStack(Material.SHEARS, 1, (byte) 2));
+            this.pole.setHelmet(ItemUtil.create(Material.SHEARS, 1, 2));
 
             this.horse.spawn();
             this.pole.spawn();

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import network.palace.core.player.CPlayer;
-import network.palace.ridemanager.utils.MathUtil;
+import network.palace.core.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -172,11 +172,7 @@ public class ChunkStand {
     }
 
     public UUID getUniqueId() {
-        if (stand.isPresent()) {
-            return stand.get().getUniqueId();
-        } else {
-            return UUID.randomUUID();
-        }
+        return stand.map(Entity::getUniqueId).orElseGet(UUID::randomUUID);
     }
 
     public int getEntityId() {

@@ -4,6 +4,8 @@ import lombok.Getter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.core.utils.ItemUtil;
+import network.palace.core.utils.MathUtil;
+import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.handlers.actions.*;
 import network.palace.ridemanager.handlers.builder.PathDataTimer;
@@ -27,8 +29,8 @@ public class RideBuilderUtil {
 
     public RideBuilderUtil() {
         pathDataTimer = new PathDataTimer();
-        Core.runTaskTimer(pathDataTimer, 0L, 20L);
-        Core.runTaskTimer(() -> {
+        Core.runTaskTimer(RideManager.getInstance(), pathDataTimer, 0L, 20L);
+        Core.runTaskTimer(RideManager.getInstance(), () -> {
             for (BuildSession session : sessions.values()) {
                 CPlayer player = Core.getPlayerManager().getPlayer(session.getUuid());
                 if (player == null) continue;

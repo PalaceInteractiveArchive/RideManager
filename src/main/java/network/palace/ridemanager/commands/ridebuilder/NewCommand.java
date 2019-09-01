@@ -9,6 +9,7 @@ import network.palace.ridemanager.handlers.BuildSession;
 import network.palace.ridemanager.utils.RideBuilderUtil;
 import org.bukkit.ChatColor;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -43,6 +44,17 @@ public class NewCommand extends CoreCommand {
         session.setFileName(fileName + ".ride");
         session.updateBossBar();
         util.setInventory(player.getUniqueId(), true);
+
+        File mapFile = new File("plugins/RideManager/maps/" + fileName + ".map");
+        if (!mapFile.exists()) {
+            try {
+                mapFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            player.sendMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Note: " + ChatColor.YELLOW + "Created a blank seat map file, edit it to change seat organization");
+        }
+
         try {
             session.save();
             player.sendMessage(ChatColor.GREEN + "New ride session created!");

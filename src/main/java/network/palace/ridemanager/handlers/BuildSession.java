@@ -70,7 +70,7 @@ public class BuildSession {
     public void load(File file) {
         loading = true;
         fileName = file.getName();
-        Core.runTaskAsynchronously(new FileRideLoader(null, file, (name, actionList, sensorList, spawn, speed, setYaw) -> {
+        Core.runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(null, file, (name, actionList, sensorList, spawn, speed, setYaw) -> {
             setName(name);
             actions = RideManager.getRideBuilderUtil().getFakeActions(actionList);
 //            sensors = RideManager.getRideBuilderUtil().getFakeSensors(sensorList);

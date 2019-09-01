@@ -8,9 +8,10 @@ import network.palace.core.player.CPlayer;
 import network.palace.core.player.CPlayerActionBarManager;
 import network.palace.core.player.Rank;
 import network.palace.core.utils.ItemUtil;
+import network.palace.core.utils.MathUtil;
+import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.handlers.ride.Ride;
-import network.palace.ridemanager.utils.MathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
@@ -73,7 +74,7 @@ public class AerialCarouselRide extends Ride {
 
     private void startTask() {
         stopTask();
-        taskID = Core.runTaskTimer(() -> {
+        taskID = Core.runTaskTimer(RideManager.getInstance(), () -> {
             for (Vehicle v : getVehicles()) {
                 CPlayer p = v.getPassenger();
                 if (p == null) continue;
@@ -187,7 +188,7 @@ public class AerialCarouselRide extends Ride {
         a11.setHeadPose(pose);
         a12.setHeadPose(pose);
 
-        ItemStack item = new ItemStack(Material.SHEARS, 1, (byte) 9);
+        ItemStack item = ItemUtil.create(Material.SHEARS, 1, 9);
 
         a1.setHelmet(item);
         a2.setHelmet(item);
@@ -372,7 +373,7 @@ public class AerialCarouselRide extends Ride {
             Optional<ArmorStand> s = v.getStand();
             if (!s.isPresent()) continue;
             if (s.get().getEntityId() == entityId) {
-                Core.runTask(() -> v.addPassenger(player));
+                Core.runTask(RideManager.getInstance(), () -> v.addPassenger(player));
                 addToOnRide(player.getUniqueId());
                 return true;
             }
@@ -593,7 +594,7 @@ public class AerialCarouselRide extends Ride {
             ArmorStand stand = lock(loc.getWorld().spawn(loc, ArmorStand.class));
             this.stand = Optional.of(stand);
             ArmorStand support = lock(loc.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 2, 0), ArmorStand.class));
-            ItemStack pole = new ItemStack(Material.SHEARS, 1, (byte) 10);
+            ItemStack pole = ItemUtil.create(Material.SHEARS, 1, 10);
             support.setGravity(false);
             support.setVisible(false);
             support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
@@ -637,7 +638,7 @@ public class AerialCarouselRide extends Ride {
             ArmorStand stand = lock(loc.getWorld().spawn(loc, ArmorStand.class));
             this.stand = Optional.of(stand);
             ArmorStand support = lock(loc.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 2, 0), ArmorStand.class));
-            ItemStack pole = new ItemStack(Material.SHEARS, 1, (byte) 10);
+            ItemStack pole = ItemUtil.create(Material.SHEARS, 1, 10);
             support.setGravity(false);
             support.setVisible(false);
             support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));
@@ -650,7 +651,7 @@ public class AerialCarouselRide extends Ride {
             this.angle = angle;
             ArmorStand support = lock(stand.getWorld().spawn(getRelativeLocation(angle, supportRadius, center).add(0, height / 2, 0), ArmorStand.class));
             this.supportID = support.getUniqueId();
-            ItemStack pole = new ItemStack(Material.SHEARS, 1, (byte) 10);
+            ItemStack pole = ItemUtil.create(Material.SHEARS, 1, 10);
             support.setGravity(false);
             support.setVisible(false);
             support.setHeadPose(support.getHeadPose().add(Math.toRadians(supportAngle), Math.toRadians(360 - angle), 0));

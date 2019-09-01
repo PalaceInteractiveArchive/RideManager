@@ -2,7 +2,7 @@ package network.palace.ridemanager.handlers.actions;
 
 import lombok.Getter;
 import network.palace.ridemanager.handlers.builder.ActionType;
-import network.palace.ridemanager.utils.MathUtil;
+import network.palace.ridemanager.utils.RideMathUtil;
 import network.palace.ridemanager.utils.MovementUtil;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -46,7 +46,7 @@ public class TurnAction extends MoveAction {
                 v.setY(MovementUtil.getYMin());
             }
             cart.setVelocity(v);
-            to.setYaw(MathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
+            to.setYaw(RideMathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
             cart.teleport(to);
             finished = true;
             return;
@@ -74,7 +74,7 @@ public class TurnAction extends MoveAction {
             v.setY(MovementUtil.getYMin());
         }
         cart.setVelocity(v);
-        next.setYaw(MathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
+        next.setYaw(RideMathUtil.getBezierAngleAt(t, p0, p1, p2) - 90);
         cart.teleport(next);
 
         t += changeOfT();

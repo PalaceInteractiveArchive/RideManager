@@ -5,6 +5,8 @@ import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.economy.CurrencyType;
 import network.palace.core.player.CPlayer;
+import network.palace.core.utils.ItemUtil;
+import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideEndEvent;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.handlers.ride.ChunkStand;
@@ -14,7 +16,6 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -532,7 +533,7 @@ public class TeacupsRide extends FlatRide {
 
         private void spawn() {
             seat1.spawn();
-            seat1.setHelmet(new ItemStack(Material.SHEARS, 1, (short) (2 + num)));
+            seat1.setHelmet(ItemUtil.create(Material.SHEARS, 1, 2 + num));
             seat2.spawn();
             seat3.spawn();
         }
@@ -566,13 +567,13 @@ public class TeacupsRide extends FlatRide {
             boolean added = false;
             if (seat1.getStand().isPresent() && seat1.getStand().get().getUniqueId().equals(stand)) {
                 added = true;
-                Core.runTask(() -> seat1.addPassenger(player));
+                Core.runTask(RideManager.getInstance(), () -> seat1.addPassenger(player));
             } else if (seat2.getStand().isPresent() && seat2.getStand().get().getUniqueId().equals(stand)) {
                 added = true;
-                Core.runTask(() -> seat2.addPassenger(player));
+                Core.runTask(RideManager.getInstance(), () -> seat2.addPassenger(player));
             } else if (seat3.getStand().isPresent() && seat3.getStand().get().getUniqueId().equals(stand)) {
                 added = true;
-                Core.runTask(() -> seat3.addPassenger(player));
+                Core.runTask(RideManager.getInstance(), () -> seat3.addPassenger(player));
             }
             if (added) {
                 player.getScoreboard().toggleTags(true);
