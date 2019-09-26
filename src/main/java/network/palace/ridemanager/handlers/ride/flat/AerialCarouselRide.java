@@ -26,9 +26,9 @@ import java.util.*;
  * Created by Marc on 3/10/17.
  */
 public class AerialCarouselRide extends Ride {
-    private double aerialRadius = 6.5;
-    private double supportRadius = 4.5;
-    private final boolean small;
+    @Getter private double aerialRadius = 6.5;
+    @Getter private double supportRadius = 4.5;
+    @Getter private final boolean small;
     @Getter private FlatState state = FlatState.LOADING;
     @Getter private Location center;
     @Getter private boolean spawned = false;
