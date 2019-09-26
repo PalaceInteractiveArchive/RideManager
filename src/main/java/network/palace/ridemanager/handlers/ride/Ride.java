@@ -1,5 +1,6 @@
 package network.palace.ridemanager.handlers.ride;
 
+import com.comphenix.protocol.utility.MinecraftReflection;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.Setter;
@@ -105,18 +106,20 @@ public abstract class Ride {
     public static void teleport(org.bukkit.entity.Entity entity, Location loc) {
         try {
             if (!entity.getPassengers().isEmpty()) new RideMoveEvent(entity, entity.getLocation(), loc).call();
+
             Method getHandle = entity.getClass().getMethod("getHandle");
             Object minecraftEntity = getHandle.invoke(entity);
+
             Method setLocation = minecraftEntity.getClass().getMethod("setLocation",
-                    Double.class, Double.class, Double.class, Float.class, Float.class);
-            Method setHeadRotation = minecraftEntity.getClass().getMethod("setHeadRotation", Float.class);
+                    Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE);
+            Method setHeadRotation = minecraftEntity.getClass().getMethod("setHeadRotation", Float.TYPE);
 
             Object worldServer = minecraftEntity.getClass().getField("world").get(minecraftEntity);
-            Method entityJoinedWorld = worldServer.getClass().getMethod("entityJoinedWorld", minecraftEntity.getClass(), Boolean.class);
+            Method entityJoinedWorld = worldServer.getClass().getMethod("entityJoinedWorld", MinecraftReflection.getEntityClass(), Boolean.TYPE);
 
             setLocation.invoke(minecraftEntity, loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
             setHeadRotation.invoke(minecraftEntity, loc.getYaw());
-            entityJoinedWorld.invoke(minecraftEntity, minecraftEntity, false);
+            entityJoinedWorld.invoke(worldServer, minecraftEntity, false);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
             e.printStackTrace();
         }
