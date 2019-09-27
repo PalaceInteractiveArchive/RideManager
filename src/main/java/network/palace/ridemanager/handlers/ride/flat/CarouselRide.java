@@ -131,7 +131,6 @@ public class CarouselRide extends FlatRide {
         this.spawned = true;
     }
 
-
     @Override
     public void start(List<CPlayer> riders) {
         if (started) return;
@@ -153,7 +152,7 @@ public class CarouselRide extends FlatRide {
                     tp.teleport(getExit());
                     break;
                 }
-                if (tp.getBukkitPlayer().isSneaking()) {
+                if (tp.isSneaking()) {
                     tp.sendMessage(ChatColor.RED + "You cannot board a ride while sneaking!");
                     tp.teleport(getExit());
                     break;

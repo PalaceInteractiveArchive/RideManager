@@ -30,7 +30,7 @@ public class ChunkStand {
     @Getter @Setter private float pitch = 0;
     private ItemStack helmet = null;
     @Getter private Vector velocity = new Vector(0, MovementUtil.getYMin(), 0);
-    private EulerAngle headPose = null;
+    @Getter private EulerAngle headPose = null;
 
     public ChunkStand(Location loc) {
         this(loc, true);
