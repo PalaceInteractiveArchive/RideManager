@@ -24,18 +24,20 @@ public class TeacupsRide extends FlatRide {
     private final int tableRadius = 7;
     private final int cupRadius = 3;
     private final double riderRadius = 0.5;
-    @Getter private Location center;
+    private Location center;
     private List<Table> tables = new ArrayList<>();
 
     public TeacupsRide(String name, String displayName, double delay, Location exit, Location center,
                        CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId) {
         super(name, displayName, 54, delay, exit, currencyType, currencyAmount, honorAmount, achievementId);
-        this.center = center;
+        this.center = center.clone().add(0, -1.31, 0);
         spawn();
     }
 
     public void spawn() {
         if (isSpawned()) return;
+
+        Location center = this.center;
 
         Location loc1 = getRelativeLocation(0, tableRadius, center);
         Location loc2 = getRelativeLocation(120, tableRadius, center);
@@ -277,6 +279,10 @@ public class TeacupsRide extends FlatRide {
         for (Table t : tables) {
             t.despawn();
         }
+    }
+
+    public Location getCenter() {
+        return center.clone().add(0, 1.31, 0);
     }
 
     @Override
