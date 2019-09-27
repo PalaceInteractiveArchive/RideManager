@@ -69,7 +69,6 @@ public class AerialCarouselRide extends Ride {
         this.small = small;
         loadSurroundingChunks(center);
         spawn();
-        startTask();
     }
 
     private void startTask() {
@@ -103,9 +102,8 @@ public class AerialCarouselRide extends Ride {
     }
 
     public void spawn() {
-        if (isSpawned()) {
-            return;
-        }
+        if (isSpawned()) return;
+        startTask();
         World w = getWorld();
         double an = small ? 30 : 22.5;
         Location loc1 = getRelativeLocation(0, aerialRadius, this.center);
