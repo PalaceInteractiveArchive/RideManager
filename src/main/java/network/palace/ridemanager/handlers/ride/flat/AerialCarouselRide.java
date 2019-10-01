@@ -8,6 +8,8 @@ import network.palace.core.player.CPlayer;
 import network.palace.core.player.CPlayerActionBarManager;
 import network.palace.core.player.Rank;
 import network.palace.core.utils.ItemUtil;
+import network.palace.parkmanager.ParkManager;
+import network.palace.parkmanager.utils.InventoryUtil;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.events.RideStartEvent;
 import network.palace.ridemanager.handlers.ride.ChunkStand;
@@ -24,8 +26,9 @@ import java.util.*;
  * Created by Marc on 3/10/17.
  */
 public class AerialCarouselRide extends FlatRide {
-    @Getter private double aerialRadius = 6.5;
-    @Getter private double supportRadius = 4.5;
+    @Getter private ItemStack vehicleModel, supportModel;
+    @Getter private double aerialRadius;
+    @Getter private double supportRadius;
     @Getter private final boolean small;
     @Getter private FlatState state = FlatState.LOADING;
     private Location center;
@@ -33,10 +36,10 @@ public class AerialCarouselRide extends FlatRide {
     @Getter private List<Vehicle> vehicles = new ArrayList<>();
     @Getter @Setter private double speed = 0; //Full speed is 0.2
     @Getter @Setter private double heightSpeed = 0;
-    @Getter private double height = 3;
-    @Getter private double movein = 0.9;
+    @Getter private double height;
+    @Getter private double movein;
     @Getter private double maxHeight;
-    @Getter private double supportAngle = 45;
+    @Getter private double supportAngle;
     @Getter private boolean canFly = false;
     @Getter private boolean started = false;
     private long startTime = 0;
@@ -44,24 +47,26 @@ public class AerialCarouselRide extends FlatRide {
     private int taskID;
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType,
-                              int currencyAmount, int honorAmount, int achievementId) {
-        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, achievementId, 6.5, 4.5);
+                              int currencyAmount, int honorAmount, int achievementId, ItemStack vehicleModel, ItemStack supportModel) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, achievementId, vehicleModel, supportModel, 6.5, 4.5);
     }
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType,
-                              int currencyAmount, int honorAmount, int achievementId, double aerialRadius, double supportRadius) {
-        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, achievementId, aerialRadius, supportRadius, true);
+                              int currencyAmount, int honorAmount, int achievementId, ItemStack vehicleModel, ItemStack supportModel, double aerialRadius, double supportRadius) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, achievementId, vehicleModel, supportModel, aerialRadius, supportRadius, true);
     }
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType,
-                              int currencyAmount, int honorAmount, int achievementId, double aerialRadius, double supportRadius, boolean small) {
-        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, achievementId, aerialRadius, supportRadius, small, 45, 3, 0.9);
+                              int currencyAmount, int honorAmount, int achievementId, ItemStack vehicleModel, ItemStack supportModel, double aerialRadius, double supportRadius, boolean small) {
+        this(name, displayName, delay, exit, center, currencyType, currencyAmount, honorAmount, achievementId, vehicleModel, supportModel, aerialRadius, supportRadius, small, 45, 3, 0.9);
     }
 
     public AerialCarouselRide(String name, String displayName, double delay, Location exit, Location center, CurrencyType currencyType,
-                              int currencyAmount, int honorAmount, int achievementId, double aerialRadius, double supportRadius, boolean small, double angle, double height, double movein) {
+                              int currencyAmount, int honorAmount, int achievementId, ItemStack vehicleModel, ItemStack supportModel, double aerialRadius, double supportRadius, boolean small, double angle, double height, double movein) {
         super(name, displayName, 16, delay, exit, currencyType, currencyAmount, honorAmount, achievementId);
         this.center = center.clone().add(0, -1.31, 0);
+        this.vehicleModel = vehicleModel;
+        this.supportModel = supportModel;
         this.aerialRadius = aerialRadius;
         this.supportRadius = supportRadius;
         this.supportAngle = angle;
@@ -285,6 +290,11 @@ public class AerialCarouselRide extends FlatRide {
                         break;
                     case 6:
                         speed = 0.3125;
+                        for (UUID uuid : getOnRide()) {
+                            CPlayer cp = Core.getPlayerManager().getPlayer(uuid);
+                            if (cp == null) continue;
+                            ParkManager.getInventoryUtil().switchToState(cp, InventoryUtil.InventoryState.RIDE);
+                        }
                         break;
                     case 7:
                         speed = 0.2;
@@ -301,6 +311,12 @@ public class AerialCarouselRide extends FlatRide {
                     case 75:
                         canFly = false;
                         getVehicles().stream().forEach(v -> v.setFlyingState(FlyingState.DESCENDING));
+                        ItemStack air = ItemUtil.create(Material.AIR);
+                        for (UUID uuid : getOnRide()) {
+                            CPlayer cp = Core.getPlayerManager().getPlayer(uuid);
+                            if (cp == null) continue;
+                            cp.getInventory().setItem(4, air);
+                        }
                         break;
                     case 82:
                         speed = 0.3;
@@ -464,14 +480,14 @@ public class AerialCarouselRide extends FlatRide {
 
         public Vehicle(Location standLoc, double angle) {
             this.stand = new ChunkStand(standLoc, true, new EulerAngle(0, Math.toRadians(-90), 0));
-            this.stand.setHelmet(ItemUtil.create(Material.SHEARS, 1, 9));
+            this.stand.setHelmet(vehicleModel);
 
             this.angle = angle;
 
             Location loc = getRelativeLocation(angle, supportRadius, center);
             loc.add(0, height / 2, 0);
             this.support = new ChunkStand(loc, false, new EulerAngle(Math.toRadians(supportAngle), Math.toRadians(-angle), 0));
-            this.support.setHelmet(ItemUtil.create(Material.SHEARS, 1, 10));
+            this.support.setHelmet(supportModel);
 
             this.stand.spawn();
             this.support.spawn();
@@ -496,6 +512,7 @@ public class AerialCarouselRide extends FlatRide {
             if (getPassenger() != null) {
                 CPlayer p = Core.getPlayerManager().getPlayer(getPassenger());
                 if (p != null) {
+                    ParkManager.getInventoryUtil().switchToState(p, InventoryUtil.InventoryState.GUEST);
                     eject(p, async);
                 } else {
                     emptyStand(stand.getStand().get(), false);
