@@ -375,6 +375,7 @@ public class TeacupsRide extends FlatRide {
                 c.eject(async);
             }
         }
+        clearOnRide();
     }
 
     @Override
