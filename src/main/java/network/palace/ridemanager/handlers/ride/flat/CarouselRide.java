@@ -137,13 +137,13 @@ public class CarouselRide extends FlatRide {
         new RideStartEvent(this).call();
         state = FlatState.RUNNING;
         for (CPlayer player : new ArrayList<>(riders)) {
-            if (player == null) continue;
+            if (player == null || player.getBukkitPlayer() == null) continue;
             if (getOnRide().contains(player.getUniqueId())) {
                 riders.remove(player);
             }
         }
         int horseNumber = 1;
-        Horse h = null;
+        Horse h;
         for (CPlayer tp : new ArrayList<>(riders)) {
             while (horseNumber < 24) {
                 h = getHorse(horseNumber++);
@@ -448,6 +448,7 @@ public class CarouselRide extends FlatRide {
         }
 
         public boolean addPassenger(CPlayer player) {
+            if (player == null || player.getBukkitPlayer() == null) return false;
             player.getScoreboard().toggleTags(true);
             return horse.addPassenger(player);
         }

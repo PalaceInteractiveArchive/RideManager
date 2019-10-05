@@ -163,7 +163,7 @@ public class ChunkStand {
     }
 
     public boolean addPassenger(CPlayer player) {
-        return getStand().isPresent() && stand.get().getPassengers().isEmpty() && stand.get().addPassenger(player.getBukkitPlayer());
+        return player.getBukkitPlayer() != null && stand.isPresent() && stand.get().getPassengers().isEmpty() && stand.get().addPassenger(player.getBukkitPlayer());
     }
 
     public UUID getPassenger() {
