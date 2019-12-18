@@ -60,7 +60,13 @@ public class MappingUtil {
         YamlConfiguration file = YamlConfiguration.loadConfiguration(f);
         ModelMap map = new ModelMap();
         if (file.contains("item")) {
-            ItemStack item = ItemUtil.create(Material.matchMaterial(file.getString("item")), 1);
+            String[] list = file.getString("item").split(":");
+            int id = Integer.parseInt(list[0]);
+            byte data = 0;
+            if (list.length > 1) {
+                data = Byte.parseByte(list[1]);
+            }
+            ItemStack item = ItemUtil.create(Material.getMaterial(id), 1, data);
             if (item != null)
                 map.setItem(item);
         }
