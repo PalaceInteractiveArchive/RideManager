@@ -91,10 +91,10 @@ public class RideManager extends Plugin {
      * Load a location from a section of a config file
      *
      * @param section the ConfigurationSection with location information
-     * @return a Location with the x,y,z,yaw,pitch values from the config
+     * @return a Location with the world,x,y,z,yaw,pitch values from the config
      */
     public static Location parseLocation(ConfigurationSection section) {
-        World world = Bukkit.getWorlds().get(0);
+        World world = Bukkit.getWorld(section.getString("world"));
         double x = section.getDouble("x");
         double y = section.getDouble("y");
         double z = section.getDouble("z");

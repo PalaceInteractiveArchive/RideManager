@@ -31,17 +31,19 @@ public class MappingUtil {
     /**
      * Get a ModelMap by its name
      *
-     * @param name the name
+     * @param name  the name
+     * @param world the world this map will be used in
      * @return the ModelMap, or null if none was found
      * @implNote If no ModelMap is found, the plugin will attempt to load it from the file system. If this fails, null will be returned.
      */
-    public ModelMap getMap(String name) {
+    public ModelMap getMap(String name, World world) {
         ModelMap map;
         if (maps.containsKey(name)) {
             map = maps.get(name);
         } else {
             map = loadMap(name);
         }
+        map = map.copy(world);
         return map;
     }
 
@@ -51,6 +53,7 @@ public class MappingUtil {
      * @param name the name of the map *excluding* the extension .map
      * @return null if file doesn't exist, and a ModelMap object if the file does exist
      */
+    @SuppressWarnings("deprecation")
     private ModelMap loadMap(String name) {
         File f = new File("plugins/RideManager/maps/" + name + ".map");
         if (!f.exists()) {
@@ -89,10 +92,9 @@ public class MappingUtil {
             map.setCartCount(1);
         }
         ConfigurationSection sec = file.getConfigurationSection("seats");
-        World w = Bukkit.getWorlds().get(0);
         for (String s : sec.getKeys(false)) {
             ConfigurationSection seat = sec.getConfigurationSection(s);
-            map.addSeat(Integer.parseInt(s), new Seat(seat.getDouble("x"), seat.getDouble("y"), seat.getDouble("z"), w));
+            map.addSeat(Integer.parseInt(s), new Seat(seat.getDouble("x"), seat.getDouble("y"), seat.getDouble("z"), null));
         }
         maps.put(name, map);
         return map;

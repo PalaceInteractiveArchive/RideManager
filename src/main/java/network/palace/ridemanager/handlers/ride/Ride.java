@@ -9,7 +9,6 @@ import network.palace.core.economy.CurrencyType;
 import network.palace.core.mongo.MongoHandler;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideMoveEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -55,7 +54,7 @@ public abstract class Ride {
      * @implNote If no achievement is desired, use -1
      */
     public Ride(String name, String displayName, int riders, double delay, Location exit, CurrencyType currencyType, int currencyAmount, int honorAmount, int achievementId) {
-        this.world = Bukkit.getWorlds().get(0);
+        this.world = exit.getWorld();
         this.name = name;
         this.displayName = displayName;
         this.riders = riders;

@@ -16,10 +16,7 @@ import network.palace.ridemanager.handlers.ride.Ride;
 import network.palace.ridemanager.threads.FileRideLoader;
 import network.palace.ridemanager.utils.MovementUtil;
 import network.palace.ridemanager.utils.RideBuilderUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -40,6 +37,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BuildSession {
     @Getter private final UUID uuid;
+    @Getter private final World world;
     @Getter @Setter private String name;
     @Getter @Setter private String fileName;
     private List<RideAction> actions = new ArrayList<>();
@@ -70,7 +68,7 @@ public class BuildSession {
     public void load(File file) {
         loading = true;
         fileName = file.getName();
-        Core.runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(null, file, (name, actionList, sensorList, spawn, speed, setYaw) -> {
+        Core.runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(world, null, file, (name, actionList, sensorList, spawn, speed, setYaw) -> {
             setName(name);
             actions = RideManager.getRideBuilderUtil().getFakeActions(actionList);
 //            sensors = RideManager.getRideBuilderUtil().getFakeSensors(sensorList);
@@ -400,7 +398,7 @@ public class BuildSession {
             if (type == null) continue;
             ItemStack item = type.getItem();
             ItemMeta meta = item.getItemMeta();
-            meta.setLore(Arrays.asList(action.toString()));
+            meta.setLore(Collections.singletonList(action.toString()));
             item.setItemMeta(meta);
             inv.setItem(i++, item);
         }
@@ -734,7 +732,7 @@ public class BuildSession {
             if (index != -1) {
                 mapName = fileName.substring(0, index);
             }
-            ModelMap map = RideManager.getMappingUtil().getMap(mapName);
+            ModelMap map = RideManager.getMappingUtil().getMap(mapName, spawn.getWorld());
             if (map != null && map.getItem() != null) {
                 stand.setHelmet(map.getItem());
             } else {

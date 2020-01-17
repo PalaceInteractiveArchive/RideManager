@@ -69,7 +69,7 @@ public class RideBuilderUtil {
      * @return the new BuildSession
      */
     public BuildSession newSession(CPlayer player) {
-        BuildSession session = new BuildSession(player.getUniqueId());
+        BuildSession session = new BuildSession(player.getUniqueId(), player.getWorld());
         sessions.put(player.getUniqueId(), session);
         session.updateBossBar();
         return session;

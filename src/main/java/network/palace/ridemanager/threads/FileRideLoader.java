@@ -7,10 +7,10 @@ import network.palace.ridemanager.handlers.actions.*;
 import network.palace.ridemanager.handlers.actions.sensors.*;
 import network.palace.ridemanager.handlers.builder.SensorType;
 import network.palace.ridemanager.handlers.ride.file.FileRide;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 
 import java.io.*;
 import java.util.LinkedList;
@@ -21,6 +21,7 @@ import java.util.LinkedList;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class FileRideLoader implements Runnable {
+    @Getter private final World world;
     @Getter private final FileRide ride;
     @Getter private final File file;
     @Getter private final RideCallback callback;
@@ -35,7 +36,7 @@ public class FileRideLoader implements Runnable {
         double speed = 0.1;
         boolean setYaw = true;
         try {
-            String strLine = "";
+            String strLine;
             FileInputStream fstream = new FileInputStream(file);
             DataInputStream in = new DataInputStream(fstream);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -232,15 +233,14 @@ public class FileRideLoader implements Runnable {
      * @return the Location
      * @implNote string should follow the format x,y,z
      */
-    public static Location strToLoc(String string) {
+    private Location strToLoc(String string) {
         Location l = null;
         if (string.length() == 0) {
             return null;
         }
         String[] tokens = string.split(",");
         try {
-            l = new Location(Bukkit.getWorlds().get(0), Double.parseDouble(tokens[0]), Double.parseDouble(tokens[1]),
-                    Double.parseDouble(tokens[2]));
+            l = new Location(world, Double.parseDouble(tokens[0]), Double.parseDouble(tokens[1]), Double.parseDouble(tokens[2]));
         } catch (Exception ignored) {
             System.out.println("Error parsing location [" + string + "]");
         }

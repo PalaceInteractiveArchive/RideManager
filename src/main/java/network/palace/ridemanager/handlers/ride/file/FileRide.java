@@ -59,7 +59,7 @@ public class FileRide extends Ride {
             return;
         }
         loading = true;
-        Core.runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(this, rideFile, (name, actionList, sensorList, spawn, speed, setYaw) -> {
+        Core.runTaskAsynchronously(RideManager.getInstance(), new FileRideLoader(getExit().getWorld(), this, rideFile, (name, actionList, sensorList, spawn, speed, setYaw) -> {
             actions = actionList;
             sensors = sensorList;
             setSpawn(spawn);
@@ -123,12 +123,7 @@ public class FileRide extends Ride {
         }
         if (cart == null) return;
         Cart finalCart = cart;
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                finalCart.removePassenger(player, false);
-            }
-        };
+        Runnable task = () -> finalCart.removePassenger(player, false);
         if (async) {
             Core.runTask(RideManager.getInstance(), task);
         } else {
@@ -146,11 +141,7 @@ public class FileRide extends Ride {
         if (!atStation.isPresent()) return;
         RideVehicle atStation = this.atStation.get();
         new RideStartEvent(this).call();
-        for (CPlayer player : new ArrayList<>(riders)) {
-            if (getOnRide().contains(player.getUniqueId())) {
-                riders.remove(player);
-            }
-        }
+        riders.removeIf(player -> getOnRide().contains(player.getUniqueId()));
         List<Seat> seats = atStation.getSeats();
         int sc = 0;
         Seat s = seats.get(sc);
@@ -232,7 +223,7 @@ public class FileRide extends Ride {
             cartSensors.add(s.duplicate());
         }
         if (modelMap == null) {
-            modelMap = RideManager.getMappingUtil().getMap(modelMapFileName);
+            modelMap = RideManager.getMappingUtil().getMap(modelMapFileName, spawn.getWorld());
         }
         ItemStack model = modelMap.getItem();
         if (model == null) {

@@ -1,6 +1,7 @@
 package network.palace.ridemanager.handlers.ride.file;
 
 import lombok.Getter;
+import lombok.Setter;
 import network.palace.core.Core;
 import network.palace.core.player.CPlayer;
 import network.palace.core.utils.MathUtil;
@@ -26,7 +27,7 @@ public class Seat {
     private final double relative_y;
     private final double relative_z;
 
-    @Getter private World world;
+    @Getter @Setter private World world;
     @Getter private double x, y, z;
     @Getter private float yaw;
     @Getter private float pitch;
@@ -99,7 +100,7 @@ public class Seat {
     }
 
     public Location getRelative(Location loc, float yaw) {
-        double angle = (double) yaw;
+        double angle = yaw;
         if (angle < 0) {
             angle += 360;
         }
