@@ -3,7 +3,7 @@ package network.palace.ridemanager.handlers.ride.file;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
-import network.palace.core.economy.CurrencyType;
+import network.palace.core.economy.currency.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.RideManager;
@@ -123,12 +123,7 @@ public class FileRide extends Ride {
         }
         if (cart == null) return;
         Cart finalCart = cart;
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                finalCart.removePassenger(player, false);
-            }
-        };
+        Runnable task = () -> finalCart.removePassenger(player, false);
         if (async) {
             Core.runTask(RideManager.getInstance(), task);
         } else {
@@ -146,11 +141,7 @@ public class FileRide extends Ride {
         if (!atStation.isPresent()) return;
         RideVehicle atStation = this.atStation.get();
         new RideStartEvent(this).call();
-        for (CPlayer player : new ArrayList<>(riders)) {
-            if (getOnRide().contains(player.getUniqueId())) {
-                riders.remove(player);
-            }
-        }
+        riders.removeIf(player -> getOnRide().contains(player.getUniqueId()));
         List<Seat> seats = atStation.getSeats();
         int sc = 0;
         Seat s = seats.get(sc);
