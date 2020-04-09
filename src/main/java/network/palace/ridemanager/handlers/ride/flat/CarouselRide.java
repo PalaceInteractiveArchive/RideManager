@@ -3,7 +3,7 @@ package network.palace.ridemanager.handlers.ride.flat;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
-import network.palace.core.economy.CurrencyType;
+import network.palace.core.economy.currency.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.RideManager;
@@ -469,6 +469,7 @@ public class CarouselRide extends FlatRide {
                 if (p != null) {
                     eject(p, async);
                 } else {
+                    horse.getStand().ifPresent(h -> emptyStand(h, false));
                     emptyStand(horse.getStand().get(), false);
                     removeFromOnRide(horse.getPassenger());
                 }
@@ -479,7 +480,7 @@ public class CarouselRide extends FlatRide {
             if (player == null) return false;
             boolean ejected = false;
             if (getPassenger() != null && getPassenger().equals(player.getUniqueId())) {
-                emptyStand(horse.getStand().get(), async);
+                horse.getStand().ifPresent(h -> emptyStand(h, false));
                 removeFromOnRide(player.getUniqueId());
                 player.getScoreboard().toggleTags(false);
                 ejected = true;

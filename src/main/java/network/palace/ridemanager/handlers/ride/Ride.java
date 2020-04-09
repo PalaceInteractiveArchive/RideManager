@@ -5,8 +5,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
-import network.palace.core.economy.CurrencyType;
-import network.palace.core.mongo.MongoHandler;
+import network.palace.core.economy.currency.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.events.RideMoveEvent;
 import org.bukkit.Chunk;
@@ -153,13 +152,18 @@ public abstract class Ride {
     }
 
     public void rewardCurrency(UUID[] uuids) {
-        MongoHandler mongo = Core.getMongoHandler();
-        if (mongo == null) return;
         for (UUID uuid : uuids) {
-            if (Core.getPlayerManager().getPlayer(uuid) == null) continue;
-            mongo.changeAmount(uuid, currencyAmount, "Ride " + name + " " + Core.getInstanceName(),
-                    currencyType, false);
-            mongo.addHonor(uuid, honorAmount);
+            CPlayer tp;
+            if ((tp = Core.getPlayerManager().getPlayer(uuid)) == null) continue;
+            switch (currencyType) {
+                case BALANCE:
+                    tp.addBalance(currencyAmount, "Ride " + name + " " + Core.getInstanceName());
+                    break;
+                case TOKENS:
+                    tp.addTokens(currencyAmount, "Ride " + name + " " + Core.getInstanceName());
+                    break;
+            }
+            tp.giveHonor(honorAmount);
         }
     }
 

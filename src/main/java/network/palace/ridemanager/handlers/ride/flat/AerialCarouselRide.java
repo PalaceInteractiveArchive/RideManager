@@ -3,7 +3,7 @@ package network.palace.ridemanager.handlers.ride.flat;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
-import network.palace.core.economy.CurrencyType;
+import network.palace.core.economy.currency.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.core.player.CPlayerActionBarManager;
 import network.palace.core.player.Rank;
@@ -169,11 +169,7 @@ public class AerialCarouselRide extends FlatRide {
         if (started) return;
         new RideStartEvent(this).call();
         state = FlatState.RUNNING;
-        for (CPlayer player : new ArrayList<>(riders)) {
-            if (getOnRide().contains(player.getUniqueId())) {
-                riders.remove(player);
-            }
-        }
+        riders.removeIf(player -> getOnRide().contains(player.getUniqueId()));
         int hc = 1;
         Vehicle h = getVehicle(hc);
         for (CPlayer tp : riders) {
@@ -498,7 +494,7 @@ public class AerialCarouselRide extends FlatRide {
                 if (p != null) {
                     eject(p, async);
                 } else {
-                    emptyStand(stand.getStand().get(), false);
+                    stand.getStand().ifPresent(s -> emptyStand(s, false));
                     removeFromOnRide(stand.getPassenger());
                 }
             }
@@ -508,7 +504,7 @@ public class AerialCarouselRide extends FlatRide {
             if (player == null) return false;
             boolean ejected = false;
             if (getPassenger() != null && getPassenger().equals(player.getUniqueId())) {
-                emptyStand(stand.getStand().get(), async);
+                stand.getStand().ifPresent(s -> emptyStand(s, async));
                 removeFromOnRide(player.getUniqueId());
                 player.getScoreboard().toggleTags(false);
                 ejected = true;

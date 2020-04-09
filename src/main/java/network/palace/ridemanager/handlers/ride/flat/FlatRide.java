@@ -3,7 +3,7 @@ package network.palace.ridemanager.handlers.ride.flat;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
-import network.palace.core.economy.CurrencyType;
+import network.palace.core.economy.currency.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.RideManager;
 import network.palace.ridemanager.handlers.ride.Ride;
@@ -25,22 +25,19 @@ public abstract class FlatRide extends Ride {
 
     protected void emptyStand(ArmorStand stand, boolean async) {
         if (stand.getPassengers().isEmpty()) return;
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                for (Entity e : stand.getPassengers()) {
-                    CPlayer p = Core.getPlayerManager().getPlayer(e.getUniqueId());
-                    if (p == null) continue;
-                    final Location pLoc = p.getLocation();
-                    stand.removePassenger(p.getBukkitPlayer());
-                    Location loc = getExit();
-                    if (state.equals(FlatState.LOADING)) {
-                        loc = stand.getLocation().add(0, 2, 0);
-                        loc.setYaw(pLoc.getYaw());
-                        loc.setPitch(pLoc.getPitch());
-                    }
-                    p.teleport(loc);
+        Runnable task = () -> {
+            for (Entity e : stand.getPassengers()) {
+                CPlayer p = Core.getPlayerManager().getPlayer(e.getUniqueId());
+                if (p == null) continue;
+                final Location pLoc = p.getLocation();
+                stand.removePassenger(p.getBukkitPlayer());
+                Location loc = getExit();
+                if (state.equals(FlatState.LOADING)) {
+                    loc = stand.getLocation().add(0, 2, 0);
+                    loc.setYaw(pLoc.getYaw());
+                    loc.setPitch(pLoc.getPitch());
                 }
+                p.teleport(loc);
             }
         };
         if (async) {

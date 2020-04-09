@@ -3,7 +3,7 @@ package network.palace.ridemanager.handlers.ride.flat;
 import lombok.Getter;
 import lombok.Setter;
 import network.palace.core.Core;
-import network.palace.core.economy.CurrencyType;
+import network.palace.core.economy.currency.CurrencyType;
 import network.palace.core.player.CPlayer;
 import network.palace.core.utils.ItemUtil;
 import network.palace.ridemanager.RideManager;
@@ -599,7 +599,7 @@ public class TeacupsRide extends FlatRide {
 
         public void eject(boolean async) {
             if (seat1.getPassenger() != null) {
-                emptyStand(seat1.getStand().get(), async);
+                seat1.getStand().ifPresent(s -> emptyStand(s, async));
                 removeFromOnRide(seat1.getPassenger());
                 CPlayer p = Core.getPlayerManager().getPlayer(seat1.getPassenger());
                 if (p != null) {
@@ -607,7 +607,7 @@ public class TeacupsRide extends FlatRide {
                 }
             }
             if (seat2.getPassenger() != null) {
-                emptyStand(seat2.getStand().get(), async);
+                seat2.getStand().ifPresent(s -> emptyStand(s, async));
                 removeFromOnRide(seat2.getPassenger());
                 CPlayer p = Core.getPlayerManager().getPlayer(seat2.getPassenger());
                 if (p != null) {
@@ -615,7 +615,7 @@ public class TeacupsRide extends FlatRide {
                 }
             }
             if (seat3.getPassenger() != null) {
-                emptyStand(seat3.getStand().get(), async);
+                seat3.getStand().ifPresent(s -> emptyStand(s, async));
                 removeFromOnRide(seat3.getPassenger());
                 CPlayer p = Core.getPlayerManager().getPlayer(seat3.getPassenger());
                 if (p != null) {
@@ -628,17 +628,17 @@ public class TeacupsRide extends FlatRide {
             if (player == null) return false;
             boolean ejected = false;
             if (seat1.getPassenger() != null && player.getUniqueId().equals(seat1.getPassenger())) {
-                emptyStand(seat1.getStand().get(), async);
+                seat1.getStand().ifPresent(s -> emptyStand(s, async));
                 removeFromOnRide(player.getUniqueId());
                 ejected = true;
             }
             if (seat2.getPassenger() != null && player.getUniqueId().equals(seat2.getPassenger())) {
-                emptyStand(seat2.getStand().get(), async);
+                seat2.getStand().ifPresent(s -> emptyStand(s, async));
                 removeFromOnRide(player.getUniqueId());
                 ejected = true;
             }
             if (seat3.getPassenger() != null && player.getUniqueId().equals(seat3.getPassenger())) {
-                emptyStand(seat3.getStand().get(), async);
+                seat3.getStand().ifPresent(s -> emptyStand(s, async));
                 removeFromOnRide(player.getUniqueId());
                 ejected = true;
             }
