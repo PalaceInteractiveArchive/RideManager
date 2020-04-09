@@ -17,7 +17,7 @@ public class ShowSensor extends RideSensor {
 
     public ShowSensor(Location location, double radius, String file, int delay) {
         super(location, radius);
-        this.file = new File("plugins/Show/shows/" + file + ".show");
+        this.file = new File("plugins/Show/shows/" + location.getWorld().getName() + "/" + file + ".show");
         this.delay = delay;
     }
 
@@ -25,11 +25,13 @@ public class ShowSensor extends RideSensor {
     public void activate() {
         super.activate();
         if (file == null || !file.exists()) return;
-        if (delay > 0) {
-            Core.runTaskLater(RideManager.getInstance(), () -> ShowPlugin.startShow(getRandomString(), new RideShow(RideManager.getInstance(), file, vehicle)), 20 * delay);
-        } else {
-            ShowPlugin.startShow(getRandomString(), new RideShow(RideManager.getInstance(), file, vehicle));
-        }
+        Core.runTaskLater(RideManager.getInstance(), () -> {
+            try {
+                ShowPlugin.startShow(getRandomString(), new RideShow(file, vehicle));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, 20 * delay);
     }
 
     @Override

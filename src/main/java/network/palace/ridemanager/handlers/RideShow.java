@@ -3,7 +3,6 @@ package network.palace.ridemanager.handlers;
 import network.palace.core.player.CPlayer;
 import network.palace.ridemanager.handlers.ride.file.RideVehicle;
 import network.palace.show.Show;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -13,8 +12,8 @@ import java.util.UUID;
 public class RideShow extends Show {
     private final RideVehicle vehicle;
 
-    public RideShow(JavaPlugin plugin, File file, RideVehicle vehicle) {
-        super(plugin, file);
+    public RideShow(File file, RideVehicle vehicle) {
+        super(file, vehicle.getRide().getWorld());
         this.vehicle = vehicle;
     }
 
