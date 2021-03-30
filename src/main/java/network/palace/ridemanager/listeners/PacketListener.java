@@ -64,7 +64,7 @@ public class PacketListener implements Listener {
 //            @Override
 //            public void onPacketReceiving(PacketEvent event) {
 //                CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
-//                if (player == null || player.getRank().getRankId() < Rank.MOD.getRankId()) return;
+//                if (player == null || player.getRank().getRankId() < Rank.CM.getRankId()) return;
 //                PacketContainer packet = event.getPacket();
 //            }
 //        });

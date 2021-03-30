@@ -258,7 +258,7 @@ public class AerialCarouselRide extends FlatRide {
                         speed = 1.5;
                         for (UUID uuid : getOnRide()) {
                             CPlayer cp = Core.getPlayerManager().getPlayer(uuid);
-                            if (cp == null || cp.getRank().getRankId() < Rank.MOD.getRankId()) continue;
+                            if (cp == null || cp.getRank().getRankId() < Rank.CM.getRankId()) continue;
                             ItemStack i = cp.getInventory().getItem(4);
                             if (i == null || !i.getType().equals(Material.THIN_GLASS)) continue;
                             cp.performCommand("build");

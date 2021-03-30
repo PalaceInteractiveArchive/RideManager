@@ -16,14 +16,14 @@ public class PlayerMove implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerMove(PlayerMoveEvent event) {
         CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
-        if (player == null || player.getRank().getRankId() < Rank.MOD.getRankId()) return;
+        if (player == null || player.getRank().getRankId() < Rank.CM.getRankId()) return;
         RideManager.getRideBuilderUtil().moveEvent(player, MathUtil.round(event.getFrom().clone(), 4), MathUtil.round(event.getTo().clone(), 4));
     }
 
     @EventHandler
     public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
         CPlayer player = Core.getPlayerManager().getPlayer(event.getPlayer());
-        if (player == null || player.getRank().getRankId() < Rank.MOD.getRankId()) return;
+        if (player == null || player.getRank().getRankId() < Rank.CM.getRankId()) return;
         RideManager.getRideBuilderUtil().toggleShift(player, event.isSneaking());
     }
 }
