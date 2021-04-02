@@ -8,7 +8,7 @@ import network.palace.ridemanager.RideManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-@CommandMeta(description = "Reset ride seat maps", rank = Rank.MOD)
+@CommandMeta(description = "Reset ride seat maps", rank = Rank.CM)
 public class RideMapResetCommand extends CoreCommand {
 
     public RideMapResetCommand() {
